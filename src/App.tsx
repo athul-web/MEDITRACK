@@ -83,11 +83,11 @@ export default function App() {
       setIsLoading(true);
       try {
         const [eqRes, techRes, probRes, mainRes, notifRes, setRes] = await Promise.all([
-          supabase.from('equipment').select('*').order('name'),
-          supabase.from('technicians').select('*').order('name'),
-          supabase.from('problem_reports').select('*').order('reported_at', { ascending: false }),
-          supabase.from('maintenance_records').select('*').order('date', { ascending: false }),
-          supabase.from('notifications').select('*').order('timestamp', { ascending: false }),
+          supabase.from('equipment').select('*'),
+          supabase.from('technicians').select('*'),
+          supabase.from('problem_reports').select('*'),
+          supabase.from('maintenance_records').select('*'),
+          supabase.from('notifications').select('*'),
           supabase.from('facility_settings').select('*').single(),
         ]);
 

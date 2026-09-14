@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <p id="header-facility-name" className="text-xs text-slate-500 truncate max-w-[200px] sm:max-w-xs">
-                {facilitySettings.hospitalName} • Clinical Engineering
+                {facilitySettings?.hospitalName || 'Medical Center'} • Clinical Engineering
               </p>
             </div>
           </div>

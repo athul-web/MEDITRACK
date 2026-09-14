@@ -93,7 +93,16 @@ export default function App() {
 
         if (eqRes.data) setEquipmentList(mapDbToFrontend(eqRes.data));
         if (techRes.data) setTechnicians(mapDbToFrontend(techRes.data));
-        if (probRes.data) setProblemReports(mapDbToFrontend(probRes.data));
+        if (probRes.data) {
+          const mappedReports = mapDbToFrontend(probRes.data).map((report: any) => {
+            const eq = equipmentList.find(e => e.id === report.equipmentId);
+            return {
+              ...report,
+              equipmentName: eq?.name || 'Unknown Equipment'
+            };
+          });
+          setProblemReports(mappedReports);
+        }
         if (mainRes.data) setMaintenanceRecords(mapDbToFrontend(mainRes.data));
         if (notifRes.data) setNotifications(mapDbToFrontend(notifRes.data));
         if (setRes.data) setFacilitySettings(mapDbToFrontend(setRes.data));

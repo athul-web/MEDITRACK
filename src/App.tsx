@@ -1,24 +1,17 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { 
-  Equipment, 
-  Technician, 
-  ProblemReport, 
-  MaintenanceRecord, 
-  UserRole, 
-  NotificationItem, 
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Equipment,
+  Technician,
+  ProblemReport,
+  MaintenanceRecord,
+  UserRole,
+  NotificationItem,
   FacilitySettings,
   Department,
   EquipmentStatus,
   CriticalityLevel
 } from './types';
-import { 
-  INITIAL_EQUIPMENT, 
-  INITIAL_TECHNICIANS, 
-  INITIAL_PROBLEM_REPORTS, 
-  INITIAL_MAINTENANCE_RECORDS, 
-  INITIAL_NOTIFICATIONS, 
-  INITIAL_FACILITY_SETTINGS 
-} from './data/mockData';
+import { supabase, mapDbToFrontend, mapFrontendToDb } from './lib/supabase';
 import { Header } from './components/Header';
 import { StatsOverview } from './components/StatsOverview';
 import { EquipmentCard } from './components/EquipmentCard';
@@ -49,23 +42,43 @@ import {
   Sparkles
 } from 'lucide-react';
 
-interface ToastState {
-  title: string;
-  message?: string;
-  type?: 'success' | 'info' | 'alert';
-}
-
 export default function App() {
   // Core Application State
-  const [equipmentList, setEquipmentList] = useState<Equipment[]>(INITIAL_EQUIPMENT);
-  const [technicians, setTechnicians] = useState<Technician[]>(INITIAL_TECHNICIANS);
-  const [problemReports, setProblemReports] = useState<ProblemReport[]>(INITIAL_PROBLEM_REPORTS);
-  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>(INITIAL_MAINTENANCE_RECORDS);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
-  const [facilitySettings, setFacilitySettings] = useState<FacilitySettings>(INITIAL_FACILITY_SETTINGS);
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [problemReports, setProblemReports] = useState<ProblemReport[]>([]);
+  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [facilitySettings, setFacilitySettings] = useState<FacilitySettings | null>(null);
 
   // Role and Navigation State
   const [currentRole, setCurrentRole] = useState<UserRole>('Staff');
+
+  // Fetch initial data from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [eqRes, techRes, probRes, mainRes, notifRes, setRes] = await Promise.all([
+          supabase.from('equipment').select('*'),
+          supabase.from('technicians').select('*'),
+          supabase.from('problem_reports').select('*'),
+          supabase.from('maintenance_records').select('*'),
+          supabase.from('notifications').select('*'),
+          supabase.from('facility_settings').select('*').single(),
+        ]);
+
+        if (eqRes.data) setEquipmentList(mapDbToFrontend(eqRes.data));
+        if (techRes.data) setTechnicians(mapDbToFrontend(techRes.data));
+        if (probRes.data) setProblemReports(mapDbToFrontend(probRes.data));
+        if (mainRes.data) setMaintenanceRecords(mapDbToFrontend(mainRes.data));
+        if (notifRes.data) setNotifications(mapDbToFrontend(notifRes.data));
+        if (setRes.data) setFacilitySettings(mapDbToFrontend(setRes.data));
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    }
+    loadData();
+  }, []);
   const [activeNav, setActiveNav] = useState<'equipment' | 'workorders' | 'history' | 'technicians'>('equipment');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
@@ -94,25 +107,12 @@ export default function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // Toast feedback state
-  const [toast, setToast] = useState<ToastState | null>(null);
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const showToast = (title: string, message?: string, type: 'success' | 'info' | 'alert' = 'success') => {
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current);
-    }
-    setToast({ title, message, type });
-    toastTimerRef.current = setTimeout(() => {
-      setToast(null);
-    }, 4500);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
   };
-
-  // If role is changed to Staff while on technicians tab, automatically redirect to equipment
-  useEffect(() => {
-    if (currentRole === 'Staff' && activeNav === 'technicians') {
-      setActiveNav('equipment');
-    }
-  }, [currentRole, activeNav]);
 
   // Fleet uptime calculation
   const fleetUptime = useMemo(() => {
@@ -161,230 +161,189 @@ export default function App() {
     setIsReportModalOpen(true);
   };
 
-  const handleSubmitProblemReport = (reportData: Omit<ProblemReport, 'id' | 'reportedAt' | 'status'>) => {
-    const ticketId = `WO-${Math.floor(1040 + Math.random() * 8960)}`;
-    const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+  const handleSubmitProblemReport = async (reportData: Omit<ProblemReport, 'id' | 'reportedAt' | 'status'>) => {
+    try {
+      const ticketId = `TICK-${Math.floor(1000 + Math.random() * 9000)}`;
+      const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    const newTicket: ProblemReport = {
-      ...reportData,
-      id: ticketId,
-      status: 'Reported',
-      reportedAt: nowStr,
-    };
+      const newTicket: ProblemReport = {
+        ...reportData,
+        id: ticketId,
+        status: 'Reported',
+        reportedAt: nowStr,
+      };
 
-    // Update equipment status based on urgency
-    const newStatus: EquipmentStatus = 
-      reportData.severity === 'Critical' || reportData.severity === 'High' 
-        ? 'Down' 
-        : 'Needs Attention';
+      // 1. Insert the problem report
+      const { error: reportError } = await supabase
+        .from('problem_reports')
+        .insert([mapFrontendToDb(newTicket)]);
 
-    setEquipmentList(prev =>
-      prev.map(eq => {
-        if (eq.id === reportData.equipmentId) {
-          return {
-            ...eq,
-            status: newStatus,
-            activeTicketId: ticketId,
-          };
-        }
-        return eq;
-      })
-    );
+      if (reportError) throw reportError;
 
-    setProblemReports(prev => [newTicket, ...prev]);
+      // Update equipment status based on urgency
+      const newStatus: EquipmentStatus =
+        reportData.severity === 'Critical' || reportData.severity === 'High'
+          ? 'Down'
+          : 'Needs Attention';
 
-    // Push real-time notification
-    const newNotif: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      title: `${reportData.severity} Issue Reported: ${reportData.equipmentName}`,
-      message: `${reportData.equipmentId} reported in ${reportData.room} by ${reportData.reportedBy}.`,
-      type: reportData.severity === 'Critical' ? 'alert' : 'warning',
-      timestamp: 'Just now',
-      equipmentId: reportData.equipmentId,
-      read: false,
-    };
-    setNotifications(prev => [newNotif, ...prev]);
+      // 2. Update equipment status and link ticket
+      const { error: eqError } = await supabase
+        .from('equipment')
+        .update({
+          status: newStatus,
+          active_ticket_id: ticketId
+        })
+        .eq('id', reportData.equipmentId);
 
-    showToast(
-      'Equipment breakdown reported',
-      `Work order #${ticketId} created and routed to Lead Biomedical Engineer.`,
-      'success'
-    );
+      if (eqError) throw eqError;
 
-    // If modal is open for this equipment, update selected
-    if (selectedEquipment && selectedEquipment.id === reportData.equipmentId) {
-      setSelectedEquipment(prev => prev ? { ...prev, status: newStatus, activeTicketId: ticketId } : null);
+      // Refresh local state
+      setEquipmentList(prev =>
+        prev.map(eq => (eq.id === reportData.equipmentId ? { ...eq, status: newStatus, activeTicketId: ticketId } : eq))
+      );
+      setProblemReports(prev => [newTicket, ...prev]);
+
+      // Push real-time notification
+      const newNotif: NotificationItem = {
+        id: `notif-${Date.now()}`,
+        title: `${reportData.severity} Issue Reported: ${reportData.equipmentName}`,
+        message: `${reportData.equipmentId} reported in ${reportData.room} by ${reportData.reportedBy}.`,
+        type: reportData.severity === 'Critical' ? 'alert' : 'warning',
+        timestamp: 'Just now',
+        equipmentId: reportData.equipmentId,
+        read: false,
+      };
+
+      await supabase.from('notifications').insert([mapFrontendToDb(newNotif)]);
+      setNotifications(prev => [newNotif, ...prev]);
+
+      showToast(`Work Order ${ticketId} created. Equipment updated to ${newStatus}.`);
+
+      if (selectedEquipment && selectedEquipment.id === reportData.equipmentId) {
+        setSelectedEquipment(prev => prev ? { ...prev, status: newStatus, activeTicketId: ticketId } : null);
+      }
+    } catch (error: any) {
+      console.error('Error reporting problem:', error);
+      showToast(`Error: ${error.message || 'Failed to report problem'}`);
     }
   };
 
-  // 2. Assign Technician (Admin only)
+  // 2. Assign Technician
   const handleOpenAssignModal = (equipment: Equipment) => {
-    if (currentRole !== 'Admin') return;
     setAssignTargetEquipment(equipment);
     setIsAssignModalOpen(true);
   };
 
-  const handleAssignTechnician = (equipmentId: string, tech: Technician, note: string) => {
-    if (currentRole !== 'Admin') return;
-    const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+  const handleAssignTechnician = async (equipmentId: string, tech: Technician, note: string) => {
+    try {
+      const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    // Find previous technician if reassigning
-    const existingTicket = problemReports.find(
-      ticket => ticket.equipmentId === equipmentId && ticket.status !== 'Resolved'
-    );
-    const previousTechId = existingTicket?.assignedTechnicianId;
+      // 1. Update Equipment
+      const { error: eqError } = await supabase
+        .from('equipment')
+        .update({
+          status: 'Under Maintenance',
+          assigned_technician_id: tech.id,
+        })
+        .eq('id', equipmentId);
 
-    // Update Equipment: status remains current (or Under Maintenance) with technician assigned
-    setEquipmentList(prev =>
-      prev.map(eq => {
-        if (eq.id === equipmentId) {
-          return {
-            ...eq,
-            assignedTechnicianId: tech.id,
-            assignedTechnicianName: tech.name,
-          };
-        }
-        return eq;
-      })
-    );
+      if (eqError) throw eqError;
 
-    // Update Ticket: set status to 'Assigned'
-    setProblemReports(prev =>
-      prev.map(ticket => {
-        if (ticket.equipmentId === equipmentId && ticket.status !== 'Resolved') {
-          const notes = ticket.repairNotes || [];
-          return {
-            ...ticket,
-            status: 'Assigned',
-            assignedTechnicianId: tech.id,
-            assignedTechnicianName: tech.name,
-            assignedAt: nowStr,
-            repairNotes: [`${nowStr} - Technician ${tech.name} assigned: ${note}`, ...notes],
-          };
-        }
-        return ticket;
-      })
-    );
+      // 2. Update or link Ticket
+      const { error: ticketError } = await supabase
+        .from('problem_reports')
+        .update({
+          status: 'In Repair',
+          assigned_technician_id: tech.id,
+          assigned_at: nowStr,
+        })
+        .eq('equipment_id', equipmentId)
+        .neq('status', 'Resolved');
 
-    // Update Technician workloads
-    setTechnicians(prev =>
-      prev.map(t => {
-        if (t.id === tech.id) {
-          const increment = previousTechId === tech.id ? 0 : 1;
-          return {
-            ...t,
-            status: 'Assigned',
-            activeTicketsCount: t.activeTicketsCount + increment,
-          };
-        }
-        if (previousTechId && t.id === previousTechId && previousTechId !== tech.id) {
-          const nextCount = Math.max(0, t.activeTicketsCount - 1);
-          return {
-            ...t,
-            activeTicketsCount: nextCount,
-            status: nextCount === 0 ? 'Available' : 'Assigned',
-          };
-        }
-        return t;
-      })
-    );
+      if (ticketError) throw ticketError;
 
-    // Add Notification
-    setNotifications(prev => [
-      {
+      // 3. Update Technician workload
+      const { error: techError } = await supabase
+        .from('technicians')
+        .update({
+          status: 'Assigned',
+          active_tickets_count: tech.activeTicketsCount + 1,
+        })
+        .eq('id', tech.id);
+
+      if (techError) throw techError;
+
+      // Refresh local state
+      setEquipmentList(prev =>
+        prev.map(eq => (eq.id === equipmentId ? { ...eq, status: 'Under Maintenance', assignedTechnicianId: tech.id, assignedTechnicianName: tech.name } : eq))
+      );
+
+      setProblemReports(prev =>
+        prev.map(ticket => {
+          if (ticket.equipmentId === equipmentId && ticket.status !== 'Resolved') {
+            const notes = ticket.repairNotes || [];
+            return {
+              ...ticket,
+              status: 'In Repair',
+              assignedTechnicianId: tech.id,
+              assignedTechnicianName: tech.name,
+              assignedAt: nowStr,
+              repairNotes: [`${nowStr} - Technician ${tech.name} assigned: ${note}`, ...notes],
+            };
+          }
+          return ticket;
+        })
+      );
+
+      setTechnicians(prev =>
+        prev.map(t => (t.id === tech.id ? { ...t, status: 'Assigned', activeTicketsCount: t.activeTicketsCount + 1 } : t))
+      );
+
+      // Add Notification
+      const newNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
         title: `Technician Assigned: ${tech.name}`,
-        message: `Assigned to work order for ${equipmentId}. Status transitioned to Assigned.`,
+        message: `Dispatched to work on ${equipmentId}. Status set to Under Maintenance.`,
         type: 'info',
         timestamp: 'Just now',
         equipmentId,
         read: false,
-      },
-      ...prev,
-    ]);
+      };
 
-    showToast(
-      'Technician assigned',
-      `${tech.name} assigned to ${equipmentId}. Work order status updated to Assigned.`,
-      'success'
-    );
-
-    if (selectedEquipment && selectedEquipment.id === equipmentId) {
-      setSelectedEquipment(prev => prev ? { 
-        ...prev, 
-        assignedTechnicianId: tech.id, 
-        assignedTechnicianName: tech.name 
-      } : null);
-    }
-  };
-
-  // 2b. Start Repair (Admin only - transitions from Assigned to In Repair)
-  const handleStartRepair = (ticketId: string) => {
-    if (currentRole !== 'Admin') return;
-    const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
-    let targetEquipmentId = '';
-    let targetEqName = '';
-    let techName = '';
-
-    setProblemReports(prev =>
-      prev.map(ticket => {
-        if (ticket.id === ticketId) {
-          targetEquipmentId = ticket.equipmentId;
-          targetEqName = ticket.equipmentName;
-          techName = ticket.assignedTechnicianName || 'Biomedical Technician';
-          const notes = ticket.repairNotes || [];
-          return {
-            ...ticket,
-            status: 'In Repair',
-            repairNotes: [`${nowStr} - Physical repair commenced by ${techName}`, ...notes],
-          };
-        }
-        return ticket;
-      })
-    );
-
-    if (targetEquipmentId) {
-      setEquipmentList(prev =>
-        prev.map(eq =>
-          eq.id === targetEquipmentId
-            ? { ...eq, status: 'Under Maintenance' }
-            : eq
-        )
-      );
-
-      if (selectedEquipment && selectedEquipment.id === targetEquipmentId) {
-        setSelectedEquipment(prev => prev ? { ...prev, status: 'Under Maintenance' } : null);
-      }
-
-      setNotifications(prev => [
+      await supabase.from('notifications').insert([
         {
-          id: `notif-${Date.now()}`,
-          title: `Repair Commenced: ${targetEqName || targetEquipmentId}`,
-          message: `${techName} started repair work on ticket #${ticketId}. Unit status updated to Under Maintenance.`,
-          type: 'info',
-          timestamp: 'Just now',
-          equipmentId: targetEquipmentId,
-          read: false,
-        },
-        ...prev,
+          title: newNotif.title,
+          message: newNotif.message,
+          type: newNotif.type,
+          equipment_id: newNotif.equipmentId,
+          read: newNotif.read
+        }
       ]);
+      setNotifications(prev => [newNotif, ...prev]);
 
-      showToast(
-        'Repair commenced',
-        `Work order #${ticketId} is now In Repair. Equipment marked Under Maintenance.`,
-        'info'
-      );
+      showToast(`${tech.name} assigned to ${equipmentId}.`);
+
+      if (selectedEquipment && selectedEquipment.id === equipmentId) {
+        setSelectedEquipment(prev => prev ? {
+          ...prev,
+          status: 'Under Maintenance',
+          assignedTechnicianId: tech.id,
+          assignedTechnicianName: tech.name
+        } : null);
+      }
+    } catch (error: any) {
+      console.error('Error assigning technician:', error);
+      showToast(`Error: ${error.message || 'Failed to assign technician'}`);
     }
   };
 
-  // 3. Resolve Repair & Return to Operational (Admin only)
+  // 3. Resolve Repair & Return to Operational
   const handleOpenResolveModal = (equipment: Equipment) => {
-    if (currentRole !== 'Admin') return;
     setResolveTargetEquipment(equipment);
     setIsResolveModalOpen(true);
   };
 
-  const handleResolveRepair = (data: {
+  const handleResolveRepair = async (data: {
     equipmentId: string;
     resolutionSummary: string;
     partsReplaced: string[];
@@ -392,130 +351,170 @@ export default function App() {
     cost: number;
     technicianName: string;
   }) => {
-    if (currentRole !== 'Admin') return;
-    const recordId = `MAINT-${Math.floor(8000 + Math.random() * 2000)}`;
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const nowTimeStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    try {
+      const recordId = `MAINT-${Math.floor(8000 + Math.random() * 2000)}`;
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const nowTimeStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    const targetEq = equipmentList.find(e => e.id === data.equipmentId);
+      const targetEq = equipmentList.find(e => e.id === data.equipmentId);
 
-    // 1. Create MaintenanceRecord
-    const newRecord: MaintenanceRecord = {
-      id: recordId,
-      equipmentId: data.equipmentId,
-      equipmentName: targetEq?.name || 'Medical Equipment',
-      date: todayStr,
-      resolvedDate: nowTimeStr,
-      type: 'Corrective Repair',
-      technicianName: data.technicianName,
-      description: data.resolutionSummary,
-      partsReplaced: data.partsReplaced,
-      downtimeHours: data.downtimeHours,
-      cost: data.cost,
-      notes: 'Certified compliant with clinical engineering safety guidelines.',
-    };
+      // 1. Create MaintenanceRecord
+      const { error: maintError } = await supabase
+        .from('maintenance_records')
+        .insert([{
+          id: recordId,
+          equipment_id: data.equipmentId,
+          date: todayStr,
+          resolved_date: nowTimeStr,
+          type: 'Corrective Repair',
+          description: data.resolutionSummary,
+          parts_replaced: data.partsReplaced,
+          downtime_hours: data.downtimeHours,
+          cost: data.cost,
+          notes: 'Certified compliant with clinical engineering safety guidelines.',
+        }]);
 
-    setMaintenanceRecords(prev => [newRecord, ...prev]);
+      if (maintError) throw maintError;
 
-    // 2. Mark active ticket resolved
-    let resolvedTechId: string | undefined;
-    setProblemReports(prev =>
-      prev.map(ticket => {
-        if (ticket.equipmentId === data.equipmentId && ticket.status !== 'Resolved') {
-          resolvedTechId = ticket.assignedTechnicianId;
-          return {
-            ...ticket,
-            status: 'Resolved',
-            resolvedAt: nowTimeStr,
-            resolutionSummary: data.resolutionSummary,
-            partsUsed: data.partsReplaced,
-            downtimeHours: data.downtimeHours,
-          };
-        }
-        return ticket;
-      })
-    );
+      // 2. Mark active ticket resolved
+      const { error: ticketError } = await supabase
+        .from('problem_reports')
+        .update({
+          status: 'Resolved',
+          resolved_at: nowTimeStr,
+          resolution_summary: data.resolutionSummary,
+          parts_used: data.partsReplaced,
+          downtime_hours: data.downtimeHours,
+        })
+        .eq('equipment_id', data.equipmentId)
+        .neq('status', 'Resolved');
 
-    // 3. Decrement technician active workload
-    const techToFree = resolvedTechId || targetEq?.assignedTechnicianId;
-    if (techToFree) {
-      setTechnicians(prev =>
-        prev.map(t => {
-          if (t.id === techToFree) {
-            const nextCount = Math.max(0, t.activeTicketsCount - 1);
+      if (ticketError) throw ticketError;
+
+      // 3. Update Equipment to Working
+      const { error: eqError } = await supabase
+        .from('equipment')
+        .update({
+          status: 'Working',
+          active_ticket_id: null,
+          assigned_technician_id: null,
+          last_maintenance_date: todayStr,
+          total_downtime_hours: (targetEq?.totalDowntimeHours || 0) + data.downtimeHours,
+        })
+        .eq('id', data.equipmentId);
+
+      if (eqError) throw eqError;
+
+      // Refresh local state
+      setMaintenanceRecords(prev => [
+        {
+          id: recordId,
+          equipmentId: data.equipmentId,
+          equipmentName: targetEq?.name || 'Medical Equipment',
+          date: todayStr,
+          resolvedDate: nowTimeStr,
+          type: 'Corrective Repair',
+          technicianName: data.technicianName,
+          description: data.resolutionSummary,
+          partsReplaced: data.partsReplaced,
+          downtimeHours: data.downtimeHours,
+          cost: data.cost,
+          notes: 'Certified compliant with clinical engineering safety guidelines.',
+        },
+        ...prev,
+      ]);
+
+      setProblemReports(prev =>
+        prev.map(ticket => {
+          if (ticket.equipmentId === data.equipmentId && ticket.status !== 'Resolved') {
             return {
-              ...t,
-              activeTicketsCount: nextCount,
-              status: nextCount === 0 ? 'Available' : 'Assigned',
+              ...ticket,
+              status: 'Resolved',
+              resolvedAt: nowTimeStr,
+              resolutionSummary: data.resolutionSummary,
+              partsUsed: data.partsReplaced,
+              downtimeHours: data.downtimeHours,
             };
           }
-          return t;
+          return ticket;
         })
       );
-    }
 
-    // 4. Update Equipment to Working
-    setEquipmentList(prev =>
-      prev.map(eq => {
-        if (eq.id === data.equipmentId) {
-          return {
-            ...eq,
-            status: 'Working',
-            activeTicketId: undefined,
-            assignedTechnicianId: undefined,
-            assignedTechnicianName: undefined,
-            lastMaintenanceDate: todayStr,
-            totalDowntimeHours: (eq.totalDowntimeHours || 0) + data.downtimeHours,
-          };
-        }
-        return eq;
-      })
-    );
+      setEquipmentList(prev =>
+        prev.map(eq => {
+          if (eq.id === data.equipmentId) {
+            return {
+              ...eq,
+              status: 'Working',
+              activeTicketId: undefined,
+              assignedTechnicianId: undefined,
+              assignedTechnicianName: undefined,
+              lastMaintenanceDate: todayStr,
+              totalDowntimeHours: (eq.totalDowntimeHours || 0) + data.downtimeHours,
+            };
+          }
+          return eq;
+        })
+      );
 
-    // 5. Update Notifications
-    setNotifications(prev => [
-      {
+      // 4. Update Notifications
+      const newNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
         title: `Repair Certified: ${targetEq?.name || data.equipmentId}`,
-        message: `Returned to Operational status by ${data.technicianName}. Safety sign-off recorded.`,
+        message: `Returned to Operational status by ${data.technicianName}.`,
         type: 'success',
         timestamp: 'Just now',
         equipmentId: data.equipmentId,
         read: false,
-      },
-      ...prev,
-    ]);
+      };
 
-    showToast(
-      'Repair verified & certified',
-      `${data.equipmentId} returned to Operational status. Service history recorded.`,
-      'success'
-    );
+      await supabase.from('notifications').insert([
+        {
+          title: newNotif.title,
+          message: newNotif.message,
+          type: newNotif.type,
+          equipment_id: newNotif.equipmentId,
+          read: newNotif.read
+        }
+      ]);
+      setNotifications(prev => [newNotif, ...prev]);
 
-    if (selectedEquipment && selectedEquipment.id === data.equipmentId) {
-      setSelectedEquipment(prev => prev ? { 
-        ...prev, 
-        status: 'Working', 
-        activeTicketId: undefined,
-        assignedTechnicianId: undefined,
-        assignedTechnicianName: undefined,
-      } : null);
+      showToast(`Repair verified. ${data.equipmentId} returned to Operational.`);
+
+      if (selectedEquipment && selectedEquipment.id === data.equipmentId) {
+        setSelectedEquipment(prev => prev ? {
+          ...prev,
+          status: 'Working',
+          activeTicketId: undefined,
+          assignedTechnicianId: undefined,
+          assignedTechnicianName: undefined,
+        } : null);
+      }
+    } catch (error: any) {
+      console.error('Error resolving repair:', error);
+      showToast(`Error: ${error.message || 'Failed to resolve repair'}`);
     }
   };
 
-  // 4. Direct Status Change (Biomed Admin only)
-  const handleUpdateStatus = (equipmentId: string, newStatus: EquipmentStatus) => {
-    if (currentRole !== 'Admin') return;
-    setEquipmentList(prev =>
-      prev.map(eq => (eq.id === equipmentId ? { ...eq, status: newStatus } : eq))
-    );
+  // 4. Direct Status Change (Biomed Admin)
+  const handleUpdateStatus = async (equipmentId: string, newStatus: EquipmentStatus) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .update({ status: newStatus })
+        .eq('id', equipmentId);
 
-    if (selectedEquipment && selectedEquipment.id === equipmentId) {
-      setSelectedEquipment(prev => prev ? { ...prev, status: newStatus } : null);
-    }
+      if (error) throw error;
 
-    setNotifications(prev => [
-      {
+      setEquipmentList(prev =>
+        prev.map(eq => (eq.id === equipmentId ? { ...eq, status: newStatus } : eq))
+      );
+
+      if (selectedEquipment && selectedEquipment.id === equipmentId) {
+        setSelectedEquipment(prev => prev ? { ...prev, status: newStatus } : null);
+      }
+
+      const newNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
         title: `Equipment Status Changed`,
         message: `${equipmentId} transitioned to ${newStatus}.`,
@@ -523,52 +522,108 @@ export default function App() {
         timestamp: 'Just now',
         equipmentId,
         read: false,
-      },
-      ...prev,
-    ]);
+      };
 
-    showToast(
-      'Status updated',
-      `${equipmentId} transitioned to ${newStatus}.`,
-      'info'
-    );
+      await supabase.from('notifications').insert([
+        {
+          title: newNotif.title,
+          message: newNotif.message,
+          type: newNotif.type,
+          equipment_id: newNotif.equipmentId,
+          read: newNotif.read
+        }
+      ]);
+      setNotifications(prev => [newNotif, ...prev]);
+
+      showToast(`Status updated to ${newStatus}`);
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      showToast(`Error: ${error.message || 'Failed to update status'}`);
+    }
   };
 
   // 5. Add note to active ticket
-  const handleAddTicketNote = (ticketId: string, noteText: string) => {
-    const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
-    const author = currentRole === 'Admin' ? 'Lead Biomedical Engineer' : 'Clinical Staff';
-    const formattedNote = `${timestamp} [${author}] - ${noteText}`;
+  const handleAddTicketNote = async (ticketId: string, noteText: string) => {
+    try {
+      const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      const author = currentRole === 'Admin' ? 'Biomedical Admin' : 'Staff';
+      const formattedNote = `${timestamp} [${author}] - ${noteText}`;
 
-    setProblemReports(prev =>
-      prev.map(ticket => {
-        if (ticket.id === ticketId) {
-          const notes = ticket.repairNotes || [];
-          return {
-            ...ticket,
-            repairNotes: [formattedNote, ...notes],
-          };
-        }
-        return ticket;
-      })
-    );
+      const { data: ticket } = await supabase
+        .from('problem_reports')
+        .select('repair_notes')
+        .eq('id', ticketId)
+        .single();
 
-    showToast('Service note added', 'Note recorded to work order history.');
+      const updatedNotes = [formattedNote, ...(ticket?.repair_notes || [])];
+
+      const { error } = await supabase
+        .from('problem_reports')
+        .update({ repair_notes: updatedNotes })
+        .eq('id', ticketId);
+
+      if (error) throw error;
+
+      setProblemReports(prev =>
+        prev.map(ticket => {
+          if (ticket.id === ticketId) {
+            return {
+              ...ticket,
+              repairNotes: updatedNotes,
+            };
+          }
+          return ticket;
+        })
+      );
+
+      showToast('Service note added to ticket');
+    } catch (error: any) {
+      console.error('Error adding note:', error);
+      showToast(`Error: ${error.message || 'Failed to add note'}`);
+    }
   };
 
-  // 6. Add or Edit Equipment (Admin only)
-  const handleSaveEquipment = (eq: Equipment) => {
-    if (currentRole !== 'Admin') return;
-    setEquipmentList(prev => {
-      const exists = prev.some(item => item.id === eq.id);
-      if (exists) {
-        return prev.map(item => (item.id === eq.id ? eq : item));
-      } else {
-        return [eq, ...prev];
-      }
-    });
+  // 6. Add or Edit Equipment
+  const handleSaveEquipment = async (eq: Equipment) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .upsert({
+          id: eq.id,
+          name: eq.name,
+          model: eq.model,
+          manufacturer: eq.manufacturer,
+          serial_number: eq.serialNumber,
+          department: eq.department,
+          room: eq.room,
+          status: eq.status,
+          criticality: eq.criticality,
+          install_date: eq.installDate,
+          last_maintenance_date: eq.lastMaintenanceDate,
+          next_scheduled_maintenance: eq.nextScheduledMaintenance,
+          assigned_technician_id: eq.assignedTechnicianId,
+          active_ticket_id: eq.activeTicketId,
+          uptime_percentage: eq.uptimePercentage,
+          total_downtime_hours: eq.totalDowntimeHours,
+          specifications: eq.specifications,
+        });
 
-    showToast('Equipment registry updated', `Equipment ${eq.id} saved successfully.`);
+      if (error) throw error;
+
+      setEquipmentList(prev => {
+        const exists = prev.some(item => item.id === eq.id);
+        if (exists) {
+          return prev.map(item => (item.id === eq.id ? eq : item));
+        } else {
+          return [eq, ...prev];
+        }
+      });
+
+      showToast(`Equipment ${eq.id} saved successfully`);
+    } catch (error: any) {
+      console.error('Error saving equipment:', error);
+      showToast(`Error: ${error.message || 'Failed to save equipment'}`);
+    }
   };
 
   // 7. Select equipment by ID (from notification, table, or work order)
@@ -581,59 +636,18 @@ export default function App() {
     }
   };
 
-  // 7b. Click notification: mark as read immediately and jump to equipment if attached
-  const handleNotificationClick = (notifId: string, equipmentId?: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === notifId ? { ...n, read: true } : n))
-    );
-    if (equipmentId) {
-      handleSelectEquipmentById(equipmentId);
-    }
-  };
-
   // 8. Reset to default demo data
-  const handleResetData = () => {
-    setEquipmentList(INITIAL_EQUIPMENT);
-    setTechnicians(INITIAL_TECHNICIANS);
-    setProblemReports(INITIAL_PROBLEM_REPORTS);
-    setMaintenanceRecords(INITIAL_MAINTENANCE_RECORDS);
-    setNotifications(INITIAL_NOTIFICATIONS);
-    setFacilitySettings(INITIAL_FACILITY_SETTINGS);
-    setStatusFilter('All');
-    setDepartmentFilter('All');
-    setCriticalityFilter('All');
-    setSearchQuery('');
-    showToast('Demo data reset', 'Reset all records to initial hospital state.', 'info');
-  };
 
   return (
     <div className="min-h-screen bg-slate-50/75 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Toast Notification Banner */}
-      {toast && (
-        <div 
-          id="toast-notification-banner"
-          role="status"
-          className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-3 text-xs shadow-2xl flex items-start gap-3 border border-slate-700 max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-150"
-        >
-          <div className="mt-0.5 shrink-0">
-            {toast.type === 'alert' ? (
-              <AlertTriangle className="w-4 h-4 text-rose-400" />
-            ) : (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-white text-xs leading-snug">
-              {toast.title.startsWith('✓') ? toast.title : `✓ ${toast.title}`}
-            </p>
-            {toast.message && (
-              <p className="text-slate-300 text-[11px] mt-0.5 leading-relaxed">{toast.message}</p>
-            )}
-          </div>
+      {toastMessage && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-xs font-medium shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
           <button 
-            onClick={() => setToast(null)}
-            className="text-slate-400 hover:text-white transition-colors ml-1 p-0.5 rounded cursor-pointer"
-            aria-label="Dismiss notification"
+            onClick={() => setToastMessage(null)}
+            className="ml-2 text-slate-400 hover:text-white"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -645,11 +659,21 @@ export default function App() {
         currentRole={currentRole}
         onRoleChange={setCurrentRole}
         notifications={notifications}
-        onMarkAllNotificationsRead={() => {
-          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-          showToast('Notifications updated', 'All notifications marked as read.', 'info');
+        onMarkAllNotificationsRead={async () => {
+          const { error } = await supabase
+            .from('notifications')
+            .update({ read: true })
+            .eq('read', false);
+
+          if (error) {
+            console.error('Error marking notifications as read:', error);
+            showToast('Error updating notifications.');
+          } else {
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            showToast('All notifications marked as read.');
+          }
         }}
-        onNotificationClick={handleNotificationClick}
+        onNotificationClick={handleSelectEquipmentById}
         onOpenReportModal={() => handleOpenReportModal(null)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         facilitySettings={facilitySettings}
@@ -701,20 +725,18 @@ export default function App() {
                 <span>Maintenance History</span>
               </button>
 
-              {currentRole === 'Admin' && (
-                <button
-                  id="nav-technicians-tab"
-                  onClick={() => setActiveNav('technicians')}
-                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                    activeNav === 'technicians'
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span>Biomedical Team</span>
-                </button>
-              )}
+              <button
+                id="nav-technicians-tab"
+                onClick={() => setActiveNav('technicians')}
+                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                  activeNav === 'technicians'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                <span>Biomedical Team</span>
+              </button>
             </nav>
 
             {/* Active Role Indicator */}
@@ -946,7 +968,6 @@ export default function App() {
             onOpenReportModal={() => handleOpenReportModal(null)}
             onOpenAssignModal={handleOpenAssignModal}
             onOpenResolveModal={handleOpenResolveModal}
-            onStartRepair={handleStartRepair}
           />
         )}
 
@@ -959,8 +980,8 @@ export default function App() {
           />
         )}
 
-        {/* NAV 4: TECHNICIANS TEAM (Biomed Admin only) */}
-        {activeNav === 'technicians' && currentRole === 'Admin' && (
+        {/* NAV 4: TECHNICIANS TEAM */}
+        {activeNav === 'technicians' && (
           <TechniciansView
             technicians={technicians}
             equipmentList={equipmentList}
@@ -1013,7 +1034,6 @@ export default function App() {
             setIsDetailOpen(false);
             handleOpenResolveModal(eq);
           }}
-          onStartRepair={handleStartRepair}
           onUpdateStatus={handleUpdateStatus}
           onAddTicketNote={handleAddTicketNote}
         />
@@ -1070,7 +1090,6 @@ export default function App() {
         onClose={() => setIsSettingsModalOpen(false)}
         settings={facilitySettings}
         onSaveSettings={setFacilitySettings}
-        onResetData={handleResetData}
       />
     </div>
   );

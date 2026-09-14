@@ -50,6 +50,7 @@ export default function App() {
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [facilitySettings, setFacilitySettings] = useState<FacilitySettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Role and Navigation State
   const [currentRole, setCurrentRole] = useState<UserRole>('Staff');
@@ -75,6 +76,8 @@ export default function App() {
         if (setRes.data) setFacilitySettings(mapDbToFrontend(setRes.data));
       } catch (error) {
         console.error('Error loading initial data:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadData();
@@ -588,25 +591,7 @@ export default function App() {
     try {
       const { error } = await supabase
         .from('equipment')
-        .upsert({
-          id: eq.id,
-          name: eq.name,
-          model: eq.model,
-          manufacturer: eq.manufacturer,
-          serial_number: eq.serialNumber,
-          department: eq.department,
-          room: eq.room,
-          status: eq.status,
-          criticality: eq.criticality,
-          install_date: eq.installDate,
-          last_maintenance_date: eq.lastMaintenanceDate,
-          next_scheduled_maintenance: eq.nextScheduledMaintenance,
-          assigned_technician_id: eq.assignedTechnicianId,
-          active_ticket_id: eq.activeTicketId,
-          uptime_percentage: eq.uptimePercentage,
-          total_downtime_hours: eq.totalDowntimeHours,
-          specifications: eq.specifications,
-        });
+        .upsert(mapFrontendToDb(eq));
 
       if (error) throw error;
 
@@ -636,7 +621,29 @@ export default function App() {
     }
   };
 
-  // 8. Reset to default demo data
+  // 8. Save Facility Settings
+  const handleSaveSettings = async (settings: FacilitySettings) => {
+    try {
+      const { error } = await supabase
+        .from('facility_settings')
+        .update(mapFrontendToDb(settings))
+        .eq('id', settings.id || 1);
+
+      if (error) throw error;
+
+      setFacilitySettings(settings);
+      showToast('Facility settings updated successfully');
+    } catch (error: any) {
+      console.error('Error saving settings:', error);
+      showToast(`Error: ${error.message || 'Failed to save settings'}`);
+    }
+  };
+
+  // 9. Reset to default demo data (Now manual via seed.sql)
+  const handleResetData = () => {
+    showToast('Reset is now handled via the seed.sql script in the Supabase SQL Editor.');
+  };
+
 
   return (
     <div className="min-h-screen bg-slate-50/75 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -999,10 +1006,10 @@ export default function App() {
       <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            {facilitySettings.hospitalName} • Medical Equipment Uptime & Maintenance System
+            {facilitySettings?.hospitalName || 'Medical Center'} • Medical Equipment Uptime & Maintenance System
           </span>
           <span>
-            Emergency Dispatch: <strong>{facilitySettings.primaryContactPhone}</strong>
+            Emergency Dispatch: <strong>{facilitySettings?.primaryContactPhone || 'N/A'}</strong>
           </span>
         </div>
       </footer>
@@ -1088,8 +1095,17 @@ export default function App() {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
-        settings={facilitySettings}
-        onSaveSettings={setFacilitySettings}
+        settings={facilitySettings || {
+          id: 1,
+          hospitalName: 'Loading...',
+          facilityCode: '...',
+          slaCriticalHours: 2,
+          slaHighHours: 8,
+          primaryContactPhone: '...',
+          maintenanceEmail: '...',
+        }}
+        onSaveSettings={handleSaveSettings}
+        onResetData={handleResetData}
       />
     </div>
   );

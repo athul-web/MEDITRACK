@@ -1,0 +1,412 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+/* Left Side Panel */
+.left-panel {
+  position: relative;
+  background-color: #0d1527;
+  width: 45%;
+  padding: 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* Faint Caduceus Background Watermark */
+.medical-bg-graphic {
+  position: absolute;
+  top: 50%;
+  right: -80px;
+  transform: translateY(-50%);
+  width: 420px;
+  height: 420px;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.logo-box {
+  width: 44px;
+  height: 44px;
+  background-color: #10b981;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.logo-box svg {
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.left-content h1 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.left-content p {
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 360px;
+}
+
+/* Animated Live ECG Display Card */
+.ecg-monitor-card {
+  width: 100%;
+  max-width: 380px;
+  height: 180px;
+  background-color: #060911;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  margin-top: 24px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+}
+
+/* Grid Background Pattern */
+.ecg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+/* ECG Monitor Header Details */
+.ecg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.ecg-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.bpm-container {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bpm-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+  font-family: monospace;
+}
+
+.bpm-unit {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* SVG Live Pulse Container */
+.ecg-svg-container {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+}
+
+.ecg-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Base faint static line */
+.ecg-base-line {
+  stroke: rgba(16, 185, 129, 0.18);
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Live animated glowing stroke */
+.ecg-animated-line {
+  stroke: #10b981;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: ecgSweep 2.8s linear infinite;
+  filter: drop-shadow(0px 0px 6px #10b981);
+}
+
+/* Outer ambient glow path */
+.ecg-glow-line {
+  stroke: #34d399;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0.35;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: ecgSweep 2.8s linear infinite;
+  filter: blur(4px);
+}
+
+@keyframes ecgSweep {
+  0% {
+    stroke-dashoffset: 600;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Footer Metadata inside Left Panel */
+.footer-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  z-index: 2;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #10b981;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.stat-subtext {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.stat-value {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Right Side Panel */
+.right-panel {
+  width: 55%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background-color: #ffffff;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 360px;
+}
+
+.form-header {
+  margin-bottom: 32px;
+}
+
+.form-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.form-header p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 40px 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #94a3b8;
+}
+
+.toggle-btn:hover svg {
+  fill: #475569;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  cursor: pointer;
+}
+
+.remember-label input {
+  accent-color: #10b981;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.forgot-link {
+  color: #0284c7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #10b981;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #059669;
+}
+
+.security-note {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+@media (max-width: 860px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
+  }
+
+  .left-panel {
+    padding: 40px 24px;
+  }
+}

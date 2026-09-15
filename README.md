@@ -1,4 +1,4 @@
-# Equipment Uptime
+# MEDITRACK
 
 A React and TypeScript dashboard for tracking hospital equipment, incident reports, repairs, maintenance history, technicians, and facility settings. Operational data is stored in Supabase; the application contains no built-in seed or mock records.
 

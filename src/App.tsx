@@ -200,9 +200,9 @@ export default function App() {
         setFacilitySettings(
           setRes.data ? mapDbToFrontend<FacilitySettings>(setRes.data) : null,
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to initialize application data:', error);
-        showToast('Error loading system data from backend.');
+        showToast(error?.message || 'Error loading system data from backend.');
       } finally {
         setIsLoading(false);
       }

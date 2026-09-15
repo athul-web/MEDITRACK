@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type {
   Equipment,
   MaintenanceRecord,
@@ -6,19 +6,58 @@ import type {
   ProblemReport,
 } from '../types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase URL and Anon Key are required. Please check your .env file.');
+/**
+ * Configuration problems are reported as a value instead of being thrown while
+ * this module is evaluated. createClient() throws synchronously on a missing or
+ * malformed URL, and a throw here aborts the whole module graph before
+ * main.tsx can mount React -- which renders a blank page with no explanation.
+ */
+function describeConfigProblem(): string | null {
+  const missing = [
+    !supabaseUrl && 'VITE_SUPABASE_URL',
+    !supabaseAnonKey && 'VITE_SUPABASE_ANON_KEY',
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    return `Supabase is not configured: ${missing.join(' and ')} missing. Copy .env.example to .env, fill both values, then restart the dev server.`;
+  }
+
+  if (!/^https?:\/\//i.test(supabaseUrl!)) {
+    return 'Supabase is not configured: VITE_SUPABASE_URL must be the project root URL including https:// (for example https://your-project-ref.supabase.co).';
+  }
+
+  return null;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabaseConfigError = describeConfigProblem();
+
+if (supabaseConfigError) {
+  console.error(supabaseConfigError);
+}
+
+/**
+ * When the configuration is invalid there is no client to hand out. Any access
+ * raises the real configuration error, so App.tsx's existing error handling
+ * surfaces it in the UI rather than the app dying before it can render.
+ */
+const unconfiguredClient = () =>
+  new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error(supabaseConfigError!);
+    },
+  });
+
+export const supabase: SupabaseClient = supabaseConfigError
+  ? unconfiguredClient()
+  : createClient(supabaseUrl!, supabaseAnonKey!);
 
 // Utility to map snake_case from DB to camelCase for Frontend
 export function mapDbToFrontend<T>(data: any): T {
   if (!data) return data;
-  if (Array.isArray(data)) return data.map(mapDbToFrontend);
+  if (Array.isArray(data)) return data.map(item => mapDbToFrontend(item)) as T;
 
   const mapped: any = {};
   for (const key in data) {

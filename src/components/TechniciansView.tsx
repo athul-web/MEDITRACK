@@ -1,6 +1,18 @@
+```tsx
 import React, { useState } from 'react';
 import { Technician, Equipment, ProblemReport, UserRole } from '../types';
-import { User, Phone, Mail, Award, CheckCircle2, Clock, Wrench, Shield, Copy, Check } from 'lucide-react';
+import {
+  User,
+  Phone,
+  Mail,
+  Award,
+  CheckCircle2,
+  Clock,
+  Wrench,
+  Shield,
+  Copy,
+  Check,
+} from 'lucide-react';
 
 interface TechniciansViewProps {
   technicians: Technician[];
@@ -42,6 +54,7 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
           <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
             {technicians.filter(t => t.status === 'Available').length} Available Now
           </span>
+
           <span className="px-3 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-semibold">
             {technicians.filter(t => t.status === 'Assigned').length} In Field / Repair
           </span>
@@ -51,7 +64,10 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
       {/* Technicians Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {technicians.map(tech => {
-          const assignedUnits = equipmentList.filter(e => e.assignedTechnicianId === tech.id);
+          const assignedUnits = equipmentList.filter(
+            e => e.assignedTechnicianId === tech.id
+          );
+
           const activeTechTickets = tickets.filter(
             t => t.assignedTechnicianId === tech.id && t.status !== 'Resolved'
           );
@@ -64,20 +80,36 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
               <div>
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="h-11 w-11 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-                    {tech.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                    {tech.name
+                      .split(' ')
+                      .map(n => n[0])
+                      .slice(0, 2)
+                      .join('')}
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${tech.status === 'Available' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                    tech.status === 'Assigned' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                      'bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}>
+
+                  <span
+                    className={`px - 2 py - 0.5 rounded - full text - xs font - semibold ${
+  tech.status === 'Available'
+    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    : tech.status === 'Assigned'
+      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+      : 'bg-slate-100 text-slate-700 border border-slate-200'
+} `}
+                  >
                     {tech.status}
                   </span>
                 </div>
 
-                <h4 className="text-base font-bold text-slate-900">{tech.name}</h4>
+                <h4 className="text-base font-bold text-slate-900">
+                  {tech.name}
+                </h4>
+
                 <p className="text-xs text-slate-500">{tech.title}</p>
+
                 <div className="mt-2.5 p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
-                  <span className="font-semibold text-slate-700">Specialty: </span>
+                  <span className="font-semibold text-slate-700">
+                    Specialty:{' '}
+                  </span>
                   <span className="text-slate-600">{tech.specialty}</span>
                 </div>
 
@@ -85,8 +117,10 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                 <div className="mt-3 space-y-1.5 text-xs text-slate-600">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" /> {tech.phone}
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      {tech.phone}
                     </span>
+
                     <button
                       onClick={() => handleCopyPhone(tech.id, tech.phone)}
                       className="text-slate-400 hover:text-slate-700 p-1"
@@ -99,6 +133,7 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                       )}
                     </button>
                   </div>
+
                   <div className="flex items-center gap-1.5 truncate">
                     <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="truncate">{tech.email}</span>
@@ -110,9 +145,13 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                   <span className="text-[11px] font-semibold uppercase text-slate-400 block mb-1">
                     Credentials & Certifications
                   </span>
+
                   <div className="flex flex-wrap gap-1">
                     {(tech.certifications ?? []).map((cert, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium">
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium"
+                      >
                         {cert}
                       </span>
                     ))}
@@ -123,8 +162,12 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
               {/* Workload footer */}
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div>
-                  <span className="text-slate-500">Active Work Orders: </span>
-                  <strong className="text-slate-900">{activeTechTickets.length}</strong>
+                  <span className="text-slate-500">
+                    Active Work Orders:{' '}
+                  </span>
+                  <strong className="text-slate-900">
+                    {activeTechTickets.length}
+                  </strong>
                 </div>
 
                 <button
@@ -141,3 +184,4 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
     </div>
   );
 };
+```

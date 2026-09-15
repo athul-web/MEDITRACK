@@ -121,6 +121,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
             </label>
             <select
               id="report-equipment-select"
+              name="equipment-id"
               value={selectedEqId}
               onChange={e => {
                 const eq = equipmentList.find(item => item.id === e.target.value);
@@ -198,6 +199,8 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
               <div className="relative">
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="report-room"
+                  name="room-override"
                   type="text"
                   value={roomOverride}
                   onChange={e => setRoomOverride(e.target.value)}
@@ -216,6 +219,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
             </label>
             <textarea
               id="report-issue-description"
+              name="issue-description"
               rows={3}
               value={issueDescription}
               onChange={e => setIssueDescription(e.target.value)}
@@ -234,6 +238,8 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="report-by"
+                  name="reported-by"
                   type="text"
                   value={reportedBy}
                   onChange={e => setReportedBy(e.target.value)}

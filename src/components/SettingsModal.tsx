@@ -83,6 +83,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 Facility Code
               </label>
               <input
+                id="settings-facility-code"
+                name="facility-code"
                 type="text"
                 value={formData.facilityCode}
                 onChange={e => setFormData({ ...formData, facilityCode: e.target.value })}
@@ -98,6 +100,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-sla-critical"
+                  name="sla-critical"
                   type="number"
                   min="1"
                   max="24"
@@ -118,6 +122,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-contact-phone"
+                  name="contact-phone"
                   type="text"
                   value={formData.primaryContactPhone}
                   onChange={e => setFormData({ ...formData, primaryContactPhone: e.target.value })}
@@ -134,6 +140,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-maintenance-email"
+                  name="maintenance-email"
                   type="email"
                   value={formData.maintenanceEmail}
                   onChange={e => setFormData({ ...formData, maintenanceEmail: e.target.value })}

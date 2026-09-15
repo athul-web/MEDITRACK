@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { UserRole, NotificationItem, FacilitySettings } from '../types';
-import { 
-  Activity, 
-  Bell, 
-  ShieldCheck, 
-  User, 
-  Settings as SettingsIcon, 
-  AlertTriangle, 
-  Check, 
+import {
+  Activity,
+  Bell,
+  ShieldCheck,
+  User,
+  Settings as SettingsIcon,
+  AlertTriangle,
+  Check,
   PlusCircle,
   Stethoscope,
-  Wrench
+  Wrench,
+  LogOut
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -21,6 +22,7 @@ interface HeaderProps {
   onNotificationClick: (notifId: string, equipmentId?: string) => void;
   onOpenReportModal: () => void;
   onOpenSettingsModal: () => void;
+  onLogout: () => void;
   facilitySettings: FacilitySettings;
   fleetUptime: number;
 }
@@ -33,6 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNotificationClick,
   onOpenReportModal,
   onOpenSettingsModal,
+  onLogout,
   facilitySettings,
   fleetUptime,
 }) => {
@@ -205,6 +208,16 @@ export const Header: React.FC<HeaderProps> = ({
               title="Facility Configuration & Team"
             >
               <SettingsIcon className="w-5 h-5" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              id="header-logout-btn"
+              onClick={onLogout}
+              className="p-2 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors"
+              title="Sign out of session"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>

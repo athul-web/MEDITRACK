@@ -156,6 +156,16 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      showToast('Signed out successfully.');
+    } catch (error: any) {
+      showToast(`Error: ${error.message || 'Logout failed'}`);
+    }
+  };
+
   // --- Data Loading ---
   useEffect(() => {
     async function initApp() {
@@ -647,6 +657,7 @@ export default function App() {
         onNotificationClick={handleSelectEquipmentById}
         onOpenReportModal={() => handleOpenReportModal(null)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onLogout={handleLogout}
         facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
         fleetUptime={fleetUptime}
       />

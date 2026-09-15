@@ -1,284 +1,57 @@
-# MetroHealth Medical Equipment Management System
+# Project architecture
 
-## Overview
+## Purpose
 
-This project is a React + TypeScript dashboard for managing hospital medical equipment, maintenance workflows, technician assignments, and repair tracking. It is designed to support a clinical operations workflow where staff and biomedical administrators can:
+Equipment Uptime supports a hospital clinical-engineering workflow: staff can report device problems, biomedical staff can assign and resolve work orders, and administrators can maintain the equipment registry and facility settings.
 
-- monitor the equipment fleet
-- report equipment issues
-- assign technicians
-- resolve repairs and log maintenance history
-- track uptime and maintenance risk
-- manage facility settings and notifications
+## Technology
 
-The application is built as a single-page web app with a hospital operations interface and mock data for a realistic healthcare environment.
+- React 19, TypeScript, and Vite
+- Supabase Postgres and Row Level Security
+- `@supabase/supabase-js` for browser-to-database communication
+- Tailwind CSS utilities and Lucide icons
 
----
+## Data flow
 
-## Tech Stack
+`src/App.tsx` is the application controller. On load it fetches records from Supabase, converts database `snake_case` to UI `camelCase`, then derives display-only names from their relational IDs. Writes use explicit row converters in `src/lib/supabase.ts`; those remove display-only fields before a Supabase insert or update.
 
-- React 19
-- TypeScript
-- Vite
-- Lucide React icons
-- Tailwind-style utility classes for UI styling
-- Local mock data for realistic demo content
+The core tables are:
 
----
+- `equipment`
+- `technicians`
+- `problem_reports`
+- `maintenance_records`
+- `notifications`
+- `facility_settings`
+- `profiles`
 
-## Project Structure
+## Important implementation details
+
+- `equipmentName`, `assignedTechnicianName`, and maintenance `technicianName` are UI fields. They are generated from foreign-key relationships and are not database columns.
+- Reporting an issue creates a `problem_reports` row and updates the associated equipment status.
+- Assigning and resolving a repair update technician workload as well as the work order and equipment state.
+- The app has no mock-data fallback. An empty database renders an empty dashboard.
+
+## Configuration
+
+Use `.env.example` as the configuration template. Both variables must be set in local development and Vercel:
 
 ```text
-health-care-v2/
-├── index.html
-├── metadata.json
-├── package.json
-├── README.md
-├── PROJECT.md
-├── tsconfig.json
-├── vite.config.ts
-├── src/
-│   ├── App.tsx
-│   ├── index.css
-│   ├── main.tsx
-│   ├── types.ts
-│   ├── components/
-│   │   ├── AddEditEquipmentModal.tsx
-│   │   ├── AssignTechModal.tsx
-│   │   ├── EquipmentCard.tsx
-│   │   ├── EquipmentDetailModal.tsx
-│   │   ├── EquipmentTable.tsx
-│   │   ├── Header.tsx
-│   │   ├── MaintenanceHistoryView.tsx
-│   │   ├── ReportProblemModal.tsx
-│   │   ├── ResolveRepairModal.tsx
-│   │   ├── SettingsModal.tsx
-│   │   ├── StatsOverview.tsx
-│   │   ├── StatusBadge.tsx
-│   │   ├── TechniciansView.tsx
-│   │   └── WorkOrdersView.tsx
-│   └── data/
-│       └── mockData.ts
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-publishable-key
 ```
 
----
+Use the project-root URL, not its `/rest/v1` endpoint.
 
-## Core Features
+## Verification
 
-### 1. Equipment Fleet Dashboard
-The main screen provides a hospital fleet overview with:
-
-- search by equipment name, ID, model, serial number, department, or room
-- department filtering
-- criticality filtering
-- card or table view toggle
-- quick status updates
-- equipment detail modal
-
-### 2. Work Order Management
-Staff can create problem reports for equipment issues. Those reports are tracked as work orders and include:
-
-- severity level
-- reported by user information
-- room and department context
-- assignment to a technician
-- repair notes
-- resolution summary and downtime tracking
-
-### 3. Maintenance History
-The maintenance history view shows prior service records including:
-
-- repair type
-- technician name
-- date
-- parts replaced
-- downtime hours
-- incident cost
-- notes and compliance details
-
-### 4. Technician Management
-The biomedical team view includes:
-
-- technician profiles
-- specialties and certifications
-- current assignment status
-- active ticket counts
-- ability to filter equipment by assigned technician
-
-### 5. Role-Based Workflow
-The app supports two user roles:
-
-- Staff: can report issues and monitor equipment
-- Admin: has access to administrative operations like adding equipment and resetting settings
-
-### 6. Facility Settings and Notifications
-The app includes:
-
-- notification center
-- read/unread notification indicators
-- facility info such as hospital name, contact number, and SLA settings
-- data reset to demo defaults
-
----
-
-## Application Flow
-
-### Main user journey
-
-1. A staff member searches or views equipment.
-2. A device issue is reported through the reporting modal.
-3. The equipment status changes to a degraded state.
-4. A biomedical technician is assigned.
-5. Repair work is recorded in the work order.
-6. The maintenance record is created once resolved.
-7. The equipment returns to operational status and the notification feed updates.
-
----
-
-## Key State and Data Model
-
-The app centralizes core operational data in `src/App.tsx`:
-
-- `equipmentList`
-- `technicians`
-- `problemReports`
-- `maintenanceRecords`
-- `notifications`
-- `facilitySettings`
-- `currentRole`
-- `activeNav`
-- `viewMode`
-- `searchQuery`
-- filter states
-- modal open states
-
-The core types are defined in `src/types.ts` and include:
-
-- `Equipment`
-- `Technician`
-- `ProblemReport`
-- `MaintenanceRecord`
-- `NotificationItem`
-- `FacilitySettings`
-- `EquipmentStatus`
-- `TicketSeverity`
-- `UserRole`
-
----
-
-## Mock Data
-
-The dataset is seeded in `src/data/mockData.ts` and includes:
-
-- hospital departments
-- medical equipment inventory
-- active and historical work orders
-- maintenance logs
-- technician roster
-- facility settings
-- notifications
-
-This makes the app immediately runnable without a backend while still demonstrating realistic healthcare maintenance workflows.
-
----
-
-## Important Components
-
-### `src/App.tsx`
-This is the main application controller. It contains the primary logic for:
-
-- data state management
-- fleet calculations
-- filtering and search logic
-- report creation
-- technician assignment
-- repair resolution
-- modal orchestration
-- notification handling
-
-### `src/components/Header.tsx`
-Displays the global app header, role selector, notifications, and uptime summary.
-
-### `src/components/StatsOverview.tsx`
-Shows metric cards such as total equipment count, downtime categories, and operational health.
-
-### `src/components/EquipmentCard.tsx`
-Displays each equipment item in the card grid view.
-
-### `src/components/EquipmentTable.tsx`
-Displays equipment in a compact tabular format for admin or operational review.
-
-### `src/components/EquipmentDetailModal.tsx`
-Provides a detailed drill-down modal for a specific equipment item, including its status, ticket, and maintenance history.
-
-### `src/components/WorkOrdersView.tsx`
-Shows all ongoing and historical work orders for the facility.
-
-### `src/components/MaintenanceHistoryView.tsx`
-Shows the complete history of equipment maintenance and repair work.
-
-### `src/components/TechniciansView.tsx`
-Shows technicians, their workload, certifications, and assignment data.
-
-### `src/components/ReportProblemModal.tsx`
-Marks an issue report for a piece of equipment.
-
-### `src/components/AssignTechModal.tsx`
-Assigns a technician to a repair task.
-
-### `src/components/ResolveRepairModal.tsx`
-Closes a repair, logs downtime, and saves repair details.
-
-### `src/components/SettingsModal.tsx`
-Allows editing facility settings and resetting mock data.
-
----
-
-## Run Instructions
-
-### Prerequisites
-
-- Node.js installed locally
-
-### Install dependencies
-
-```bash
-npm install
-```
-
-### Start the application
-
-```bash
-npm run dev
-```
-
-This starts the Vite server, typically on port 3000.
-
-### Build for production
-
-```bash
-npm run build
-```
-
-### Type-checking
+Run the following before deployment:
 
 ```bash
 npm run lint
+npm run build
 ```
 
----
+## Security
 
-## Notes on the Current Implementation
-
-- This project is a demo healthcare operations dashboard.
-- Data is local and in-memory; there is no backend or persistent database.
-- It is ideal for UI prototyping, front-end workflow demonstration, and operational dashboard mockups.
-- The app is structured so it can later be extended with real APIs, authentication, and persistent storage.
-
----
-
-## Summary
-
-This project represents a hospital equipment lifecycle management interface with realistic operational flows for biomedical engineering teams. It combines fleet monitoring, service request handling, maintenance history, technician dispatching, and admin oversight in a single polished dashboard.
-
-It is well-suited for demonstrating front-end engineering skills, workflow design, and healthcare operations simulation.
+Supabase RLS is the actual authorization boundary. Client-side role controls must never be treated as security controls. Before production use with real healthcare data, require authenticated users and restrict policies by `profiles.role`.

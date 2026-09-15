@@ -100,6 +100,7 @@ export const AssignTechModal: React.FC<AssignTechModalProps> = ({
                 >
                   <div className="flex items-start gap-3">
                     <input
+                      id={`tech-${tech.id}`}
                       type="radio"
                       name="technician"
                       value={tech.id}
@@ -137,6 +138,8 @@ export const AssignTechModal: React.FC<AssignTechModalProps> = ({
               Initial Work Order / Dispatch Notes
             </label>
             <textarea
+              id="assign-dispatch-note"
+              name="dispatch-note"
               rows={2}
               value={dispatchNote}
               onChange={e => setDispatchNote(e.target.value)}

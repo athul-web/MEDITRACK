@@ -45,11 +45,11 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
-        ticket.id.toLowerCase().includes(q) ||
-        ticket.equipmentName.toLowerCase().includes(q) ||
-        ticket.equipmentId.toLowerCase().includes(q) ||
-        ticket.department.toLowerCase().includes(q) ||
-        ticket.reportedBy.toLowerCase().includes(q) ||
+        (ticket.id ?? '').toLowerCase().includes(q) ||
+        (ticket.equipmentName ?? '').toLowerCase().includes(q) ||
+        (ticket.equipmentId ?? '').toLowerCase().includes(q) ||
+        (ticket.department ?? '').toLowerCase().includes(q) ||
+        (ticket.reportedBy ?? '').toLowerCase().includes(q) ||
         (ticket.assignedTechnicianName && ticket.assignedTechnicianName.toLowerCase().includes(q))
       );
     }

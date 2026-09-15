@@ -31,7 +31,7 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
   );
   const [cost, setCost] = useState<number>(180);
   const [technicianName, setTechnicianName] = useState(
-    equipment.assignedTechnicianName || 'Marcus Vance, CBET'
+    equipment.assignedTechnicianName || activeTicket?.assignedTechnicianName || ''
   );
   const [error, setError] = useState('');
 
@@ -55,7 +55,7 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
       partsReplaced: parts,
       downtimeHours: Number(downtimeHours) || 1,
       cost: Number(cost) || 0,
-      technicianName: technicianName.trim() || 'Biomedical Engineering Staff',
+      technicianName: technicianName.trim(),
     });
 
     onClose();
@@ -116,6 +116,7 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
             </label>
             <textarea
               id="resolve-summary-input"
+              name="resolution-summary"
               rows={3}
               value={resolutionSummary}
               onChange={e => setResolutionSummary(e.target.value)}
@@ -131,6 +132,8 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
               Parts Replaced (comma-separated)
             </label>
             <input
+              id="resolve-parts"
+              name="parts-replaced"
               type="text"
               value={partsInput}
               onChange={e => setPartsInput(e.target.value)}
@@ -148,6 +151,8 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
               <div className="relative">
                 <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="resolve-downtime"
+                  name="downtime-hours"
                   type="number"
                   step="0.5"
                   min="0.1"
@@ -166,6 +171,8 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
               <div className="relative">
                 <DollarSign className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="resolve-cost"
+                  name="repair-cost"
                   type="number"
                   min="0"
                   value={cost}
@@ -182,6 +189,8 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
               Certifying Technician / Engineer *
             </label>
             <input
+              id="resolve-tech-name"
+              name="technician-name"
               type="text"
               value={technicianName}
               onChange={e => setTechnicianName(e.target.value)}

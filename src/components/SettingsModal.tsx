@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FacilitySettings } from '../types';
-import { Settings, X, Building, Phone, Mail, Clock, RefreshCw, Check } from 'lucide-react';
+import { Settings, X, Building, Phone, Mail, Clock, Check } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   settings: FacilitySettings;
   onSaveSettings: (settings: FacilitySettings) => void;
-  onResetData: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -15,7 +14,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   settings,
   onSaveSettings,
-  onResetData,
 }) => {
   const [formData, setFormData] = useState<FacilitySettings>({ ...settings });
   const [isSaved, setIsSaved] = useState(false);
@@ -85,6 +83,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 Facility Code
               </label>
               <input
+                id="settings-facility-code"
+                name="facility-code"
                 type="text"
                 value={formData.facilityCode}
                 onChange={e => setFormData({ ...formData, facilityCode: e.target.value })}
@@ -100,6 +100,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-sla-critical"
+                  name="sla-critical"
                   type="number"
                   min="1"
                   max="24"
@@ -120,6 +122,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-contact-phone"
+                  name="contact-phone"
                   type="text"
                   value={formData.primaryContactPhone}
                   onChange={e => setFormData({ ...formData, primaryContactPhone: e.target.value })}
@@ -136,6 +140,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="settings-maintenance-email"
+                  name="maintenance-email"
                   type="email"
                   value={formData.maintenanceEmail}
                   onChange={e => setFormData({ ...formData, maintenanceEmail: e.target.value })}
@@ -143,29 +149,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   required
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Reset Demo Data Section */}
-          <div className="pt-3 mt-4 border-t border-slate-200">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div>
-                <p className="font-semibold text-slate-800">Reset Demo State</p>
-                <p className="text-[11px] text-slate-500">Restore equipment, tickets, and maintenance logs to default.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Reset all equipment and maintenance data to default initial state?')) {
-                    onResetData();
-                    onClose();
-                  }
-                }}
-                className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs flex items-center gap-1.5"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset</span>
-              </button>
             </div>
           </div>
 

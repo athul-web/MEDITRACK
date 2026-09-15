@@ -8,6 +8,7 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [bpm, setBpm] = useState(72);
   const navigate = useNavigate();
 
@@ -21,6 +22,7 @@ export function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -29,7 +31,7 @@ export function Login() {
       if (error) throw error;
       navigate('/dashboard');
     } catch (error: any) {
-      alert(error.message || 'Login failed. Please check your credentials.');
+      setErrorMessage(error.message || 'Invalid username or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -131,9 +133,20 @@ export function Login() {
             <p>Enter your credentials to access your dashboard.</p>
           </div>
 
+          {errorMessage && (
+            <div className="error-message">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              {errorMessage}
+            </div>
+          )}
+
           <form onSubmit={handleLogin}>
             <div className="field-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">Username / Email</label>
               <div className="input-wrapper">
                 <input
                   type="email"

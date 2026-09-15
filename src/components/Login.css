@@ -1,19 +1,21 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-}
+/*
+   Scoped styles for Login page only.
+   Removed all global selectors (*, body, html) to prevent dashboard jankiness.
+*/
 
 .login-container {
   display: flex;
   width: 100vw;
   min-height: 100vh;
   background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 }
 
 /* Left Side Panel */
-.left-panel {
+.login-container .left-panel {
   position: relative;
   background-color: #0d1527;
   width: 45%;
@@ -23,10 +25,10 @@
   justify-content: space-between;
   color: #ffffff;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Faint Caduceus Background Watermark */
-.medical-bg-graphic {
+.login-container .medical-bg-graphic {
   position: absolute;
   top: 50%;
   right: -80px;
@@ -37,7 +39,7 @@
   pointer-events: none;
 }
 
-.logo-box {
+.login-container .logo-box {
   width: 44px;
   height: 44px;
   background-color: #10b981;
@@ -48,7 +50,7 @@
   margin-bottom: 40px;
 }
 
-.logo-box svg {
+.login-container .logo-box svg {
   width: 24px;
   height: 24px;
   stroke: #ffffff;
@@ -58,7 +60,7 @@
   stroke-linejoin: round;
 }
 
-.left-content h1 {
+.login-container .left-content h1 {
   font-size: 32px;
   font-weight: 700;
   line-height: 1.25;
@@ -66,7 +68,7 @@
   margin-bottom: 12px;
 }
 
-.left-content p {
+.login-container .left-content p {
   color: #94a3b8;
   font-size: 14px;
   line-height: 1.6;
@@ -74,7 +76,7 @@
 }
 
 /* Animated Live ECG Display Card */
-.ecg-monitor-card {
+.login-container .ecg-monitor-card {
   width: 100%;
   max-width: 380px;
   height: 180px;
@@ -90,10 +92,10 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 16px;
+  box-sizing: border-box;
 }
 
-/* Grid Background Pattern */
-.ecg-grid {
+.login-container .ecg-grid {
   position: absolute;
   inset: 0;
   background-image:
@@ -103,15 +105,14 @@
   pointer-events: none;
 }
 
-/* ECG Monitor Header Details */
-.ecg-header {
+.login-container .ecg-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 2;
 }
 
-.ecg-label {
+.login-container .ecg-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -119,27 +120,26 @@
   text-transform: uppercase;
 }
 
-.bpm-container {
+.login-container .bpm-container {
   display: flex;
   align-items: baseline;
   gap: 4px;
 }
 
-.bpm-val {
+.login-container .bpm-val {
   font-size: 18px;
   font-weight: 700;
   color: #10b981;
   font-family: monospace;
 }
 
-.bpm-unit {
+.login-container .bpm-unit {
   font-size: 10px;
   color: #64748b;
   font-weight: 600;
 }
 
-/* SVG Live Pulse Container */
-.ecg-svg-container {
+.login-container .ecg-svg-container {
   position: relative;
   width: 100%;
   height: 100px;
@@ -148,21 +148,19 @@
   align-items: center;
 }
 
-.ecg-svg {
+.login-container .ecg-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-/* Base faint static line */
-.ecg-base-line {
+.login-container .ecg-base-line {
   stroke: rgba(16, 185, 129, 0.18);
   stroke-width: 2;
   fill: none;
 }
 
-/* Live animated glowing stroke */
-.ecg-animated-line {
+.login-container .ecg-animated-line {
   stroke: #10b981;
   stroke-width: 2.5;
   stroke-linecap: round;
@@ -174,8 +172,7 @@
   filter: drop-shadow(0px 0px 6px #10b981);
 }
 
-/* Outer ambient glow path */
-.ecg-glow-line {
+.login-container .ecg-glow-line {
   stroke: #34d399;
   stroke-width: 6;
   stroke-linecap: round;
@@ -189,17 +186,11 @@
 }
 
 @keyframes ecgSweep {
-  0% {
-    stroke-dashoffset: 600;
-  }
-
-  100% {
-    stroke-dashoffset: 0;
-  }
+  0% { stroke-dashoffset: 600; }
+  100% { stroke-dashoffset: 0; }
 }
 
-/* Footer Metadata inside Left Panel */
-.footer-stats {
+.login-container .footer-stats {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -208,7 +199,7 @@
   z-index: 2;
 }
 
-.status-badge {
+.login-container .status-badge {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -217,7 +208,7 @@
   font-weight: 600;
 }
 
-.status-dot {
+.login-container .status-dot {
   width: 8px;
   height: 8px;
   background-color: #10b981;
@@ -227,26 +218,18 @@
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
-
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
-.stat-subtext {
+.login-container .stat-subtext {
   color: #64748b;
   font-size: 12px;
   margin-top: 4px;
 }
 
-.stat-value {
+.login-container .stat-value {
   color: #ffffff;
   font-size: 18px;
   font-weight: 700;
@@ -254,55 +237,42 @@
 }
 
 /* Right Side Panel */
-.right-panel {
+.login-container .right-panel {
   width: 55%;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 40px;
   background-color: #ffffff;
+  box-sizing: border-box;
 }
 
-.form-container {
+.login-container .form-container {
   width: 100%;
   max-width: 360px;
 }
 
-.form-header {
+.login-container .form-header {
   margin-bottom: 32px;
 }
 
-.form-header h2 {
+.login-container .form-header h2 {
   font-size: 28px;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
 }
 
-.form-header p {
+.login-container .form-header p {
   color: #64748b;
   font-size: 14px;
 }
 
-.error-message {
-  color: #dc2626;
-  background-color: #fef2f2;
-  border: 1px solid #fee2e2;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.field-group {
+.login-container .field-group {
   margin-bottom: 20px;
 }
 
-.field-group label {
+.login-container .field-group label {
   display: block;
   font-size: 13px;
   font-weight: 600;
@@ -310,11 +280,11 @@
   margin-bottom: 8px;
 }
 
-.input-wrapper {
+.login-container .input-wrapper {
   position: relative;
 }
 
-.input-wrapper input {
+.login-container .input-wrapper input {
   width: 100%;
   padding: 12px 40px 12px 14px;
   border: 1px solid #cbd5e1;
@@ -323,14 +293,15 @@
   color: #0f172a;
   outline: none;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.input-wrapper input:focus {
+.login-container .input-wrapper input:focus {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
-.toggle-btn {
+.login-container .toggle-btn {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -343,17 +314,17 @@
   align-items: center;
 }
 
-.toggle-btn svg {
+.login-container .toggle-btn svg {
   width: 18px;
   height: 18px;
   fill: #94a3b8;
 }
 
-.toggle-btn:hover svg {
+.login-container .toggle-btn:hover svg {
   fill: #475569;
 }
 
-.form-options {
+.login-container .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -361,7 +332,7 @@
   font-size: 13px;
 }
 
-.remember-label {
+.login-container .remember-label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -369,24 +340,24 @@
   cursor: pointer;
 }
 
-.remember-label input {
+.login-container .remember-label input {
   accent-color: #10b981;
   width: 16px;
   height: 16px;
   border-radius: 4px;
 }
 
-.forgot-link {
+.login-container .forgot-link {
   color: #0284c7;
   text-decoration: none;
   font-weight: 500;
 }
 
-.forgot-link:hover {
+.login-container .forgot-link:hover {
   text-decoration: underline;
 }
 
-.submit-btn {
+.login-container .submit-btn {
   width: 100%;
   padding: 12px;
   background-color: #10b981;
@@ -399,28 +370,41 @@
   transition: background-color 0.2s ease;
 }
 
-.submit-btn:hover {
+.login-container .submit-btn:hover {
   background-color: #059669;
 }
 
-.security-note {
+.login-container .security-note {
   margin-top: 20px;
   text-align: center;
   font-size: 12px;
   color: #94a3b8;
 }
 
+.login-container .error-message {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
 @media (max-width: 860px) {
   .login-container {
     flex-direction: column;
   }
-
-  .left-panel,
-  .right-panel {
+  .login-container .left-panel,
+  .login-container .right-panel {
     width: 100%;
   }
-
-  .left-panel {
+  .login-container .left-panel {
     padding: 40px 24px;
   }
 }

@@ -10,7 +10,15 @@ import {
   EquipmentStatus,
   Department
 } from './types';
-import { supabase, mapDbToFrontend, mapFrontendToDb } from './lib/supabase';
+import {
+  supabase,
+  mapDbToFrontend,
+  mapFrontendToDb,
+  toEquipmentRow,
+  toMaintenanceRecordRow,
+  toNotificationRow,
+  toProblemReportRow,
+} from './lib/supabase';
 import { Header } from './components/Header';
 import { StatsOverview } from './components/StatsOverview';
 import { EquipmentCard } from './components/EquipmentCard';
@@ -37,6 +45,77 @@ import {
   Layers,
   X
 } from 'lucide-react';
+
+type RepairResolution = {
+  equipmentId: string;
+  resolutionSummary: string;
+  partsReplaced: string[];
+  downtimeHours: number;
+  cost: number;
+  technicianName: string;
+};
+
+const EMPTY_FACILITY_SETTINGS: FacilitySettings = {
+  hospitalName: 'Medical Center',
+  facilityCode: '',
+  slaCriticalHours: 2,
+  slaHighHours: 8,
+  primaryContactPhone: '',
+  maintenanceEmail: '',
+};
+
+const enrichEquipment = (equipment: Equipment[], technicians: Technician[]): Equipment[] => {
+  const techniciansById = new Map(technicians.map(technician => [technician.id, technician]));
+
+  return equipment.map(item => ({
+    ...item,
+    assignedTechnicianName: item.assignedTechnicianId
+      ? techniciansById.get(item.assignedTechnicianId)?.name
+      : undefined,
+  }));
+};
+
+const enrichProblemReports = (
+  reports: ProblemReport[],
+  equipment: Equipment[],
+  technicians: Technician[],
+): ProblemReport[] => {
+  const equipmentById = new Map(equipment.map(item => [item.id, item]));
+  const techniciansById = new Map(technicians.map(technician => [technician.id, technician]));
+
+  return reports.map(report => ({
+    ...report,
+    equipmentName: equipmentById.get(report.equipmentId)?.name ?? 'Unknown equipment',
+    assignedTechnicianName: report.assignedTechnicianId
+      ? techniciansById.get(report.assignedTechnicianId)?.name
+      : undefined,
+  }));
+};
+
+const enrichMaintenanceRecords = (
+  records: MaintenanceRecord[],
+  equipment: Equipment[],
+  technicians: Technician[],
+): MaintenanceRecord[] => {
+  const equipmentById = new Map(equipment.map(item => [item.id, item]));
+  const techniciansById = new Map(technicians.map(technician => [technician.id, technician]));
+
+  return records.map(record => ({
+    ...record,
+    equipmentName: equipmentById.get(record.equipmentId)?.name ?? 'Unknown equipment',
+    technicianName: record.technicianId
+      ? techniciansById.get(record.technicianId)?.name ?? 'Unknown technician'
+      : 'Unassigned technician',
+  }));
+};
+
+const activeTicketCount = (technicianId: string, reports: ProblemReport[]) =>
+  reports.filter(report => report.assignedTechnicianId === technicianId && report.status !== 'Resolved').length;
+
+const technicianStatusForWorkload = (technician: Technician, workload: number): Technician['status'] => {
+  if (workload > 0) return 'Assigned';
+  return technician.status === 'Assigned' ? 'Available' : technician.status;
+};
 
 export default function App() {
   // --- Core State ---
@@ -88,24 +167,39 @@ export default function App() {
           supabase.from('problem_reports').select('*'),
           supabase.from('maintenance_records').select('*'),
           supabase.from('notifications').select('*'),
-          supabase.from('facility_settings').select('*').single(),
+          supabase.from('facility_settings').select('*').maybeSingle(),
         ]);
 
-        if (eqRes.data) setEquipmentList(mapDbToFrontend(eqRes.data));
-        if (techRes.data) setTechnicians(mapDbToFrontend(techRes.data));
-        if (probRes.data) {
-          const mappedReports = mapDbToFrontend(probRes.data).map((report: any) => {
-            const eq = equipmentList.find(e => e.id === report.equipmentId);
-            return {
-              ...report,
-              equipmentName: eq?.name || 'Unknown Equipment'
-            };
-          });
-          setProblemReports(mappedReports);
-        }
-        if (mainRes.data) setMaintenanceRecords(mapDbToFrontend(mainRes.data));
-        if (notifRes.data) setNotifications(mapDbToFrontend(notifRes.data));
-        if (setRes.data) setFacilitySettings(mapDbToFrontend(setRes.data));
+        const firstError = [eqRes, techRes, probRes, mainRes, notifRes, setRes]
+          .map(response => response.error)
+          .find(Boolean);
+
+        if (firstError) throw firstError;
+
+        const mappedTechnicians = mapDbToFrontend<Technician[]>(techRes.data ?? []);
+        const mappedEquipment = enrichEquipment(
+          mapDbToFrontend<Equipment[]>(eqRes.data ?? []),
+          mappedTechnicians,
+        );
+        const mappedReports = enrichProblemReports(
+          mapDbToFrontend<ProblemReport[]>(probRes.data ?? []),
+          mappedEquipment,
+          mappedTechnicians,
+        );
+        const mappedMaintenanceRecords = enrichMaintenanceRecords(
+          mapDbToFrontend<MaintenanceRecord[]>(mainRes.data ?? []),
+          mappedEquipment,
+          mappedTechnicians,
+        );
+
+        setEquipmentList(mappedEquipment);
+        setTechnicians(mappedTechnicians);
+        setProblemReports(mappedReports);
+        setMaintenanceRecords(mappedMaintenanceRecords);
+        setNotifications(mapDbToFrontend<NotificationItem[]>(notifRes.data ?? []));
+        setFacilitySettings(
+          setRes.data ? mapDbToFrontend<FacilitySettings>(setRes.data) : null,
+        );
       } catch (error) {
         console.error('Failed to initialize application data:', error);
         showToast('Error loading system data from backend.');
@@ -155,22 +249,25 @@ export default function App() {
 
   const handleSubmitProblemReport = async (reportData: any) => {
     try {
-      const ticketId = `TICK-${Math.floor(1000 + Math.random() * 9000)}`;
+      const ticketId = `TICK-${crypto.randomUUID()}`;
       const now = new Date().toISOString();
+      const equipment = equipmentList.find(item => item.id === reportData.equipmentId);
+
+      if (!equipment) throw new Error('The selected equipment no longer exists. Refresh and try again.');
 
       const newTicket: ProblemReport = {
         ...reportData,
         id: ticketId,
         status: 'Reported',
         reportedAt: now,
-        equipmentName: equipmentList.find(e => e.id === reportData.equipmentId)?.name || 'Unknown',
+        equipmentName: equipment.name,
       };
 
-      // 1. Save Ticket
-      const { error: reportError } = await supabase.from('problem_reports').insert([mapFrontendToDb(newTicket)]);
+      const { error: reportError } = await supabase
+        .from('problem_reports')
+        .insert(toProblemReportRow(newTicket));
       if (reportError) throw reportError;
 
-      // 2. Update Equipment Status
       const newStatus: EquipmentStatus = (reportData.severity === 'Critical' || reportData.severity === 'High') ? 'Down' : 'Needs Attention';
       const { error: eqError } = await supabase
         .from('equipment')
@@ -178,22 +275,29 @@ export default function App() {
         .eq('id', reportData.equipmentId);
       if (eqError) throw eqError;
 
-      // 3. Create Notification
-      const newNotif: NotificationItem = {
-        id: `notif-${Date.now()}`,
+      const notificationDraft: Omit<NotificationItem, 'id'> = {
         title: `${reportData.severity} Issue: ${newTicket.equipmentName}`,
         message: `${reportData.equipmentId} reported in ${reportData.room}.`,
         type: reportData.severity === 'Critical' ? 'alert' : 'warning',
-        timestamp: 'Just now',
+        timestamp: now,
         equipmentId: reportData.equipmentId,
         read: false,
       };
-      await supabase.from('notifications').insert([mapFrontendToDb(newNotif)]);
+      const { data: savedNotification, error: notificationError } = await supabase
+        .from('notifications')
+        .insert(toNotificationRow(notificationDraft))
+        .select()
+        .single();
 
-      // Local State Sync
+      if (notificationError) {
+        console.error('Problem report was saved, but its notification could not be created:', notificationError);
+      }
+
       setEquipmentList(prev => prev.map(eq => eq.id === reportData.equipmentId ? { ...eq, status: newStatus, activeTicketId: ticketId } : eq));
       setProblemReports(prev => [newTicket, ...prev]);
-      setNotifications(prev => [newNotif, ...prev]);
+      if (savedNotification) {
+        setNotifications(prev => [mapDbToFrontend<NotificationItem>(savedNotification), ...prev]);
+      }
 
       showToast(`Ticket ${ticketId} created. Equipment status: ${newStatus}`);
     } catch (error: any) {
@@ -204,32 +308,83 @@ export default function App() {
   const handleAssignTechnician = async (equipmentId: string, tech: Technician, note: string) => {
     try {
       const now = new Date().toISOString();
+      const equipment = equipmentList.find(item => item.id === equipmentId);
+      const activeTicket = problemReports.find(report =>
+        report.id === equipment?.activeTicketId ||
+        (report.equipmentId === equipmentId && report.status !== 'Resolved'),
+      );
 
-      // Update Equipment
+      if (!equipment || !activeTicket) {
+        throw new Error('No active work order was found for this equipment.');
+      }
+
+      const repairNotes = [
+        ...(activeTicket.repairNotes ?? []),
+        `${now} — ${note}`,
+      ];
+
       const { error: eqError } = await supabase
         .from('equipment')
         .update({ status: 'Under Maintenance', assigned_technician_id: tech.id })
         .eq('id', equipmentId);
       if (eqError) throw eqError;
 
-      // Update Ticket
       const { error: ticketError } = await supabase
         .from('problem_reports')
-        .update({ status: 'In Repair', assigned_technician_id: tech.id, assigned_at: now })
-        .eq('equipment_id', equipmentId)
-        .neq('status', 'Resolved');
+        .update({
+          status: 'Assigned',
+          assigned_technician_id: tech.id,
+          assigned_at: now,
+          repair_notes: repairNotes,
+        })
+        .eq('id', activeTicket.id);
       if (ticketError) throw ticketError;
 
-      // Update Technician
-      const { error: techError } = await supabase
-        .from('technicians')
-        .update({ status: 'Assigned', active_tickets_count: tech.activeTicketsCount + 1 })
-        .eq('id', tech.id);
-      if (techError) throw techError;
+      const nextReports = problemReports.map(report => report.id === activeTicket.id
+        ? {
+            ...report,
+            status: 'Assigned' as const,
+            assignedTechnicianId: tech.id,
+            assignedTechnicianName: tech.name,
+            assignedAt: now,
+            repairNotes,
+          }
+        : report,
+      );
 
-      // Local Sync
+      const affectedTechnicianIds = new Set(
+        [tech.id, equipment.assignedTechnicianId].filter((id): id is string => Boolean(id)),
+      );
+      const technicianUpdates = technicians
+        .filter(technician => affectedTechnicianIds.has(technician.id))
+        .map(technician => {
+          const workload = activeTicketCount(technician.id, nextReports);
+          return {
+            id: technician.id,
+            active_tickets_count: workload,
+            status: technicianStatusForWorkload(technician, workload),
+          };
+        });
+
+      await Promise.all(technicianUpdates.map(async (update) => {
+        const { error: technicianError } = await supabase
+          .from('technicians')
+          .update({
+            active_tickets_count: update.active_tickets_count,
+            status: update.status,
+          })
+          .eq('id', update.id);
+        if (technicianError) throw technicianError;
+      }));
+
       setEquipmentList(prev => prev.map(eq => eq.id === equipmentId ? { ...eq, status: 'Under Maintenance', assignedTechnicianId: tech.id, assignedTechnicianName: tech.name } : eq));
-      setTechnicians(prev => prev.map(t => t.id === tech.id ? { ...t, status: 'Assigned', activeTicketsCount: t.activeTicketsCount + 1 } : t));
+      setProblemReports(nextReports);
+      setTechnicians(prev => prev.map(technician => {
+        const update = technicianUpdates.find(item => item.id === technician.id);
+        return update
+          ? { ...technician, status: update.status, activeTicketsCount: update.active_tickets_count }
+          : technician;
+      }));
 
       showToast(`Technician ${tech.name} assigned to ${equipmentId}`);
     } catch (error: any) {
@@ -237,35 +392,50 @@ export default function App() {
     }
   };
 
-  const handleResolveRepair = async (data: any) => {
+  const handleResolveRepair = async (data: RepairResolution) => {
     try {
-      const recordId = `MAINT-${Math.floor(8000 + Math.random() * 2000)}`;
+      const recordId = `MAINT-${crypto.randomUUID()}`;
       const now = new Date().toISOString();
-      const targetEq = equipmentList.find(e => e.id === data.equipmentId);
+      const targetEquipment = equipmentList.find(item => item.id === data.equipmentId);
+      const activeTicket = problemReports.find(report =>
+        report.id === targetEquipment?.activeTicketId ||
+        (report.equipmentId === data.equipmentId && report.status !== 'Resolved'),
+      );
+      const technicianId = activeTicket?.assignedTechnicianId ?? targetEquipment?.assignedTechnicianId;
+      const technician = technicians.find(item => item.id === technicianId);
 
-      // 1. Maintenance Record
-      const { error: maintError } = await supabase.from('maintenance_records').insert([{
+      if (!targetEquipment || !activeTicket) {
+        throw new Error('No active work order was found for this equipment.');
+      }
+
+      const maintenanceRecord: MaintenanceRecord = {
         id: recordId,
-        equipment_id: data.equipmentId,
+        equipmentId: data.equipmentId,
+        equipmentName: targetEquipment.name,
         date: now.slice(0, 10),
-        resolved_date: now,
+        resolvedDate: now,
         type: 'Corrective Repair',
+        technicianId,
+        technicianName: technician?.name ?? data.technicianName,
         description: data.resolutionSummary,
-        parts_replaced: data.partsReplaced,
-        downtime_hours: data.downtimeHours,
+        partsReplaced: data.partsReplaced,
+        downtimeHours: data.downtimeHours,
         cost: data.cost,
-      }]);
+      };
+
+      const { data: savedMaintenance, error: maintError } = await supabase
+        .from('maintenance_records')
+        .insert(toMaintenanceRecordRow(maintenanceRecord))
+        .select()
+        .single();
       if (maintError) throw maintError;
 
-      // 2. Resolve Ticket
       const { error: ticketError } = await supabase
         .from('problem_reports')
         .update({ status: 'Resolved', resolved_at: now, resolution_summary: data.resolutionSummary, parts_used: data.partsReplaced, downtime_hours: data.downtimeHours })
-        .eq('equipment_id', data.equipmentId)
-        .neq('status', 'Resolved');
+        .eq('id', activeTicket.id);
       if (ticketError) throw ticketError;
 
-      // 3. Restore Equipment
       const { error: eqError } = await supabase
         .from('equipment')
         .update({
@@ -273,17 +443,71 @@ export default function App() {
           active_ticket_id: null,
           assigned_technician_id: null,
           last_maintenance_date: now.slice(0, 10),
-          total_downtime_hours: (targetEq?.totalDowntimeHours || 0) + data.downtimeHours
         })
         .eq('id', data.equipmentId);
       if (eqError) throw eqError;
 
-      // Local Sync
+      const { error: downtimeError } = await supabase.rpc('increment_equipment_downtime', {
+        equipment_id: data.equipmentId,
+        hours: data.downtimeHours,
+      });
+      if (downtimeError) throw downtimeError;
+
+      const nextReports = problemReports.map(report => report.id === activeTicket.id
+        ? {
+            ...report,
+            status: 'Resolved' as const,
+            resolvedAt: now,
+            resolutionSummary: data.resolutionSummary,
+            partsUsed: data.partsReplaced,
+            downtimeHours: data.downtimeHours,
+          }
+        : report,
+      );
+
+      const freedTechnician = technicianId
+        ? technicians.find(item => item.id === technicianId)
+        : undefined;
+      const nextWorkload = freedTechnician
+        ? activeTicketCount(freedTechnician.id, nextReports)
+        : 0;
+      const nextTechnicianStatus = freedTechnician
+        ? technicianStatusForWorkload(freedTechnician, nextWorkload)
+        : undefined;
+
+      if (freedTechnician && nextTechnicianStatus) {
+        const { error: technicianError } = await supabase
+          .from('technicians')
+          .update({
+            status: nextTechnicianStatus,
+            active_tickets_count: nextWorkload,
+          })
+          .eq('id', freedTechnician.id);
+        if (technicianError) throw technicianError;
+      }
+
       setEquipmentList(prev => prev.map(eq => eq.id === data.equipmentId ? {
-        ...eq, status: 'Working', activeTicketId: undefined, assignedTechnicianId: undefined,
-        assignedTechnicianName: undefined, lastMaintenanceDate: now.slice(0, 10),
+        ...eq, status: 'Working', activeTicketId: null, assignedTechnicianId: null,
+        assignedTechnicianName: null, lastMaintenanceDate: now.slice(0, 10),
         totalDowntimeHours: (eq.totalDowntimeHours || 0) + data.downtimeHours
       } : eq));
+      setProblemReports(nextReports);
+      if (savedMaintenance) {
+        setMaintenanceRecords(prev => [
+          ...enrichMaintenanceRecords(
+            [mapDbToFrontend<MaintenanceRecord>(savedMaintenance)],
+            equipmentList,
+            technicians,
+          ),
+          ...prev,
+        ]);
+      }
+      if (freedTechnician && nextTechnicianStatus) {
+        setTechnicians(prev => prev.map(item => item.id === freedTechnician.id
+          ? { ...item, status: nextTechnicianStatus, activeTicketsCount: nextWorkload }
+          : item,
+        ));
+      }
 
       showToast(`Repair certified. ${data.equipmentId} is now Operational.`);
     } catch (error: any) {
@@ -304,7 +528,7 @@ export default function App() {
 
   const handleSaveEquipment = async (eq: Equipment) => {
     try {
-      const { error } = await supabase.from('equipment').upsert(mapFrontendToDb(eq));
+      const { error } = await supabase.from('equipment').upsert(toEquipmentRow(eq));
       if (error) throw error;
       setEquipmentList(prev => {
         const exists = prev.some(item => item.id === eq.id);
@@ -318,17 +542,57 @@ export default function App() {
 
   const handleSaveSettings = async (settings: FacilitySettings) => {
     try {
-      const { error } = await supabase.from('facility_settings').update(mapFrontendToDb(settings)).eq('id', 1);
+      const { data, error } = await supabase
+        .from('facility_settings')
+        .upsert({ id: 1, ...mapFrontendToDb(settings) })
+        .select()
+        .single();
       if (error) throw error;
-      setFacilitySettings(settings);
+      setFacilitySettings(mapDbToFrontend<FacilitySettings>(data));
       showToast('Facility settings updated.');
     } catch (error: any) {
       showToast(`Error: ${error.message || 'Settings update failed'}`);
     }
   };
 
-  const handleResetData = () => {
-    showToast('Reset is now handled via seed.sql in Supabase SQL Editor.');
+  const handleStartRepair = async (ticketId: string) => {
+    try {
+      const { error } = await supabase
+        .from('problem_reports')
+        .update({ status: 'In Repair' })
+        .eq('id', ticketId);
+      if (error) throw error;
+
+      setProblemReports(prev => prev.map(report => report.id === ticketId
+        ? { ...report, status: 'In Repair' }
+        : report,
+      ));
+      showToast('Repair is now in progress.');
+    } catch (error: any) {
+      showToast(`Error: ${error.message || 'Unable to start repair'}`);
+    }
+  };
+
+  const handleAddTicketNote = async (ticketId: string, note: string) => {
+    try {
+      const ticket = problemReports.find(report => report.id === ticketId);
+      if (!ticket) throw new Error('Work order not found.');
+
+      const repairNotes = [...(ticket.repairNotes ?? []), `${new Date().toISOString()} — ${note}`];
+      const { error } = await supabase
+        .from('problem_reports')
+        .update({ repair_notes: repairNotes })
+        .eq('id', ticketId);
+      if (error) throw error;
+
+      setProblemReports(prev => prev.map(report => report.id === ticketId
+        ? { ...report, repairNotes }
+        : report,
+      ));
+      showToast('Work order note added.');
+    } catch (error: any) {
+      showToast(`Error: ${error.message || 'Unable to add note'}`);
+    }
   };
 
   // --- UI Helpers ---
@@ -383,7 +647,7 @@ export default function App() {
         onNotificationClick={handleSelectEquipmentById}
         onOpenReportModal={() => handleOpenReportModal(null)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
-        facilitySettings={facilitySettings}
+        facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
         fleetUptime={fleetUptime}
       />
 
@@ -476,7 +740,7 @@ export default function App() {
         )}
 
         {activeNav === 'workorders' && (
-          <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} currentRole={currentRole} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} />
+          <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} currentRole={currentRole} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
         )}
 
         {activeNav === 'history' && (
@@ -496,7 +760,7 @@ export default function App() {
       </footer>
 
       {selectedEquipment && (
-        <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} currentRole={currentRole} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onUpdateStatus={handleUpdateStatus} />
+        <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} currentRole={currentRole} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
       )}
 
       <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} currentRole={currentRole} />
@@ -511,7 +775,7 @@ export default function App() {
 
       <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
 
-      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings || { hospitalName: 'Loading...', facilityCode: '...', slaCriticalHours: 2, slaHighHours: 8, primaryContactPhone: '...', maintenanceEmail: '...' }} onSaveSettings={handleSaveSettings} onResetData={handleResetData} />
+      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
     </div>
   );
 }

@@ -1,18 +1,6 @@
-```tsx
 import React, { useState } from 'react';
 import { Technician, Equipment, ProblemReport, UserRole } from '../types';
-import {
-  User,
-  Phone,
-  Mail,
-  Award,
-  CheckCircle2,
-  Clock,
-  Wrench,
-  Shield,
-  Copy,
-  Check,
-} from 'lucide-react';
+import { Phone, Mail, Copy, Check } from 'lucide-react';
 
 interface TechniciansViewProps {
   technicians: Technician[];
@@ -88,13 +76,12 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                   </div>
 
                   <span
-                    className={`px - 2 py - 0.5 rounded - full text - xs font - semibold ${
-  tech.status === 'Available'
-    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-    : tech.status === 'Assigned'
-      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-      : 'bg-slate-100 text-slate-700 border border-slate-200'
-} `}
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${tech.status === 'Available'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : tech.status === 'Assigned'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                      }`}
                   >
                     {tech.status}
                   </span>
@@ -184,4 +171,3 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
     </div>
   );
 };
-```

@@ -1,4 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import type {
+  Equipment,
+  MaintenanceRecord,
+  NotificationItem,
+  ProblemReport,
+} from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -33,4 +39,35 @@ export function mapFrontendToDb(data: any): any {
     mapped[snakeKey] = data[key];
   }
   return mapped;
+}
+
+/**
+ * The UI includes a few display-only fields assembled from relations. Keep
+ * them out of writes so PostgREST only receives real table columns.
+ */
+export function toEquipmentRow(equipment: Equipment) {
+  const { assignedTechnicianName: _assignedTechnicianName, ...row } = equipment;
+  return mapFrontendToDb(row);
+}
+
+export function toProblemReportRow(report: ProblemReport) {
+  const {
+    equipmentName: _equipmentName,
+    assignedTechnicianName: _assignedTechnicianName,
+    ...row
+  } = report;
+  return mapFrontendToDb(row);
+}
+
+export function toMaintenanceRecordRow(record: MaintenanceRecord) {
+  const {
+    equipmentName: _equipmentName,
+    technicianName: _technicianName,
+    ...row
+  } = record;
+  return mapFrontendToDb(row);
+}
+
+export function toNotificationRow(notification: Omit<NotificationItem, 'id'>) {
+  return mapFrontendToDb(notification);
 }

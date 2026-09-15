@@ -31,7 +31,7 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
   );
   const [cost, setCost] = useState<number>(180);
   const [technicianName, setTechnicianName] = useState(
-    equipment.assignedTechnicianName || 'Marcus Vance, CBET'
+    equipment.assignedTechnicianName || activeTicket?.assignedTechnicianName || ''
   );
   const [error, setError] = useState('');
 
@@ -55,7 +55,7 @@ export const ResolveRepairModal: React.FC<ResolveRepairModalProps> = ({
       partsReplaced: parts,
       downtimeHours: Number(downtimeHours) || 1,
       cost: Number(cost) || 0,
-      technicianName: technicianName.trim() || 'Biomedical Engineering Staff',
+      technicianName: technicianName.trim(),
     });
 
     onClose();

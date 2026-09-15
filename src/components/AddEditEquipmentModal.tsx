@@ -21,6 +21,12 @@ const DEPARTMENTS: Department[] = [
   'Neonatal ICU (NICU)',
 ];
 
+const sixMonthsFromToday = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() + 6);
+  return date.toISOString().slice(0, 10);
+};
+
 export const AddEditEquipmentModal: React.FC<AddEditEquipmentModalProps> = ({
   isOpen,
   onClose,
@@ -55,7 +61,7 @@ export const AddEditEquipmentModal: React.FC<AddEditEquipmentModalProps> = ({
       setManufacturer('');
       setSerialNumber(`SN-${Math.floor(10000 + Math.random() * 90000)}`);
       setDepartment(DEPARTMENTS[0]);
-      setRoom('Room 101');
+      setRoom('');
       setCriticality('Critical Diagnostic');
       setStatus('Working');
       setInstallDate(new Date().toISOString().slice(0, 10));
@@ -83,15 +89,12 @@ export const AddEditEquipmentModal: React.FC<AddEditEquipmentModalProps> = ({
       status,
       installDate,
       lastMaintenanceDate: equipmentToEdit ? equipmentToEdit.lastMaintenanceDate : installDate,
-      nextScheduledMaintenance: equipmentToEdit ? equipmentToEdit.nextScheduledMaintenance : '2026-12-31',
+      nextScheduledMaintenance: equipmentToEdit ? equipmentToEdit.nextScheduledMaintenance : sixMonthsFromToday(),
       uptimePercentage: equipmentToEdit ? equipmentToEdit.uptimePercentage : 100,
       totalDowntimeHours: equipmentToEdit ? equipmentToEdit.totalDowntimeHours : 0,
       assignedTechnicianId: equipmentToEdit?.assignedTechnicianId,
       assignedTechnicianName: equipmentToEdit?.assignedTechnicianName,
-      specifications: equipmentToEdit?.specifications || {
-        'Standard Power': '110-240 VAC 50/60Hz',
-        'Compliance': 'FDA Class II / Medical CE',
-      },
+      specifications: equipmentToEdit?.specifications || {},
     };
 
     onSaveEquipment(newEquipment);

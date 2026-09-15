@@ -21,11 +21,11 @@ export const MaintenanceHistoryView: React.FC<MaintenanceHistoryViewProps> = ({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
-        rec.id.toLowerCase().includes(q) ||
-        rec.equipmentName.toLowerCase().includes(q) ||
-        rec.equipmentId.toLowerCase().includes(q) ||
-        rec.technicianName.toLowerCase().includes(q) ||
-        rec.description.toLowerCase().includes(q)
+        (rec.id ?? '').toLowerCase().includes(q) ||
+        (rec.equipmentName ?? '').toLowerCase().includes(q) ||
+        (rec.equipmentId ?? '').toLowerCase().includes(q) ||
+        (rec.technicianName ?? '').toLowerCase().includes(q) ||
+        (rec.description ?? '').toLowerCase().includes(q)
       );
     }
     return true;

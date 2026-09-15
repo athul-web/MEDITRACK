@@ -155,13 +155,13 @@ CREATE POLICY "Admins can manage settings" ON facility_settings FOR ALL USING (
 
 -- Trigger to create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS 1189
+RETURNS trigger AS $$
 BEGIN
   INSERT INTO public.profiles (id, role)
   VALUES (new.id, 'Staff');
   RETURN new;
 END;
-1189 LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users

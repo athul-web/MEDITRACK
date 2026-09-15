@@ -22,9 +22,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const [selectedEqId, setSelectedEqId] = useState<string>('');
   const [severity, setSeverity] = useState<TicketSeverity>('High');
   const [issueDescription, setIssueDescription] = useState('');
-  const [reportedBy, setReportedBy] = useState(
-    currentRole === 'Staff' ? 'Staff Nurse Sarah Chen, RN' : 'Marcus Vance, CBET'
-  );
+  const [reportedBy, setReportedBy] = useState('');
   const [reportedRole, setReportedRole] = useState(
     currentRole === 'Staff' ? 'Clinical Ward Staff' : 'Biomedical Engineering'
   );

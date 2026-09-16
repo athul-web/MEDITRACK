@@ -16,7 +16,6 @@ import {
 
 interface HeaderProps {
   currentRole: UserRole;
-  onRoleChange: (role: UserRole) => void;
   notifications: NotificationItem[];
   onMarkAllNotificationsRead: () => void;
   onNotificationClick: (notifId: string, equipmentId?: string) => void;
@@ -79,36 +78,6 @@ export const Header: React.FC<HeaderProps> = ({
               <AlertTriangle className="w-4 h-4" />
               <span className="hidden xs:inline">Report Problem</span>
             </button>
-
-            {/* Role Switcher Pill */}
-            <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-xs">
-              <button
-                id="role-staff-btn"
-                onClick={() => onRoleChange('Staff')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all font-medium ${
-                  currentRole === 'Staff'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Switch to Clinical Staff View (Nurse/Physician)"
-              >
-                <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
-                <span className="hidden sm:inline">Staff</span>
-              </button>
-              <button
-                id="role-admin-btn"
-                onClick={() => onRoleChange('Admin')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all font-medium ${
-                  currentRole === 'Admin'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Switch to Biomedical Engineer / Admin View"
-              >
-                <Wrench className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Biomed Admin</span>
-              </button>
-            </div>
 
             {/* Notification Popover Button */}
             <div className="relative">

@@ -171,21 +171,31 @@ export default function App() {
     async function initApp() {
       setIsLoading(true);
       try {
-        const [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes] = await Promise.all([
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+
+        const [eqRes, techRes, probRes, mainRes, notifRes, facilitySettingsResult, profileRes] = await Promise.all([
           supabase.from('equipment').select('*'),
           supabase.from('technicians').select('*'),
           supabase.from('problem_reports').select('*'),
           supabase.from('maintenance_records').select('*'),
           supabase.from('notifications').select('*'),
-          supabase.from('facility_settings').select('*').maybeSingle(),
-          supabase.from('profiles').select('role').single(),
+          supabase.from('facility_settings').select('*').eq('id', 1).maybeSingle(),
+          user
+            ? supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+            : Promise.resolve({ data: null, error: null }),
         ]);
 
-        const firstError = [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes]
-          .map(response => response.error)
-          .find(Boolean);
+        if (eqRes.error) throw eqRes.error;
 
-        if (firstError) throw firstError;
+        [techRes, probRes, mainRes, notifRes, facilitySettingsResult, profileRes]
+          .filter(response => response?.error)
+          .forEach(response => console.warn('Optional application data could not be loaded:', response.error));
+
+          if (facilitySettingsResult?.error) {
+            console.error('Failed to load facility settings:', facilitySettingsResult.error);
+            setFacilitySettings(null);
+          }
 
         const mappedTechnicians = mapDbToFrontend<Technician[]>(techRes.data ?? []);
         const mappedEquipment = enrichEquipment(
@@ -209,7 +219,7 @@ export default function App() {
         setMaintenanceRecords(mappedMaintenanceRecords);
         setNotifications(mapDbToFrontend<NotificationItem[]>(notifRes.data ?? []));
         setFacilitySettings(
-          setRes.data ? mapDbToFrontend<FacilitySettings>(setRes.data) : null,
+          facilitySettingsResult?.data ? mapDbToFrontend<FacilitySettings>(facilitySettingsResult.data) : null,
         );
         if (profileRes.data) {
           setCurrentRole(profileRes.data.role);
@@ -356,13 +366,13 @@ export default function App() {
 
       const nextReports = problemReports.map(report => report.id === activeTicket.id
         ? {
-            ...report,
-            status: 'Assigned' as const,
-            assignedTechnicianId: tech.id,
-            assignedTechnicianName: tech.name,
-            assignedAt: now,
-            repairNotes,
-          }
+          ...report,
+          status: 'Assigned' as const,
+          assignedTechnicianId: tech.id,
+          assignedTechnicianName: tech.name,
+          assignedAt: now,
+          repairNotes,
+        }
         : report,
       );
 
@@ -469,13 +479,13 @@ export default function App() {
 
       const nextReports = problemReports.map(report => report.id === activeTicket.id
         ? {
-            ...report,
-            status: 'Resolved' as const,
-            resolvedAt: now,
-            resolutionSummary: data.resolutionSummary,
-            partsUsed: data.partsReplaced,
-            downtimeHours: data.downtimeHours,
-          }
+          ...report,
+          status: 'Resolved' as const,
+          resolvedAt: now,
+          resolutionSummary: data.resolutionSummary,
+          partsUsed: data.partsReplaced,
+          downtimeHours: data.downtimeHours,
+        }
         : report,
       );
 
@@ -755,10 +765,10 @@ export default function App() {
               </div>
             ) : viewMode === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={handleUpdateStatus} />)}
+                {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
               </div>
             ) : (
-              <EquipmentTable equipment={filteredEquipment} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={handleUpdateStatus} />
+              <EquipmentTable equipment={filteredEquipment} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
             )}
           </div>
         )}

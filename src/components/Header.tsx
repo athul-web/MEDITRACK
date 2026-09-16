@@ -28,7 +28,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   currentRole,
-  onRoleChange,
   notifications,
   onMarkAllNotificationsRead,
   onNotificationClick,
@@ -131,16 +130,14 @@ export const Header: React.FC<HeaderProps> = ({
                             onNotificationClick(notif.id, notif.equipmentId);
                             setShowNotifications(false);
                           }}
-                          className={`py-2.5 px-2.5 rounded-lg cursor-pointer transition-colors ${
-                            notif.read ? 'hover:bg-slate-50 opacity-75' : 'bg-slate-50 hover:bg-slate-100 font-medium border border-slate-100'
-                          }`}
+                          className={`py-2.5 px-2.5 rounded-lg cursor-pointer transition-colors ${notif.read ? 'hover:bg-slate-50 opacity-75' : 'bg-slate-50 hover:bg-slate-100 font-medium border border-slate-100'
+                            }`}
                         >
                           <div className="flex items-start gap-2">
-                            <span className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${
-                              notif.type === 'alert' ? 'bg-rose-500' :
-                              notif.type === 'warning' ? 'bg-amber-500' :
-                              notif.type === 'success' ? 'bg-emerald-500' : 'bg-sky-500'
-                            }`} />
+                            <span className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${notif.type === 'alert' ? 'bg-rose-500' :
+                                notif.type === 'warning' ? 'bg-amber-500' :
+                                  notif.type === 'success' ? 'bg-emerald-500' : 'bg-sky-500'
+                              }`} />
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-semibold text-slate-900 truncate">{notif.title}</p>
                               <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{notif.message}</p>

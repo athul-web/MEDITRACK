@@ -180,7 +180,7 @@ export default function App() {
           supabase.from('problem_reports').select('*'),
           supabase.from('maintenance_records').select('*'),
           supabase.from('notifications').select('*'),
-          supabase.from('facility_settings').select('*').maybeSingle(),
+          supabase.from('facility_settings').select('*').eq('id', 1).maybeSingle(),
           user
             ? supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
             : Promise.resolve({ data: null, error: null }),

@@ -115,7 +115,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
           <span className="hidden sm:inline">Report</span>
         </button>
 
-        {currentRole === 'Admin' && onQuickStatusChange && (
+        {(currentRole === 'Staff' || currentRole === 'Admin') && onQuickStatusChange && (
           <div className="relative group/status">
             <button
               onClick={() => onSelect(equipment)}

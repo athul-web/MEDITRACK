@@ -292,7 +292,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                       View Equipment Details
                     </button>
 
-                    {currentRole === 'Admin' && eq && ticket.status !== 'Resolved' && (
+                    {(currentRole === 'Staff' || currentRole === 'Admin') && eq && ticket.status !== 'Resolved' && (
                       <>
                         {ticket.status === 'Reported' && (
                           <button

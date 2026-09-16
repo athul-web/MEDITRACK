@@ -215,16 +215,19 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               {/* Uptime & Reliability Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-xs text-slate-500 font-medium">Historical Uptime</span>
+                  <span className="text-xs text-slate-500 font-medium">Operational Uptime</span>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">{equipment.uptimePercentage}%</span>
+                    <span className="text-2xl font-bold text-slate-900">
+                      {(() => {
+                        const installed = new Date(equipment.installDate);
+                        const now = new Date();
+                        const totalHoursSinceInstall = (now.getTime() - installed.getTime()) / (1000 * 60 * 60);
+                        const uptimeHours = totalHoursSinceInstall - equipment.totalDowntimeHours;
+                        return Math.max(0, Math.floor(uptimeHours)).toLocaleString();
+                      })()} hrs
+                    </span>
                   </div>
-                  <div className="mt-2 w-full bg-slate-100 rounded-full h-1.5">
-                    <div 
-                      className="bg-emerald-500 h-1.5 rounded-full" 
-                      style={{ width: `${equipment.uptimePercentage}%` }}
-                    />
-                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2">Calculated from installation date</p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">

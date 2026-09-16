@@ -178,7 +178,7 @@ export default function App() {
           supabase.from('maintenance_records').select('*'),
           supabase.from('notifications').select('*'),
           supabase.from('facility_settings').select('*').maybeSingle(),
-          supabase.from('profiles').select('role').single(),
+          supabase.from('profiles').select('role').maybeSingle(),
         ]);
 
         const firstError = [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes]

@@ -174,7 +174,7 @@ export default function App() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError) throw userError;
 
-        const [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes] = await Promise.all([
+        const [eqRes, techRes, probRes, mainRes, notifRes, facilitySettingsResult, profileRes] = await Promise.all([
           supabase.from('equipment').select('*'),
           supabase.from('technicians').select('*'),
           supabase.from('problem_reports').select('*'),
@@ -188,9 +188,14 @@ export default function App() {
 
         if (eqRes.error) throw eqRes.error;
 
-        [techRes, probRes, mainRes, notifRes, setRes, profileRes]
-          .filter(response => response.error)
+        [techRes, probRes, mainRes, notifRes, facilitySettingsResult, profileRes]
+          .filter(response => response?.error)
           .forEach(response => console.warn('Optional application data could not be loaded:', response.error));
+
+          if (facilitySettingsResult?.error) {
+            console.error('Failed to load facility settings:', facilitySettingsResult.error);
+            setFacilitySettings(null);
+          }
 
         const mappedTechnicians = mapDbToFrontend<Technician[]>(techRes.data ?? []);
         const mappedEquipment = enrichEquipment(
@@ -214,7 +219,7 @@ export default function App() {
         setMaintenanceRecords(mappedMaintenanceRecords);
         setNotifications(mapDbToFrontend<NotificationItem[]>(notifRes.data ?? []));
         setFacilitySettings(
-          setRes.data ? mapDbToFrontend<FacilitySettings>(setRes.data) : null,
+          facilitySettingsResult?.data ? mapDbToFrontend<FacilitySettings>(facilitySettingsResult.data) : null,
         );
         if (profileRes.data) {
           setCurrentRole(profileRes.data.role);

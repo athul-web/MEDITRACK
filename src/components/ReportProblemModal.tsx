@@ -24,7 +24,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const [issueDescription, setIssueDescription] = useState('');
   const [reportedBy, setReportedBy] = useState('');
   const [reportedRole, setReportedRole] = useState(
-    currentRole === 'Staff' ? 'Clinical Ward Staff' : 'Biomedical Engineering'
+    currentRole === 'Staff' ? 'Clinical Ward Staff' : 'Admin'
   );
   const [roomOverride, setRoomOverride] = useState('');
   const [error, setError] = useState('');
@@ -54,7 +54,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
       return;
     }
     if (!reportedBy.trim()) {
-      setError('Please provide your name for biomedical dispatch follow-up.');
+      setError('Please provide your name for dispatch follow-up.');
       return;
     }
 
@@ -93,7 +93,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
                 Report Equipment Breakdown or Problem
               </h3>
               <p className="text-xs text-rose-700">
-                Log medical device malfunction for immediate Biomedical Engineering dispatch
+                Log medical device malfunction for immediate dispatch
               </p>
             </div>
           </div>

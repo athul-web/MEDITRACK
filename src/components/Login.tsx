@@ -57,7 +57,7 @@ export function Login() {
 
           <div className="left-content">
             <h1>Sign in to your clinical portal.</h1>
-            <p>Monitor equipment status, track live biomedical work orders, and manage fleet maintenance.</p>
+            <p>Monitor equipment status, track live work orders, and manage fleet maintenance.</p>
           </div>
 
           {/* Live Animated ECG Card Component */}

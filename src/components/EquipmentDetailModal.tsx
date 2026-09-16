@@ -166,7 +166,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Biomedical Engineering Status Control
+                        Operations Status Control
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         Update operational status for clinical availability
@@ -243,7 +243,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                       <p className="text-sm font-bold text-slate-900">
                         {equipment.assignedTechnicianName || 'Unassigned'}
                       </p>
-                      <p className="text-[11px] text-slate-500">Biomedical Team</p>
+                      <p className="text-[11px] text-slate-500">Team</p>
                     </div>
                   </div>
                 </div>
@@ -312,7 +312,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Biomedical Service Updates ({activeTicket.repairNotes?.length || 0})
+                        Service Updates ({activeTicket.repairNotes?.length || 0})
                       </h5>
                       {currentRole === 'Admin' && !isAddingNote && (
                         <button

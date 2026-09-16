@@ -551,6 +551,10 @@ export default function App() {
   };
 
   const handleSaveSettings = async (settings: FacilitySettings) => {
+    if (currentRole !== 'Admin') {
+      showToast('Access denied: Only Biomedical Admins can update hospital settings.');
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('facility_settings')
@@ -656,7 +660,13 @@ export default function App() {
         }}
         onNotificationClick={handleSelectEquipmentById}
         onOpenReportModal={() => handleOpenReportModal(null)}
-        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenSettingsModal={() => {
+          if (currentRole === 'Admin') {
+            setIsSettingsModalOpen(true);
+          } else {
+            showToast('Access denied: Admin permissions required to manage hospital settings.');
+          }
+        }}
         onLogout={handleLogout}
         facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
         fleetUptime={fleetUptime}

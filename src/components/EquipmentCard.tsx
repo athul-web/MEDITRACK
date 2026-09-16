@@ -1,5 +1,6 @@
 import React from 'react';
 import { Equipment, UserRole } from '../types';
+import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge } from './StatusBadge';
 import { 
   MapPin, 
@@ -86,20 +87,11 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
           </span>
         </div>
 
-        {/* Uptime bar */}
+        {/* Total Uptime */}
         <div className="pt-1">
-          <div className="flex items-center justify-between text-[11px] mb-1">
-            <span className="text-slate-500">Historical Uptime</span>
-            <span className="font-semibold text-slate-700">{equipment.uptimePercentage}%</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
-            <div 
-              className={`h-1 rounded-full ${
-                equipment.uptimePercentage >= 98 ? 'bg-emerald-500' :
-                equipment.uptimePercentage >= 95 ? 'bg-amber-500' : 'bg-rose-500'
-              }`}
-              style={{ width: `${equipment.uptimePercentage}%` }}
-            />
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-slate-500">Total Uptime</span>
+            <span className="font-semibold text-slate-700">{calculateUptimeHours(equipment).toLocaleString()} hrs</span>
           </div>
         </div>
       </div>

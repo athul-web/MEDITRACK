@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  Equipment, 
-  UserRole, 
-  ProblemReport, 
-  MaintenanceRecord, 
-  Technician 
-} from '../types';
+import { Equipment, UserRole, ProblemReport, MaintenanceRecord, Technician } from '../types';
+import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge, SeverityBadge, TicketStatusBadge } from './StatusBadge';
 import { 
   X, 
@@ -215,16 +210,10 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               {/* Uptime & Reliability Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-xs text-slate-500 font-medium">Operational Uptime</span>
+                  <span className="text-xs text-slate-500 font-medium">Total Uptime (Hours)</span>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-slate-900">
-                      {(() => {
-                        const installed = new Date(equipment.installDate);
-                        const now = new Date();
-                        const totalHoursSinceInstall = (now.getTime() - installed.getTime()) / (1000 * 60 * 60);
-                        const uptimeHours = totalHoursSinceInstall - equipment.totalDowntimeHours;
-                        return Math.max(0, Math.floor(uptimeHours)).toLocaleString();
-                      })()} hrs
+                      {calculateUptimeHours(equipment).toLocaleString()} hrs
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-2">Calculated from installation date</p>

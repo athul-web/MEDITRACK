@@ -128,11 +128,24 @@ CREATE POLICY "Admins can manage equipment" ON equipment FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Admin')
 );
 
+-- Staff can insert equipment (Add) and update operational fields
+CREATE POLICY "Staff can insert equipment" ON equipment FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Staff')
+);
+
+CREATE POLICY "Staff can update equipment" ON equipment FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Staff')
+);
 -- Problem Reports: Staff can create, Admins can manage
 CREATE POLICY "Anyone can view problem reports" ON problem_reports FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can report problems" ON problem_reports FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Admins can manage problem reports" ON problem_reports FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Admin')
+);
+
+-- Staff can update problem reports (assign, status changes, notes, resolve)
+CREATE POLICY "Staff can update problem reports" ON problem_reports FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Staff')
 );
 
 -- Maintenance Records: Admins can manage, anyone can view
@@ -141,10 +154,20 @@ CREATE POLICY "Admins can manage maintenance" ON maintenance_records FOR ALL USI
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Admin')
 );
 
+-- Staff can insert maintenance records when a repair is certified
+CREATE POLICY "Staff can insert maintenance records" ON maintenance_records FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Staff')
+);
+
 -- Notifications: Users view their own (if assigned) or all if Admin
 CREATE POLICY "Anyone can view notifications" ON notifications FOR SELECT USING (true);
 CREATE POLICY "Admins can manage notifications" ON notifications FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Admin')
+);
+
+-- Staff can update their notifications (mark as read)
+CREATE POLICY "Staff can update notifications" ON notifications FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'Staff')
 );
 
 -- Facility Settings: Admin only

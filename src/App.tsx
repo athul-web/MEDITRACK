@@ -739,7 +739,7 @@ export default function App() {
                     <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><LayoutGrid className="w-4 h-4" /></button>
                     <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><List className="w-4 h-4" /></button>
                   </div>
-                  {currentRole === 'Admin' && (
+                  {(currentRole === 'Staff' || currentRole === 'Admin') && (
                     <button onClick={() => { setEditEquipmentTarget(null); setIsAddEditModalOpen(true); }} className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 shrink-0 shadow-xs">
                       <Plus className="w-3.5 h-3.5" /> <span>Add Equipment</span>
                     </button>

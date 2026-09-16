@@ -161,7 +161,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Admin Status Quick Action Control */}
-              {currentRole === 'Admin' ? (
+              {(currentRole === 'Staff' || currentRole === 'Admin') ? (
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
@@ -314,7 +314,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                       <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
                         Service Updates ({activeTicket.repairNotes?.length || 0})
                       </h5>
-                      {currentRole === 'Admin' && !isAddingNote && (
+                      {(currentRole === 'Staff' || currentRole === 'Admin') && !isAddingNote && (
                         <button
                           onClick={() => setIsAddingNote(true)}
                           className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1"
@@ -366,7 +366,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                   </div>
 
                   {/* Actions for this ticket */}
-                  {currentRole === 'Admin' && (
+                  {(currentRole === 'Staff' || currentRole === 'Admin') && (
                     <div className="pt-3 border-t border-amber-200 flex flex-wrap items-center justify-end gap-2">
                       <button
                         onClick={() => onOpenAssignModal(equipment)}
@@ -495,7 +495,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               <span>Report Issue</span>
             </button>
 
-            {currentRole === 'Admin' && (
+            {(currentRole === 'Staff' || currentRole === 'Admin') && (
               <>
                 <button
                   onClick={() => onOpenAssignModal(equipment)}

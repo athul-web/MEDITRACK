@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Equipment, UserRole } from '../types';
+import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge } from './StatusBadge';
 import { Eye, AlertTriangle, ArrowUpDown, MapPin, Wrench } from 'lucide-react';
 
@@ -139,19 +140,10 @@ export const EquipmentTable: React.FC<EquipmentTableProps> = ({
                 )}
               </td>
 
-              {/* Uptime % */}
+              {/* Total Uptime */}
               <td className="py-3.5 px-4 hidden xl:table-cell whitespace-nowrap">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-xs text-slate-700">{item.uptimePercentage}%</span>
-                  <div className="w-16 bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div 
-                      className={`h-1.5 rounded-full ${
-                        item.uptimePercentage >= 98 ? 'bg-emerald-500' :
-                        item.uptimePercentage >= 95 ? 'bg-amber-500' : 'bg-rose-500'
-                      }`}
-                      style={{ width: `${item.uptimePercentage}%` }}
-                    />
-                  </div>
+                  <span className="font-semibold text-xs text-slate-700">{calculateUptimeHours(item).toLocaleString()} hrs</span>
                 </div>
               </td>
 

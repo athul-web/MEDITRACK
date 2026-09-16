@@ -201,14 +201,16 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Facility Settings Button */}
-            <button
-              id="facility-settings-btn"
-              onClick={onOpenSettingsModal}
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-              title="Facility Configuration & Team"
-            >
-              <SettingsIcon className="w-5 h-5" />
-            </button>
+            {currentRole === 'Admin' && (
+              <button
+                id="facility-settings-btn"
+                onClick={onOpenSettingsModal}
+                className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                title="Facility Configuration & Team"
+              >
+                <SettingsIcon className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Logout Button */}
             <button

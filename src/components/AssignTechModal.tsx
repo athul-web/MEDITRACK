@@ -51,7 +51,7 @@ export const AssignTechModal: React.FC<AssignTechModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">
-                Assign Biomedical Technician
+                Assign Technician
               </h3>
               <p className="text-xs text-amber-800">
                 Dispatch engineer and transition equipment into Maintenance
@@ -86,7 +86,7 @@ export const AssignTechModal: React.FC<AssignTechModalProps> = ({
           {/* Technician Selection */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Select Biomedical Engineer / Technician *
+              Select Engineer / Technician *
             </label>
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {technicians.map(tech => (

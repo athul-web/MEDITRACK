@@ -31,10 +31,10 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-slate-900">
-            Biomedical Engineering & Clinical Technology Staff
+            Maintenance Staff
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Certified biomedical equipment technicians (CBET) & clinical equipment specialists on roster
+            Certified maintenance technicians (CBET) & clinical equipment specialists on roster
           </p>
         </div>
 

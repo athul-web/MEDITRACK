@@ -87,7 +87,7 @@ export const MaintenanceHistoryView: React.FC<MaintenanceHistoryViewProps> = ({
             <FileText className="w-4 h-4 text-blue-600" />
           </div>
           <p className="text-2xl font-bold text-slate-900 mt-2">{filteredRecords.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Certified biomedical work orders</p>
+          <p className="text-[11px] text-slate-400 mt-1">Maintenance work orders</p>
         </div>
 
         <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-xs">

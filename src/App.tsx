@@ -566,7 +566,7 @@ export default function App() {
 
   const handleSaveSettings = async (settings: FacilitySettings) => {
     if (currentRole !== 'Admin') {
-      showToast('Access denied: Only Biomedical Admins can update hospital settings.');
+      showToast('Access denied: Only Admins can update hospital settings.');
       return;
     }
     try {
@@ -646,7 +646,7 @@ export default function App() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-600 font-medium animate-pulse">Connecting to Biomedical Backend...</p>
+        <p className="text-slate-600 font-medium animate-pulse">Connecting to Backend...</p>
       </div>
     );
   }
@@ -699,13 +699,13 @@ export default function App() {
                 <FileText className="w-4 h-4" /> <span>Maintenance History</span>
               </button>
               <button onClick={() => setActiveNav('technicians')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'technicians' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                <Users className="w-4 h-4" /> <span>Biomedical Team</span>
+                <Users className="w-4 h-4" /> <span>Team</span>
               </button>
             </nav>
             <div className="flex items-center gap-2 text-xs">
               <span className="text-slate-500">Active Mode:</span>
               <span className={`px-2.5 py-1 rounded-full font-semibold ${currentRole === 'Admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-sky-100 text-sky-900 border border-sky-300'}`}>
-                {currentRole === 'Admin' ? 'Lead Biomedical Engineer' : 'Clinical Ward Staff'}
+                {currentRole === 'Admin' ? 'Admin Lead' : 'Staff'}
               </span>
             </div>
           </div>

@@ -171,16 +171,17 @@ export default function App() {
     async function initApp() {
       setIsLoading(true);
       try {
-        const [eqRes, techRes, probRes, mainRes, notifRes, setRes] = await Promise.all([
+        const [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes] = await Promise.all([
           supabase.from('equipment').select('*'),
           supabase.from('technicians').select('*'),
           supabase.from('problem_reports').select('*'),
           supabase.from('maintenance_records').select('*'),
           supabase.from('notifications').select('*'),
           supabase.from('facility_settings').select('*').maybeSingle(),
+          supabase.from('profiles').select('role').single(),
         ]);
 
-        const firstError = [eqRes, techRes, probRes, mainRes, notifRes, setRes]
+        const firstError = [eqRes, techRes, probRes, mainRes, notifRes, setRes, profileRes]
           .map(response => response.error)
           .find(Boolean);
 
@@ -210,6 +211,9 @@ export default function App() {
         setFacilitySettings(
           setRes.data ? mapDbToFrontend<FacilitySettings>(setRes.data) : null,
         );
+        if (profileRes.data) {
+          setCurrentRole(profileRes.data.role);
+        }
       } catch (error: any) {
         console.error('Failed to initialize application data:', error);
         showToast(error?.message || 'Error loading system data from backend.');
@@ -649,7 +653,6 @@ export default function App() {
 
       <Header
         currentRole={currentRole}
-        onRoleChange={setCurrentRole}
         notifications={notifications}
         onMarkAllNotificationsRead={async () => {
           const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);

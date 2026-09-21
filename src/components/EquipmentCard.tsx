@@ -1,5 +1,5 @@
 import React from 'react';
-import { Equipment, UserRole } from '../types';
+import { Equipment } from '../types';
 import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge } from './StatusBadge';
 import { 
@@ -16,7 +16,6 @@ import {
 
 interface EquipmentCardProps {
   equipment: Equipment;
-  currentRole: UserRole;
   onSelect: (equipment: Equipment) => void;
   onReportProblem: (equipment: Equipment) => void;
   onQuickStatusChange?: (equipment: Equipment, status: Equipment['status']) => void;
@@ -24,7 +23,6 @@ interface EquipmentCardProps {
 
 export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   equipment,
-  currentRole,
   onSelect,
   onReportProblem,
   onQuickStatusChange,
@@ -115,18 +113,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
           <span className="hidden sm:inline">Report</span>
         </button>
 
-        {(currentRole === 'Staff' || currentRole === 'Admin') && onQuickStatusChange && (
-          <div className="relative group/status">
-            <button
-              onClick={() => onSelect(equipment)}
-              className="px-2 py-1.5 rounded-lg border border-amber-200 bg-amber-50/60 hover:bg-amber-100 text-amber-800 text-xs font-medium"
-              title="Admin Quick Management"
-            >
-              <Wrench className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
+</div>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import {
   Technician,
   ProblemReport,
   MaintenanceRecord,
-  UserRole,
+  // UserRole removed – single role model now
   NotificationItem,
   FacilitySettings,
   EquipmentStatus,
@@ -126,7 +126,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [facilitySettings, setFacilitySettings] = useState<FacilitySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentRole, setCurrentRole] = useState<UserRole>('Staff');
+  // const [currentRole, setCurrentRole] = useState<UserRole>('Staff');
 
   // --- Navigation & UI State ---
   const [activeNav, setActiveNav] = useState<'equipment' | 'workorders' | 'history' | 'technicians'>('equipment');
@@ -222,7 +222,7 @@ export default function App() {
           facilitySettingsResult?.data ? mapDbToFrontend<FacilitySettings>(facilitySettingsResult.data) : null,
         );
         if (profileRes.data) {
-          setCurrentRole(profileRes.data.role);
+          // setCurrentRole(profileRes.data.role);
         }
       } catch (error: any) {
         console.error('Failed to initialize application data:', error);
@@ -565,10 +565,6 @@ export default function App() {
   };
 
   const handleSaveSettings = async (settings: FacilitySettings) => {
-    if (currentRole !== 'Admin') {
-      showToast('Access denied: Only Admins can update hospital settings.');
-      return;
-    }
     try {
       const { data, error } = await supabase
         .from('facility_settings')
@@ -662,7 +658,6 @@ export default function App() {
       )}
 
       <Header
-        currentRole={currentRole}
         notifications={notifications}
         onMarkAllNotificationsRead={async () => {
           const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
@@ -674,11 +669,7 @@ export default function App() {
         onNotificationClick={handleSelectEquipmentById}
         onOpenReportModal={() => handleOpenReportModal(null)}
         onOpenSettingsModal={() => {
-          if (currentRole === 'Admin') {
-            setIsSettingsModalOpen(true);
-          } else {
-            showToast('Access denied: Admin permissions required to manage hospital settings.');
-          }
+          setIsSettingsModalOpen(true);
         }}
         onLogout={handleLogout}
         facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
@@ -703,9 +694,9 @@ export default function App() {
               </button>
             </nav>
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Active Mode:</span>
-              <span className={`px-2.5 py-1 rounded-full font-semibold ${currentRole === 'Admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-sky-100 text-sky-900 border border-sky-300'}`}>
-                {currentRole === 'Admin' ? 'Admin Lead' : 'Staff'}
+              <span className="text-slate-500">User Mode:</span>
+              <span className="px-2.5 py-1 rounded-full font-semibold bg-sky-100 text-sky-900 border border-sky-300">
+                Hospital Staff
               </span>
             </div>
           </div>
@@ -739,11 +730,9 @@ export default function App() {
                     <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><LayoutGrid className="w-4 h-4" /></button>
                     <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><List className="w-4 h-4" /></button>
                   </div>
-                  {(currentRole === 'Staff' || currentRole === 'Admin') && (
                     <button onClick={() => { setEditEquipmentTarget(null); setIsAddEditModalOpen(true); }} className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 shrink-0 shadow-xs">
                       <Plus className="w-3.5 h-3.5" /> <span>Add Equipment</span>
                     </button>
-                  )}
                 </div>
               </div>
               {(statusFilter !== 'All' || departmentFilter !== 'All' || criticalityFilter !== 'All' || searchQuery) && (
@@ -765,16 +754,16 @@ export default function App() {
               </div>
             ) : viewMode === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
+                {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
               </div>
             ) : (
-              <EquipmentTable equipment={filteredEquipment} currentRole={currentRole} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
+              <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
             )}
           </div>
         )}
 
         {activeNav === 'workorders' && (
-          <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} currentRole={currentRole} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
+          <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
         )}
 
         {activeNav === 'history' && (
@@ -782,7 +771,7 @@ export default function App() {
         )}
 
         {activeNav === 'technicians' && (
-          <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} currentRole={currentRole} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
+          <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
         )}
       </main>
 
@@ -794,10 +783,10 @@ export default function App() {
       </footer>
 
       {selectedEquipment && (
-        <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} currentRole={currentRole} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
+        <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
       )}
 
-      <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} currentRole={currentRole} />
+      <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} />
 
       {assignTargetEquipment && (
         <AssignTechModal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} equipment={assignTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === assignTargetEquipment.id && t.status !== 'Resolved')} technicians={technicians} onAssignTechnician={handleAssignTechnician} />

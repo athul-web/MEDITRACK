@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Equipment, UserRole, ProblemReport, MaintenanceRecord, Technician } from '../types';
+import { Equipment, ProblemReport, MaintenanceRecord, Technician } from '../types';
 import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge, SeverityBadge, TicketStatusBadge } from './StatusBadge';
-import { 
-  X, 
-  MapPin, 
-  Calendar, 
-  Wrench, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
-  FileText, 
-  Plus, 
-  User, 
-  ShieldCheck, 
+import {
+  X,
+  MapPin,
+  Calendar,
+  Wrench,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Plus,
+  User,
+  ShieldCheck,
   ChevronRight,
   Info,
   DollarSign
@@ -23,7 +23,6 @@ interface EquipmentDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   equipment: Equipment;
-  currentRole: UserRole;
   activeTicket?: ProblemReport;
   maintenanceHistory: MaintenanceRecord[];
   onReportProblem: (equipment: Equipment) => void;
@@ -38,7 +37,6 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
   isOpen,
   onClose,
   equipment,
-  currentRole,
   activeTicket,
   maintenanceHistory,
   onReportProblem,
@@ -114,21 +112,13 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
         <div className="px-6 border-b border-slate-200 bg-slate-50/70 flex items-center gap-4 text-xs font-semibold">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-3 border-b-2 transition-colors ${
-              activeTab === 'overview'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
+            className={`py-3 border-b-2 transition-colors ${activeTab === 'overview' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'}`}
           >
-            Overview & Specifications
+            Overview &amp; Specifications
           </button>
           <button
             onClick={() => setActiveTab('ticket')}
-            className={`py-3 border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'ticket'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
+            className={`py-3 border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'ticket' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'}`}
           >
             <span>Active Incident / Work Order</span>
             {activeTicket && (
@@ -137,11 +127,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`py-3 border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'history'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
+            className={`py-3 border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'history' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'}`}
           >
             <span>Maintenance History</span>
             <span className="px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px]">
@@ -155,64 +141,50 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Admin Status Quick Action Control */}
-              {(currentRole === 'Staff' || currentRole === 'Admin') ? (
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Operations Status Control
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Update operational status for clinical availability
-                      </p>
-                    </div>
+              {/* Operations Status Control */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Operations Status Control
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Update operational status for clinical availability
+                    </p>
+                  </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => onUpdateStatus(equipment.id, 'Working')}
-                        disabled={equipment.status === 'Working'}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                          equipment.status === 'Working'
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 opacity-60 cursor-not-allowed'
-                            : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
-                        }`}
-                      >
-                        Set Operational
-                      </button>
-                      <button
-                        onClick={() => onUpdateStatus(equipment.id, 'Under Maintenance')}
-                        disabled={equipment.status === 'Under Maintenance'}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                          equipment.status === 'Under Maintenance'
-                            ? 'bg-amber-100 text-amber-800 border-amber-300 opacity-60 cursor-not-allowed'
-                            : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50'
-                        }`}
-                      >
-                        In Maintenance
-                      </button>
-                      <button
-                        onClick={() => onUpdateStatus(equipment.id, 'Down')}
-                        disabled={equipment.status === 'Down'}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                          equipment.status === 'Down'
-                            ? 'bg-rose-100 text-rose-800 border-rose-300 opacity-60 cursor-not-allowed'
-                            : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50'
-                        }`}
-                      >
-                        Mark Down
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => onUpdateStatus(equipment.id, 'Working')}
+                      disabled={equipment.status === 'Working'}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${equipment.status === 'Working' ? 'bg-emerald-100 text-emerald-800 border-emerald-300 opacity-60 cursor-not-allowed' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
+                    >
+                      Set Operational
+                    </button>
+                    <button
+                      onClick={() => onUpdateStatus(equipment.id, 'Under Maintenance')}
+                      disabled={equipment.status === 'Under Maintenance'}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${equipment.status === 'Under Maintenance' ? 'bg-amber-100 text-amber-800 border-amber-300 opacity-60 cursor-not-allowed' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50'}`}
+                    >
+                      In Maintenance
+                    </button>
+                    <button
+                      onClick={() => onUpdateStatus(equipment.id, 'Down')}
+                      disabled={equipment.status === 'Down'}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${equipment.status === 'Down' ? 'bg-rose-100 text-rose-800 border-rose-300 opacity-60 cursor-not-allowed' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50'}`}
+                    >
+                      Mark Down
+                    </button>
                   </div>
                 </div>
-              ) : null}
+              </div>
 
               {/* Uptime & Reliability Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
                   <span className="text-xs text-slate-500 font-medium">Total Uptime (Hours)</span>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">
+<span className="text-2xl font-bold text-slate-900">
                       {calculateUptimeHours(equipment).toLocaleString()} hrs
                     </span>
                   </div>
@@ -244,7 +216,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               {/* Technical Specifications */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
-                  Technical Specifications & Engineering Parameters
+                  Technical Specifications &amp; Engineering Parameters
                 </h4>
                 {equipment.specifications ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -306,14 +278,12 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                       <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
                         Service Updates ({activeTicket.repairNotes?.length || 0})
                       </h5>
-                      {(currentRole === 'Staff' || currentRole === 'Admin') && !isAddingNote && (
-                        <button
-                          onClick={() => setIsAddingNote(true)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> Add Note
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setIsAddingNote(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Note
+                      </button>
                     </div>
 
                     {isAddingNote && (
@@ -358,35 +328,33 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                   </div>
 
                   {/* Actions for this ticket */}
-                  {(currentRole === 'Staff' || currentRole === 'Admin') && (
-                    <div className="pt-3 border-t border-amber-200 flex flex-wrap items-center justify-end gap-2">
+                  <div className="pt-3 border-t border-amber-200 flex flex-wrap items-center justify-end gap-2">
+                    <button
+                      onClick={() => onOpenAssignModal(equipment)}
+                      className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-1.5"
+                    >
+                      <Wrench className="w-3.5 h-3.5" />
+                      <span>{activeTicket.assignedTechnicianName ? 'Reassign Tech' : 'Assign Tech'}</span>
+                    </button>
+
+                    {activeTicket.status === 'Assigned' && onStartRepair && (
                       <button
-                        onClick={() => onOpenAssignModal(equipment)}
-                        className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-1.5"
+                        onClick={() => onStartRepair(activeTicket.id)}
+                        className="px-3.5 py-1.5 rounded-lg border border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold flex items-center gap-1.5 shadow-xs"
                       >
                         <Wrench className="w-3.5 h-3.5" />
-                        <span>{activeTicket.assignedTechnicianName ? 'Reassign Tech' : 'Assign Tech'}</span>
+                        <span>Start Repair (In Repair)</span>
                       </button>
+                    )}
 
-                      {activeTicket.status === 'Assigned' && onStartRepair && (
-                        <button
-                          onClick={() => onStartRepair(activeTicket.id)}
-                          className="px-3.5 py-1.5 rounded-lg border border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                        >
-                          <Wrench className="w-3.5 h-3.5" />
-                          <span>Start Repair (In Repair)</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => onOpenResolveModal(equipment)}
-                        className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Sign-Off & Return to Service</span>
-                      </button>
-                    </div>
-                  )}
+                    <button
+                      onClick={() => onOpenResolveModal(equipment)}
+                      className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Sign-Off &amp; Return to Service</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="py-12 text-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50">
@@ -412,7 +380,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  Historical Maintenance Log & Calibration Audit Trail
+                  Historical Maintenance Log &amp; Calibration Audit Trail
                 </h4>
                 <span className="text-xs text-slate-500">
                   {maintenanceHistory.length} total events recorded
@@ -426,7 +394,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               ) : (
                 <div className="space-y-3">
                   {maintenanceHistory.map(record => (
-                    <div 
+                    <div
                       key={record.id}
                       className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all space-y-2"
                     >
@@ -487,37 +455,35 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
               <span>Report Issue</span>
             </button>
 
-            {(currentRole === 'Staff' || currentRole === 'Admin') && (
-              <>
+            <>
+              <button
+                onClick={() => onOpenAssignModal(equipment)}
+                className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                <span>{equipment.assignedTechnicianName ? 'Reassign' : 'Assign Tech'}</span>
+              </button>
+
+              {activeTicket?.status === 'Assigned' && onStartRepair && (
                 <button
-                  onClick={() => onOpenAssignModal(equipment)}
-                  className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  onClick={() => onStartRepair(activeTicket.id)}
+                  className="px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
                 >
                   <Wrench className="w-3.5 h-3.5" />
-                  <span>{equipment.assignedTechnicianName ? 'Reassign' : 'Assign Tech'}</span>
+                  <span>Start Repair</span>
                 </button>
+              )}
 
-                {activeTicket?.status === 'Assigned' && onStartRepair && (
-                  <button
-                    onClick={() => onStartRepair(activeTicket.id)}
-                    className="px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
-                  >
-                    <Wrench className="w-3.5 h-3.5" />
-                    <span>Start Repair</span>
-                  </button>
-                )}
-
-                {equipment.status !== 'Working' && (
-                  <button
-                    onClick={() => onOpenResolveModal(equipment)}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Resolve & Return to Service</span>
-                  </button>
-                )}
-              </>
-            )}
+              {equipment.status !== 'Working' && (
+                <button
+                  onClick={() => onOpenResolveModal(equipment)}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Resolve &amp; Return to Service</span>
+                </button>
+              )}
+            </>
           </div>
 
           <button

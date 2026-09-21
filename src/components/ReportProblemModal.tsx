@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Equipment, Department, TicketSeverity, ProblemReport, UserRole } from '../types';
+import { Equipment, Department, TicketSeverity, ProblemReport } from '../types';
 import { AlertOctagon, X, AlertTriangle, Building2, MapPin, User, CheckCircle2 } from 'lucide-react';
 
 interface ReportProblemModalProps {
@@ -8,7 +8,6 @@ interface ReportProblemModalProps {
   equipmentList: Equipment[];
   preselectedEquipment?: Equipment | null;
   onSubmitReport: (report: Omit<ProblemReport, 'id' | 'reportedAt' | 'status'>) => void;
-  currentRole: UserRole;
 }
 
 export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
@@ -17,15 +16,12 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   equipmentList,
   preselectedEquipment,
   onSubmitReport,
-  currentRole,
 }) => {
   const [selectedEqId, setSelectedEqId] = useState<string>('');
   const [severity, setSeverity] = useState<TicketSeverity>('High');
   const [issueDescription, setIssueDescription] = useState('');
   const [reportedBy, setReportedBy] = useState('');
-  const [reportedRole, setReportedRole] = useState(
-    currentRole === 'Staff' ? 'Clinical Ward Staff' : 'Admin'
-  );
+  const [reportedRole, setReportedRole] = useState('');
   const [roomOverride, setRoomOverride] = useState('');
   const [error, setError] = useState('');
 

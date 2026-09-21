@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserRole, NotificationItem, FacilitySettings } from '../types';
+// Removed UserRole import as role concept is deprecated
+import { NotificationItem, FacilitySettings } from '../types';
 import {
   Activity,
   Bell,
@@ -15,7 +16,6 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  currentRole: UserRole;
   notifications: NotificationItem[];
   onMarkAllNotificationsRead: () => void;
   onNotificationClick: (notifId: string, equipmentId?: string) => void;
@@ -27,7 +27,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentRole,
   notifications,
   onMarkAllNotificationsRead,
   onNotificationClick,
@@ -167,16 +166,14 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Facility Settings Button */}
-            {currentRole === 'Admin' && (
-              <button
-                id="facility-settings-btn"
-                onClick={onOpenSettingsModal}
-                className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                title="Facility Configuration & Team"
-              >
-                <SettingsIcon className="w-5 h-5" />
-              </button>
-            )}
+            <button
+              id="facility-settings-btn"
+              onClick={onOpenSettingsModal}
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Facility Configuration & Team"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </button>
 
             {/* Logout Button */}
             <button

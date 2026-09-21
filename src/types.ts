@@ -98,7 +98,7 @@ export interface NotificationItem {
   read: boolean;
 }
 
-export type UserRole = 'Staff' | 'Admin';
+// UserRole removed; single hospital-side user model now applies universally
 
 export interface FacilitySettings {
   hospitalName: string;

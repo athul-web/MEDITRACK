@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProblemReport, Equipment, UserRole, TicketStatus, TicketSeverity } from '../types';
+import { ProblemReport, Equipment, TicketStatus, TicketSeverity } from '../types';
 import { SeverityBadge, TicketStatusBadge } from './StatusBadge';
 import { 
   AlertTriangle, 
@@ -17,7 +17,6 @@ import {
 interface WorkOrdersViewProps {
   tickets: ProblemReport[];
   equipmentList: Equipment[];
-  currentRole: UserRole;
   onSelectEquipmentById: (id: string) => void;
   onOpenReportModal: () => void;
   onOpenAssignModal: (equipment: Equipment) => void;
@@ -28,7 +27,6 @@ interface WorkOrdersViewProps {
 export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   tickets,
   equipmentList,
-  currentRole,
   onSelectEquipmentById,
   onOpenReportModal,
   onOpenAssignModal,
@@ -292,7 +290,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                       View Equipment Details
                     </button>
 
-                    {(currentRole === 'Staff' || currentRole === 'Admin') && eq && ticket.status !== 'Resolved' && (
+                    {eq && ticket.status !== 'Resolved' && (
                       <>
                         {ticket.status === 'Reported' && (
                           <button

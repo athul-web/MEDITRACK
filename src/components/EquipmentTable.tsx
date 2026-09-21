@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Equipment, UserRole } from '../types';
+import { Equipment } from '../types';
 import { EquipmentStatusBadge, CriticalityBadge } from './StatusBadge';
 import { Eye, AlertTriangle, ArrowUpDown, MapPin, Wrench } from 'lucide-react';
 
 interface EquipmentTableProps {
   equipment: Equipment[];
-  currentRole: UserRole;
   onSelect: (equipment: Equipment) => void;
   onReportProblem: (equipment: Equipment) => void;
   onQuickStatusChange?: (equipment: Equipment, status: Equipment['status']) => void;
@@ -13,7 +12,6 @@ interface EquipmentTableProps {
 
 export const EquipmentTable: React.FC<EquipmentTableProps> = ({
   equipment,
-  currentRole,
   onSelect,
   onReportProblem,
 }) => {

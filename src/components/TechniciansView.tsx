@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Technician, Equipment, ProblemReport, UserRole } from '../types';
+import { Technician, Equipment, ProblemReport } from '../types';
 import { Phone, Mail, Copy, Check } from 'lucide-react';
 
 interface TechniciansViewProps {
   technicians: Technician[];
   equipmentList: Equipment[];
   tickets: ProblemReport[];
-  currentRole: UserRole;
   onFilterEquipmentByTech: (techName: string) => void;
 }
 
@@ -14,7 +13,6 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
   technicians,
   equipmentList,
   tickets,
-  currentRole,
   onFilterEquipmentByTech,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);

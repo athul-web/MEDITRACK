@@ -110,3 +110,26 @@ export function toMaintenanceRecordRow(record: MaintenanceRecord) {
 export function toNotificationRow(notification: Omit<NotificationItem, 'id'>) {
   return mapFrontendToDb(notification);
 }
+
+/**
+ * Get the current authenticated user's hospital_id from their profile.
+ * Returns the hospital_id if the user is authenticated and has a profile with a hospital_id.
+ * Throws an error with a user-friendly message if not authenticated or no profile/hospital_id.
+ */
+export async function getCurrentUserHospitalId(): Promise<string> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Not authenticated. Please sign in to register equipment.');
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('hospital_id')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileError) throw profileError;
+  if (!profile) throw new Error('User profile not found. Please contact your administrator.');
+  if (!profile.hospital_id) throw new Error('Your account is not associated with a hospital. Please contact your administrator.');
+
+  return profile.hospital_id;
+}

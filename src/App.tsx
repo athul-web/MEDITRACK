@@ -18,6 +18,7 @@ import {
   toMaintenanceRecordRow,
   toNotificationRow,
   toProblemReportRow,
+  getCurrentUserHospitalId,
 } from './lib/supabase';
 import { Header } from './components/Header';
 import { StatsOverview } from './components/StatsOverview';
@@ -552,8 +553,15 @@ export default function App() {
 
   const handleSaveEquipment = async (eq: Equipment) => {
     try {
-      const { error } = await supabase.from('equipment').upsert(toEquipmentRow(eq));
+      // Get the authenticated user's hospital_id for tenant isolation
+      const hospitalId = await getCurrentUserHospitalId();
+
+      const equipmentRow = toEquipmentRow(eq);
+      const { error } = await supabase
+        .from('equipment')
+        .upsert({ ...equipmentRow, hospital_id: hospitalId });
       if (error) throw error;
+
       setEquipmentList(prev => {
         const exists = prev.some(item => item.id === eq.id);
         return exists ? prev.map(item => item.id === eq.id ? eq : item) : [eq, ...prev];

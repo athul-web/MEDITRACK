@@ -1,921 +1,1037 @@
-# Hospital Web App — Architecture
+# MediTrack — Frontend Architecture
 
-## 1. Purpose
+## 1. Architecture Goal
 
-The Hospital Web App is the hospital-side application of the Healthcare Platform.
+MediTrack is a public-facing healthcare resource discovery platform.
 
-It allows a hospital user to manage medical equipment, equipment issues, maintenance records, equipment history, and connected IoT monitoring.
+The current development phase focuses on building a polished, production-quality frontend UI.
 
-This application is the foundation for future components of the platform, including:
+Real hospital data, real-time resource availability, authentication, Supabase integration, GPS services, and IoT integrations will be connected later.
 
-* Public Healthcare Web App
-* Location-based hospital/resource discovery
-* Emergency resource discovery
-* Android application
-* iOS application
+The architecture must therefore:
 
-These future systems are **not part of the current implementation phase**.
-
----
-
-# 2. Current Development Scope
-
-The current phase focuses exclusively on the **Hospital Web App**.
-
-### Current priorities
-
-1. Redesign the existing UI/UX.
-2. Establish a clean and professional healthcare application structure.
-3. Preserve useful existing functionality.
-4. Simplify the user model to a single hospital-side role.
-5. Maintain Supabase as the backend.
-6. Maintain React + Vite as the frontend unless a strong technical reason requires otherwise.
-7. Prepare the architecture for future IoT integration.
+* Preserve the existing project structure where practical.
+* Avoid unnecessary rewrites of working backend infrastructure.
+* Separate UI components from data sources.
+* Use mock data during the current UI development phase.
+* Make the future transition from mock data to real APIs/Supabase straightforward.
+* Keep healthcare resource states explicit and predictable.
+* Avoid hard-coding hospital information inside visual components.
+* Remain responsive across desktop, tablet, and mobile.
 
 ---
 
-# 3. High-Level Architecture
+# 2. High-Level Architecture
 
 ```text
-                         HOSPITAL WEB APP
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │    Frontend     │
-                       │   React + Vite  │
-                       └────────┬────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │ Application /   │
-                       │ Business Logic  │
-                       └────────┬────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │    Supabase     │
-                       │    Backend      │
-                       └────────┬────────┘
-                                │
-              ┌─────────────────┼─────────────────┐
-              │                 │                 │
-              ▼                 ▼                 ▼
-          PostgreSQL       Supabase Auth      Storage
-              │
-              ▼
-       Hospital Data
-              │
-      ┌───────┼────────┐
-      │       │        │
-      ▼       ▼        ▼
- Equipment  Issues  Maintenance
-      │
-      ▼
-  IoT Devices
-      │
-      ▼
- Sensor Data
+                         MediTrack
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   Presentation  │
+                    │       Layer     │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   UI Components │
+                    │   & Pages       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  Application    │
+                    │     Layer       │
+                    │                 │
+                    │ Search / Filter │
+                    │ Sorting         │
+                    │ UI State        │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   Data Access   │
+                    │      Layer      │
+                    └────────┬────────┘
+                             │
+                  ┌──────────┴──────────┐
+                  │                     │
+                  ▼                     ▼
+          ┌───────────────┐     ┌────────────────┐
+          │ Mock Data     │     │ Future Backend │
+          │ CURRENT       │     │                │
+          └───────────────┘     │ Supabase / API │
+                                │ IoT / Realtime │
+                                └────────────────┘
 ```
 
----
-
-# 4. Technology Stack
-
-## Frontend
-
-* React
-* TypeScript
-* Vite
-* Tailwind CSS
-* Existing project component architecture where reusable
-
-## Backend
-
-* Supabase
-
-## Database
-
-* PostgreSQL through Supabase
-
-## Authentication
-
-* Supabase Authentication
-
-## IoT
-
-The IoT layer will be integrated progressively.
-
-Potential hardware may include:
-
-* ESP32-class microcontrollers
-* Temperature sensors
-* Humidity sensors
-* Power/energy monitoring
-* Equipment-state monitoring
-* Connectivity monitoring
-
-IoT hardware implementation will be developed separately from the initial UI redesign.
+The UI must not directly depend on Supabase, IoT devices, or database queries.
 
 ---
 
-# 5. User Model
+# 3. Core Architectural Principle
 
-The new architecture uses **one hospital-side user role**.
+## UI must be data-source independent.
 
-## Hospital User
+Components should receive structured data through props/hooks rather than fetching database records directly.
 
-A hospital user can access the operational functionality of the hospital application.
+### Correct
 
-They can:
-
-* View equipment
-* Add equipment
-* Edit equipment information
-* View equipment status
-* Report equipment problems
-* Track issues
-* Manage maintenance records
-* View equipment history
-* View connected IoT devices
-* View IoT monitoring data
-* View hospital settings
-
-There is no separate Staff/Admin role in the new architecture.
-
----
-
-# 6. Hospital Data Isolation
-
-Each authenticated hospital user must only be able to access data belonging to their hospital.
-
-Conceptually:
-
-```text
-Hospital User
-      │
-      ▼
-Authenticated Session
-      │
-      ▼
-Hospital Identity
-      │
-      ▼
-Hospital-Owned Data
-      │
-      ├── Equipment
-      ├── Issues
-      ├── Maintenance
-      ├── History
-      └── IoT Devices
+```tsx
+<HospitalCard hospital={hospital} />
 ```
 
-A user from Hospital A must not be able to access private operational data belonging to Hospital B.
+### Incorrect
 
-Database-level security must enforce this restriction.
-
-Client-side checks alone are not considered sufficient security.
-
----
-
-# 7. Application Structure
-
-The Hospital Web App should contain the following primary areas:
-
-```text
-Hospital Web App
-│
-├── Authentication
-│
-├── Dashboard
-│
-├── Equipment
-│   ├── Equipment List
-│   ├── Equipment Details
-│   ├── Add Equipment
-│   └── Edit Equipment
-│
-├── Issues
-│   ├── Issue List
-│   ├── Report Issue
-│   └── Issue Details
-│
-├── Maintenance
-│   ├── Maintenance Records
-│   └── Maintenance Details
-│
-├── Equipment History
-│
-├── IoT Monitoring
-│   ├── IoT Devices
-│   ├── Device Status
-│   └── Sensor Data
-│
-└── Hospital Settings
+```tsx
+<HospitalCard />
 ```
 
-The exact navigation can change during the UI redesign as long **as the underlying functionality remains accessible and logical**.
+with the component itself querying Supabase.
+
+The HospitalCard should only care about displaying hospital information.
+
+The data layer should decide where that information comes from.
 
 ---
 
-# 8. Dashboard
+# 4. Recommended Project Structure
 
-The dashboard provides a high-level operational overview of the hospital's equipment infrastructure.
-
-The dashboard may display:
-
-* Total equipment
-* Operational equipment
-* Equipment requiring attention
-* Equipment under maintenance
-* Open issues
-* Connected IoT devices
-* Offline IoT devices
-* Recent equipment activity
-* Recent maintenance activity
-* Important alerts
-
-The dashboard should prioritize information that requires attention.
-
-It should not become an overloaded collection of unnecessary statistics.
-
----
-
-# 9. Equipment Management
-
-Equipment is the central entity of the Hospital Web App.
-
-An equipment record may contain:
-
-```text
-Equipment
-│
-├── Equipment ID
-├── Equipment Name
-├── Equipment Type
-├── Manufacturer
-├── Model
-├── Serial Number
-├── Hospital ID
-├── Department / Location
-├── Operational Status
-├── Maintenance Status
-├── Installation Date
-├── Last Maintenance Date
-├── Next Maintenance Date
-├── IoT Device ID
-├── Created At
-└── Updated At
-```
-
-Example:
-
-```text
-Equipment ID: ECG-001
-Name: ECG Machine
-Type: ECG
-Location: Emergency Department
-Operational Status: Operational
-IoT Device: IOT-001
-```
-
----
-
-# 10. Equipment Status
-
-Equipment status represents the current known operational state.
-
-Possible states include:
-
-```text
-Operational
-Under Maintenance
-Faulty
-Unavailable
-Retired
-```
-
-The final status model should remain consistent throughout the application.
-
-Status changes should be recorded in the equipment history where appropriate.
-
----
-
-# 11. Issue Management
-
-Hospital users can report problems with equipment.
-
-The issue lifecycle is:
-
-```text
-Reported
-   ↓
-Assigned / Being Handled
-   ↓
-In Progress
-   ↓
-Resolved
-   ↓
-Closed
-```
-
-An issue may contain:
-
-```text
-Issue
-│
-├── Issue ID
-├── Equipment ID
-├── Description
-├── Priority
-├── Status
-├── Reported By
-├── Reported At
-├── Resolution
-└── Resolved At
-```
-
-Every issue should remain associated with the relevant equipment.
-
----
-
-# 12. Maintenance Management
-
-Maintenance records document maintenance activities performed on equipment.
-
-Example:
-
-```text
-Equipment
-    │
-    ├── Maintenance Record
-    ├── Maintenance Record
-    └── Maintenance Record
-```
-
-A maintenance record may contain:
-
-```text
-Maintenance
-│
-├── Maintenance ID
-├── Equipment ID
-├── Maintenance Type
-├── Description
-├── Date
-├── Status
-├── Responsible Person
-└── Notes
-```
-
-Maintenance activity should contribute to the equipment's history.
-
----
-
-# 13. Equipment History
-
-The application should maintain a chronological history of important equipment events.
-
-Example:
-
-```text
-ECG-001
-
-10:30 — Issue reported
-11:15 — Issue being handled
-13:00 — Maintenance started
-14:20 — Maintenance completed
-14:25 — Equipment marked operational
-```
-
-History provides traceability and helps hospital users understand the lifecycle of equipment.
-
----
-
-# 14. IoT Architecture
-
-IoT is a separate monitoring layer connected to the equipment system.
-
-```text
-Medical Equipment
-       │
-       ▼
-Sensors / Monitoring Hardware
-       │
-       ▼
-IoT Device
-       │
-       ▼
-Network
-       │
-       ▼
-Backend
-       │
-       ▼
-Hospital Web App
-```
-
-The IoT layer may monitor:
-
-* Power state
-* Equipment operational state
-* Temperature
-* Humidity
-* Connectivity
-* Last-seen time
-* Other appropriate equipment telemetry
-
-IoT monitoring should support the hospital's equipment-management workflow rather than becoming a separate disconnected system.
-
----
-
-# 15. IoT Device Association
-
-Each IoT device should be associated with a specific equipment record.
-
-Example:
-
-```text
-Equipment
-ECG-001
-    │
-    └── IoT Device
-          IOT-001
-```
-
-This allows sensor data to be associated with the correct equipment.
-
----
-
-# 16. IoT Data
-
-Sensor readings should be stored separately from the main equipment record.
-
-Conceptually:
-
-```text
-IoT Device
-     │
-     └── Sensor Readings
-            │
-            ├── Temperature
-            ├── Humidity
-            ├── Power
-            └── Equipment State
-```
-
-Sensor readings should include timestamps.
-
-The system should support historical readings where required.
-
----
-
-# 17. IoT Reliability
-
-The system should distinguish between:
-
-* Equipment failure
-* IoT device failure
-* Sensor failure
-* Network failure
-* Missing readings
-* Invalid readings
-
-For example:
-
-```text
-IOT-001
-
-Status: Offline
-Last Seen: 4 minutes ago
-```
-
-An IoT device becoming offline should **not automatically mean that the medical equipment itself has failed**.
-
-The application should clearly communicate the difference.
-
----
-
-# 18. Medical Equipment Safety
-
-IoT monitoring must not interfere with the clinical operation of medical equipment.
-
-For equipment connected to patients, IoT hardware must not be directly inserted into patient-side clinical signal paths without appropriate medical‑electrical safety, isolation, design, testing, and regulatory requirements.
-
-For power monitoring, the project must use appropriate measurement and isolation circuitry.
-
-The hackathon prototype should prioritize safe monitoring and simulation where direct equipment integration is not appropriate.
-
----
-
-# 19. Database Architecture
-
-Supabase PostgreSQL is the primary database.
-
-The logical relationship is:
-
-```text
-Hospital
-   │
-   ├── Users
-   │
-   ├── Equipment
-   │      │
-   │      ├── Issues
-   │      ├── Maintenance
-   │      ├── History
-   │      └── IoT Device
-   │                 │
-   │                 └── Sensor Readings
-   │
-   └── Hospital Settings
-```
-
----
-
-# 20. Core Database Entities
-
-The new system should conceptually contain:
-
-```text
-Hospitals
-Users
-Equipment
-Issues
-Maintenance
-Equipment History
-IoT Devices
-Sensor Readings
-Notifications
-Hospital Settings
-```
-
-The existing database schema should be evaluated against this model before major database changes are made.
-
-The old database schema is not automatically considered the final schema.
-
----
-
-# 21. Authentication
-
-Supabase Authentication is responsible for:
-
-* Login
-* Logout
-* Session management
-* Authentication state
-* Protected routes
-
-Only authenticated hospital users should access the internal Hospital Web App.
-
----
-
-# 22. Authorization and Security
-
-Security should be enforced primarily at the backend/database level.
-
-Requirements include:
-
-* Authentication
-* Hospital-level data isolation
-* Row-Level Security
-* Secure API communication
-* Input validation
-* Secure IoT communication
-* IoT device authentication
-* Audit/history tracking
-* Protection of sensitive operational information
-
-Client-side role or permission checks may improve UX but must not be treated as the primary security mechanism.
-
----
-
-# 23. Frontend Architecture
-
-The frontend should use reusable components and clear separation between:
-
-```text
-Pages
-Components
-UI Components
-Data / Services
-Types
-Utilities
-Authentication
-```
-
-A conceptual structure:
+Adapt this structure to the existing project instead of blindly replacing the entire repository.
 
 ```text
 src/
 │
+├── app/
+│   ├── routes/
+│   │   ├── home/
+│   │   ├── hospitals/
+│   │   ├── about/
+│   │   ├── contact/
+│   │   └── hospital-details/
+│   │
+│   └── layout/
+│
 ├── components/
+│   │
+│   ├── layout/
+│   │   ├── Header
+│   │   ├── Footer
+│   │   └── MobileNavigation
+│   │
+│   ├── hero/
+│   │   ├── HeroSection
+│   │   ├── SearchConsole
+│   │   └── EmergencyPresets
+│   │
+│   ├── hospitals/
+│   │   ├── HospitalCard
+│   │   ├── HospitalList
+│   │   ├── HospitalHeader
+│   │   ├── ResourceStatusGrid
+│   │   ├── ResourceStatus
+│   │   └── HospitalActions
+│   │
+│   ├── sidebar/
+│   │   ├── EmergencyCallout
+│   │   ├── HospitalPortalCard
+│   │   └── MottoCard
+│   │
+│   ├── features/
+│   │   └── FeatureGrid
+│   │
+│   └── ui/
+│       ├── Button
+│       ├── Badge
+│       ├── Input
+│       ├── Select
+│       ├── Icon
+│       └── LoadingState
 │
-├── pages/
-│
-├── components/ui/
-│
-├── lib/
-│
-├── services/
-│
-├── types/
+├── data/
+│   ├── mock/
+│   │   ├── hospitals.ts
+│   │   ├── emergencyTypes.ts
+│   │   └── resources.ts
+│   │
+│   └── repositories/
+│       └── hospitalRepository.ts
 │
 ├── hooks/
+│   ├── useHospitals
+│   ├── useHospitalSearch
+│   └── useLocation
 │
-└── App / Routing
+├── types/
+│   ├── hospital.ts
+│   ├── resource.ts
+│   ├── emergency.ts
+│   └── search.ts
+│
+├── lib/
+│   ├── utils
+│   ├── constants
+│   └── formatting
+│
+├── styles/
+│   ├── globals
+│   └── design-tokens
+│
+└── assets/
+    ├── images/
+    └── icons/
 ```
 
-The exact folder structure may be adapted to the existing codebase where doing so reduces unnecessary rewriting.
+The exact folders should follow the framework already used by the project. Do not migrate frameworks merely to match this example.
 
 ---
 
-# 24. Data Access Layer
+# 5. Data Model
 
-The application should avoid scattering complex database operations throughout UI components.
+Even though real data is not being connected yet, define the data model now.
 
-Database operations should be organized into reusable service/helper functions where practical.
+## Hospital
 
-For example:
+```ts
+interface Hospital {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+
+  distanceKm?: number;
+
+  verified: boolean;
+
+  image?: string;
+
+  lastUpdated: string;
+
+  resources: HospitalResources;
+
+  contact: {
+    phone?: string;
+    emergencyPhone?: string;
+  };
+
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+```
+
+---
+
+# 6. Hospital Resource Model
+
+```ts
+interface HospitalResources {
+  emergencyDepartment: ResourceStatus;
+  icu: ResourceStatus;
+  ventilator: ResourceStatus;
+  ctScan: ResourceStatus;
+  blood: ResourceStatus;
+}
+```
+
+Resource status must not be limited to boolean values.
+
+Use:
+
+```ts
+type ResourceStatus =
+  | "available"
+  | "unavailable"
+  | "unknown"
+  | "stale";
+```
+
+This is important for the future real-time system.
+
+A resource that has not been updated recently should not automatically be displayed as available.
+
+---
+
+# 7. Mock Data Architecture
+
+During the current development phase:
 
 ```text
-UI Component
-     ↓
-Service / Data Layer
-     ↓
-Supabase
-     ↓
-PostgreSQL
+UI
+ ↓
+Hook
+ ↓
+Repository
+ ↓
+Mock Repository
+ ↓
+Mock Data
 ```
 
-This makes future integration with other applications easier.
+Example:
+
+```ts
+export async function getHospitals(): Promise<Hospital[]> {
+  return mockHospitals;
+}
+```
+
+The UI should never import `mockHospitals` directly.
+
+### Incorrect
+
+```tsx
+import { mockHospitals } from "@/data/mock/hospitals";
+```
+
+inside a page/component.
+
+### Correct
+
+```tsx
+const { hospitals } = useHospitals();
+```
+
+This makes future backend replacement much easier.
 
 ---
 
-# 25. UI/UX Architecture
+# 8. Repository Pattern
 
-The Hospital Web App is undergoing a complete UI/UX redesign.
+Create a small abstraction around hospital data.
 
-The new design should feel like a professional healthcare operations product.
+```ts
+interface HospitalRepository {
+  getHospitals(): Promise<Hospital[]>;
 
-It should prioritize:
+  getHospitalById(
+    id: string
+  ): Promise<Hospital | null>;
 
-* Clear information hierarchy
-* Consistent typography
-* Consistent spacing
-* Professional visual language
-* Clear navigation
-* Clear equipment status
-* Efficient workflows
-* Responsive layouts
-* Accessibility
-* Loading states
-* Empty states
-* Error states
-* Confirmation states
+  searchHospitals(
+    filters: HospitalSearchFilters
+  ): Promise<Hospital[]>;
+}
+```
 
-The UI should not look like a generic AI‑generated dashboard.
-
-Visual design should support the workflow instead of adding decorative elements without functional value.
-
----
-
-# 26. Existing Codebase Reuse
-
-The existing repository is an **older implementation**.
-
-Existing code should be treated as reusable implementation material rather than the source of truth.
-
-Potentially reusable elements include:
-
-* React/Vite setup
-* Supabase configuration
-* Authentication implementation
-* Equipment data models
-* Equipment components
-* Issue functionality
-* Maintenance functionality
-* Existing data‑access helpers
-* Useful UI primitives
-
-However, existing components should be redesigned or rewritten where necessary to match this architecture and the new UI/UX direction.
-
-Old Staff/Admin‑specific functionality should not automatically be preserved.
-
----
-
-# 27. Old Functionality That Should Not Define the New Architecture
-
-The following old concepts are not part of the new architecture unless explicitly reintroduced:
-
-* Separate Staff role
-* Separate Admin role
-* Technician role as a separate application role
-* Old ECG login animation
-* Old dashboard structure
-* Old navigation structure
-* Old branding
-* Old assumptions about hospital permissions
-
-Existing code implementing these concepts should be evaluated during migration.
-
----
-
-# 28. Current UI Redesign Priority
-
-The first implementation stage is the UI redesign.
-
-Recommended order:
+Current implementation:
 
 ```text
-1. Global Design System
-        ↓
-2. Application Shell / Navigation
-        ↓
-3. Dashboard
-        ↓
-4. Equipment
-        ↓
-5. Issues
-        ↓
-6. Maintenance
-        ↓
-7. Equipment History
-        ↓
-8. IoT Monitoring
-        ↓
-9. Settings
-        ↓
-10. Responsive / Accessibility Refinement
+MockHospitalRepository
 ```
 
-The goal is to redesign the interface while preserving working functionality wherever possible.
+Future implementations:
+
+```text
+SupabaseHospitalRepository
+APIHospitalRepository
+RealtimeHospitalRepository
+```
+
+The UI should not need to know which implementation is currently active.
 
 ---
 
-# 29. Future Architecture
+# 9. Search Architecture
 
-The Hospital Web App is one component of a larger future platform.
+The homepage search console contains:
+
+```text
+Emergency Type
+Required Resources
+Location
+Search
+```
+
+Represent this using a single search state.
+
+```ts
+interface HospitalSearchFilters {
+  emergencyType?: EmergencyType;
+
+  requiredResources: ResourceType[];
+
+  location?: {
+    latitude?: number;
+    longitude?: number;
+    label?: string;
+  };
+}
+```
+
+The search process should be:
+
+```text
+User Input
+    ↓
+Search State
+    ↓
+Validation
+    ↓
+Hospital Repository
+    ↓
+Filtered Results
+    ↓
+Hospital List
+```
+
+---
+
+# 10. Emergency Presets
+
+Presets are shortcuts that modify search state.
+
+Example:
+
+```ts
+const emergencyPresets = [
+  {
+    id: "accident",
+    label: "Accident / Trauma",
+    resources: ["icu", "ventilator", "ctScan"],
+  },
+
+  {
+    id: "heart",
+    label: "Heart Emergency",
+    resources: ["emergencyDepartment", "icu"],
+  },
+
+  {
+    id: "breathing",
+    label: "Breathing Crisis",
+    resources: ["emergencyDepartment", "icu", "ventilator"],
+  },
+
+  {
+    id: "burn",
+    label: "Burn Injury",
+    resources: ["emergencyDepartment", "icu"],
+  },
+];
+```
+
+These values are UI defaults only.
+
+Clinical resource requirements must not be presented as medical protocols unless they are later validated by appropriate clinical/domain experts.
+
+---
+
+# 11. Hospital Results
+
+The hospital results section should support:
+
+* Search filtering
+* Resource filtering
+* Distance sorting
+* Availability filtering
+* Loading state
+* Empty state
+* Error state
+* Stale-data state
+
+Sorting should be represented independently from the data source.
+
+```ts
+type HospitalSort =
+  | "nearest"
+  | "availability"
+  | "recentlyUpdated";
+```
+
+Do not implement ranking logic directly inside `HospitalCard`.
+
+---
+
+# 12. Hospital Card Architecture
+
+The card is a presentation component.
+
+```text
+HospitalCard
+│
+├── Hospital Image
+│
+├── Hospital Identity
+│   ├── Name
+│   ├── Verification Indicator
+│   ├── Distance
+│   └── Address
+│
+├── Freshness Indicator
+│
+├── ResourceStatusGrid
+│   ├── Emergency Department
+│   ├── ICU
+│   ├── Ventilator
+│   ├── Blood
+│   └── CT Scan
+│
+└── Actions
+    ├── Call Hospital
+    └── View Details
+```
+
+The card must not contain database queries.
+
+---
+
+# 13. Resource Status Display
+
+Use explicit visual states.
+
+### Available
+
+```text
+✓ Available
+```
+
+Color:
+
+```text
+#16A34A
+```
+
+### Unavailable
+
+```text
+✕ Unavailable
+```
+
+Color:
+
+```text
+#DC2626
+```
+
+### Unknown
+
+```text
+? Unknown
+```
+
+Use a neutral visual treatment.
+
+### Stale
+
+```text
+! Data may be outdated
+```
+
+Do not visually represent stale information as currently available.
+
+---
+
+# 14. Freshness
+
+Every real-time resource will eventually need a freshness timestamp.
+
+Current mock data can use:
+
+```ts
+lastUpdated: "2 mins ago"
+```
+
+Future implementation should preferably use an actual timestamp:
+
+```ts
+lastUpdatedAt: "2026-09-22T09:42:00Z"
+```
+
+The frontend can then calculate:
+
+```text
+2 mins ago
+12 mins ago
+1 hour ago
+Yesterday
+```
+
+Do not permanently store human-readable relative timestamps as the canonical database value.
+
+---
+
+# 15. Location Architecture
+
+Current phase:
+
+```text
+Manual Location Input
+        +
+Mock Location Data
+```
+
+Future phase:
+
+```text
+Browser Geolocation
+        ↓
+Coordinates
+        ↓
+Reverse Geocoding
+        ↓
+Hospital Search
+```
+
+Location permissions must never be required simply to view the website.
+
+Users should be able to manually search for a location.
+
+---
+
+# 16. Navigation
+
+Primary navigation:
+
+```text
+Home
+Hospitals
+About
+Contact
+Hospital Staff Login
+```
+
+Public users should not require authentication to:
+
+* Search hospitals
+* View resource availability
+* View hospital information
+* Contact a hospital
+
+Hospital staff authentication remains a separate workflow.
+
+---
+
+# 17. Future Authentication Boundary
+
+Hospital Staff Login should be isolated from the public discovery experience.
 
 Future architecture:
 
 ```text
-                         HEALTHCARE PLATFORM
-                                │
-              ┌─────────────────┼─────────────────┐
-              │                 │                 │
-              ▼                 ▼                 ▼
-       Hospital Web       Public Web          Mobile Apps
-           App               App              Android/iOS
-              │                 │                 │
-              └─────────────────┼─────────────────┘
-                                │
-                         Shared Backend
-                           / Database
-                                │
-                         ┌──────┴──────┐
-                         │             │
-                    Hospital Data   IoT Data
-```
-
-The current Hospital Web App should therefore expose clean and controlled data structures that can later support these systems.
-
----
-
-# 30. Public Data Separation
-
-The future Public Web App must not directly expose private hospital operational data.
-
-Conceptually:
-
-```text
-Hospital Internal Data
+Public Application
         │
-        ▼
-Controlled Public Data Layer
+        ├── Hospital Search
+        ├── Hospital Details
+        └── Public Information
+       
+Hospital Staff Portal
         │
-        ▼
-Public Web App
+        ├── Authentication
+        ├── Hospital Dashboard
+        ├── Resource Management
+        ├── IoT Devices
+        └── Data Verification
 ```
 
-Examples of potentially public information:
-
-* Hospital name
-* General location
-* Public contact information
-* Approved availability information
-
-Private information such as internal maintenance notes, detailed equipment faults, sensor telemetry, security information, or patient information must remain protected.
-
-This is a future requirement and is not part of the current Hospital Web App implementation.
+Do not introduce hospital staff permissions into every public UI component.
 
 ---
 
-# 31. Future Emergency Resource Discovery
+# 18. Future Supabase Integration
 
-A future public system may support:
+When real data is introduced:
 
 ```text
-User Location
-      ↓
-Nearby Hospitals
-      ↓
-Relevant Healthcare Resources
-      ↓
-Availability Information
-      ↓
-Hospital Details
-      ↓
-Directions / Contact
+Frontend
+   ↓
+Repository
+   ↓
+Supabase
+   ↓
+PostgreSQL
+   ↓
+RLS / Authentication
 ```
 
-This is intentionally outside the current Hospital Web App implementation.
+The frontend architecture should not need to change significantly.
 
-The current architecture only needs to ensure that hospital data can eventually support this functionality.
-
----
-
-# 32. Development Principles
-
-The project should follow these principles:
-
-### 1. Do not overbuild
-
-Only implement features that serve the current project requirements.
-
-### 2. Reuse before rewriting
-
-Existing working functionality should be reused when it fits the new architecture.
-
-### 3. Architecture before features
-
-New functionality should follow the architecture rather than forcing the architecture to change unnecessarily.
-
-### 4. Security by design
-
-Sensitive hospital data must be protected at the backend/database level.
-
-### 5. Clear separation
-
-Hospital-private data and future public data must remain separated.
-
-### 6. IoT should support the workflow
-
-IoT should provide useful equipment information rather than becoming an isolated hardware demonstration.
-
-### 7. Professional UI
-
-The application should prioritize usability, clarity, consistency, and healthcare‑oriented workflows.
-
-### 8. Future‑ready, not future‑bloated
-
-The current system should be capable of expanding into the larger platform without implementing future features prematurely.
+Only the repository/data implementation should change.
 
 ---
 
-# 33. Current Implementation Goal
+# 19. Future IoT Integration
 
-The immediate goal is:
+IoT should not communicate directly with UI components.
+
+Recommended architecture:
 
 ```text
-Existing Hospital Web App
-          ↓
-Understand Existing Code
-          ↓
-Apply New Architecture
-          ↓
-Redesign UI/UX
-          ↓
-Preserve Useful Functionality
-          ↓
-Clean Database Model
-          ↓
-Stable Hospital Web App
-          ↓
-IoT Integration
-          ↓
-Future Public Web App
-          ↓
-Future Mobile Applications
+Medical Equipment
+      ↓
+IoT Sensor
+      ↓
+Gateway / Device Service
+      ↓
+Backend
+      ↓
+Database / Realtime Layer
+      ↓
+Hospital Repository
+      ↓
+Frontend
 ```
 
-The Hospital Web App should become the stable foundation of the larger Healthcare Platform.
+The frontend receives normalized resource status.
+
+Example:
+
+```ts
+{
+  resource: "ventilator",
+  status: "available",
+  quantity: 4,
+  lastUpdatedAt: "2026-09-22T09:42:00Z"
+}
+```
+
+The UI should not care whether the value came from:
+
+* Manual hospital entry
+* IoT sensor
+* External API
+* Hospital information system
 
 ---
 
-# 34. Source of Truth
+# 20. Design System Architecture
 
-For future development:
+All visual components should use centralized design tokens.
+
+## Brand
 
 ```text
-PROJECT.md
-    +
-ARCHITECTURE.md
-    ↓
-AUTHORITATIVE PROJECT REQUIREMENTS
+brand-navy   #0E4366
+brand-dark   #0B3553
+brand-blue   #1877A9
+brand-light  #EAF4F9
+brand-subtle #DCEBF5
 ```
 
-The existing source code is an implementation that can be reused, modified, or replaced according to these documents.
+## Status
 
-If existing code conflicts with `PROJECT.md` or `ARCHITECTURE.md`, the documented new architecture takes priority.
+```text
+available   #16A34A
+unavailable #DC2626
+```
+
+## Neutral
+
+```text
+page          #F8FAFC
+surface       #FFFFFF
+text-primary  #0F172A
+text-secondary #475569
+text-muted    #64748B
+border        #E2E8F0
+```
+
+Do not introduce arbitrary blue/green/red shades when an existing design token already fulfills the purpose.
 
 ---
+
+# 21. Typography
+
+The interface should prioritize:
+
+* High readability
+* Clear hierarchy
+* Professional healthcare appearance
+* Consistent font weights
+* Strong numerical readability
+
+Avoid excessive decorative typography.
+
+Handwritten/cursive typography may be used only as a minor decorative element and never for critical medical/resource information.
+
+---
+
+# 22. Responsive Architecture
+
+The interface must support:
+
+```text
+Mobile
+Tablet
+Desktop
+Large Desktop
+```
+
+Desktop:
+
+```text
+Main Content + Sidebar
+```
+
+Mobile:
+
+```text
+Single Column
+↓
+Search
+↓
+Features
+↓
+Hospitals
+↓
+Emergency Information
+↓
+Hospital Portal
+```
+
+Hospital cards should not become horizontally compressed on small screens.
+
+Actions should remain easily tappable.
+
+---
+
+# 23. Accessibility
+
+The application should follow accessible UI practices.
+
+Required:
+
+* Semantic HTML
+* Keyboard navigation
+* Visible focus states
+* Accessible labels
+* Sufficient color contrast
+* Touch-friendly controls
+* Screen-reader-friendly status indicators
+* Icons must not be the only source of meaning
+* `aria-label` where appropriate
+
+Resource status must communicate meaning through both text and visual styling.
+
+---
+
+# 24. Loading States
+
+Every asynchronous data-driven section should have a loading state.
+
+Example:
+
+```text
+Loading hospitals...
+```
+
+Use skeletons where appropriate.
+
+Avoid rendering empty cards while data is loading.
+
+---
+
+# 25. Empty States
+
+If no hospitals match the search:
+
+```text
+No matching hospitals found.
+
+Try:
+• Expanding your search area
+• Removing a required resource
+• Choosing another emergency type
+```
+
+Do not display fake hospital results as a fallback.
+
+---
+
+# 26. Error States
+
+Example:
+
+```text
+We couldn't load hospital availability.
+
+Please try again.
+```
+
+The error state should provide a retry action.
+
+---
+
+# 27. Current Development Scope
+
+## Build Now
+
+* Complete public homepage
+* Header
+* Hero
+* Search console
+* Emergency presets
+* Feature section
+* Hospital results
+* Hospital cards
+* Sidebar widgets
+* Footer
+* Responsive layouts
+* Mock data
+* Search/filter interactions
+* Sorting interactions
+* Loading states
+* Empty states
+* Error states
+* Design system
+* Accessibility
+
+## Do Not Build Yet
+
+* Real hospital database integration
+* Real-time resource synchronization
+* IoT integration
+* Production authentication
+* Live GPS backend
+* Medical equipment APIs
+* Production hospital verification
+* Complex analytics
+* Notification infrastructure
+
+These will be added after the UI is finalized.
+
+---
+
+# 28. Architecture Rules for AI Coding Agents
+
+The coding agent must follow these rules:
+
+### Rule 1 — Do not redesign the entire existing application architecture.
+
+Reuse working infrastructure whenever possible.
+
+### Rule 2 — Do not create unnecessary dependencies.
+
+Use the project's existing framework and libraries unless there is a concrete technical reason to introduce something new.
+
+### Rule 3 — Separate data from UI.
+
+Never hard-code hospital data inside components.
+
+### Rule 4 — Use reusable components.
+
+If the same visual pattern appears more than once, create a reusable component.
+
+### Rule 5 — Do not duplicate design tokens.
+
+Use the centralized design system.
+
+### Rule 6 — Do not implement backend functionality prematurely.
+
+The current goal is a polished frontend.
+
+### Rule 7 — Keep future integration in mind.
+
+Mock data should follow the same shape expected from the future backend.
+
+### Rule 8 — Do not fake real-time behavior.
+
+Mock data can visually demonstrate the interface, but the UI should not falsely imply that mock values are actually live.
+
+### Rule 9 — Preserve existing working functionality.
+
+Before changing an existing feature, inspect how it currently works.
+
+### Rule 10 — Do not blindly overwrite files.
+
+Inspect the existing project structure before making architectural changes.
+
+---
+
+# 29. Migration Strategy
+
+The redesign should happen incrementally.
+
+```text
+Existing Application
+        ↓
+Inspect Existing Architecture
+        ↓
+Preserve Working Infrastructure
+        ↓
+Introduce Design Tokens
+        ↓
+Rebuild Public UI Components
+        ↓
+Connect Mock Data Layer
+        ↓
+Implement Search / Filters
+        ↓
+Implement Responsive Design
+        ↓
+Accessibility Review
+        ↓
+UI QA
+        ↓
+Finalize Frontend
+        ↓
+Connect Real Data
+        ↓
+Add Realtime
+        ↓
+Add IoT
+```
+
+Do not perform a full rewrite unless the existing architecture is technically incapable of supporting the new UI.
+
+---
+
+# 30. Definition of Done
+
+The current UI architecture is complete when:
+
+* The public homepage is visually polished.
+* The interface does not look like a generic AI-generated dashboard.
+* Components are reusable.
+* Design tokens are centralized.
+* Mock data is separated from presentation.
+* Hospital cards consume typed data.
+* Search and filtering work using mock data.
+* Sorting works.
+* Responsive layouts work.
+* Loading, empty, and error states exist.
+* Accessibility basics are implemented.
+* No component directly depends on mock-data implementation details.
+* Future Supabase/API integration can replace the repository without requiring a major UI rewrite.
+* Existing working project functionality has not been unnecessarily destroyed.
+
+---
+
+# 31. Target Architecture
+
+The final architecture should conceptually remain:
+
+```text
+                    ┌─────────────────────┐
+                    │     MediTrack UI    │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │ Application / Hooks │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │ Hospital Repository │
+                    └──────────┬──────────┘
+                               │
+                 ┌─────────────┴─────────────┐
+                 │                           │
+                 ▼                           ▼
+          Mock Repository             Future Repository
+          CURRENT PHASE              SUPABASE / API
+                                             │
+                                             ▼
+                                      Realtime / IoT
+```
+
+The critical architectural boundary is:
+
+**UI → Application Layer → Repository → Data Source**
+
+Never:
+
+**UI → Database**
+
+This boundary allows MediTrack to evolve from a UI prototype into a real-time healthcare resource platform without requiring another frontend architectural rewrite.

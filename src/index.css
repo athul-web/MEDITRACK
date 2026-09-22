@@ -1,1 +1,197 @@
 @import "tailwindcss";
+
+@theme {
+  /* Brand Colors */
+  --color-brand-navy: #0E4366;
+  --color-brand-dark: #0B3553;
+  --color-brand-blue: #1877A9;
+  --color-brand-light: #EAF4F9;
+  --color-brand-subtle: #DCEBF5;
+
+  /* Status Colors */
+  --color-available: #16A34A;
+  --color-unavailable: #DC2626;
+  --color-unknown: #64748B;
+  --color-stale-bg: #FEF3C7;
+  --color-stale-text: #92400E;
+  --color-stale-border: #FDE68A;
+
+  /* Neutral Colors */
+  --color-page: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-border: #E2E8F0;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08);
+
+  /* Typography Scale */
+  --text-hero: clamp(2.5rem, 5vw, 2.5rem);
+  --text-section: 1.25rem;
+  --text-hospital-name: 1.0625rem;
+  --text-component: 0.9375rem;
+  --text-body: 0.9375rem;
+  --text-meta: 0.8125rem;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+}
+
+@layer base {
+  html {
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-blue);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .container-page {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  .card-surface {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-[var(--shadow-xs)];
+  }
+
+  .card-surface-hover {
+    @apply transition-all duration-150 hover:border-[var(--color-brand-blue)]/30 hover:-translate-y-[1px];
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-[var(--radius-pill)] bg-[var(--color-brand-navy)] text-white font-semibold text-sm transition-all duration-150 hover:bg-[#0B3A57] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-blue)] focus-visible:ring-offset-2 active:translate-y-[1px];
+  }
+
+  .btn-secondary-filled {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[var(--radius-sm)] bg-[var(--color-brand-blue)] text-white font-semibold text-sm transition-all duration-150 hover:bg-[#166B95] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-blue)] focus-visible:ring-offset-2 active:translate-y-[1px];
+  }
+
+  .btn-text {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-[var(--color-brand-blue)] font-medium text-sm transition-colors hover:text-[var(--color-brand-navy)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-blue)] focus-visible:ring-offset-2 active:translate-y-[1px];
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-transparent text-[var(--color-text-primary)] font-medium text-sm transition-colors hover:bg-[var(--color-page)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-blue)] focus-visible:ring-offset-2;
+  }
+
+  /* Badge Variants */
+  .badge-preset {
+    @apply inline-flex items-center gap-2 px-4.5 py-2.5 rounded-[var(--radius-pill)] text-sm font-medium transition-all duration-150 border;
+  }
+
+  .badge-preset-inactive {
+    @apply bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-page)] hover:border-[var(--color-brand-blue)] hover:text-[var(--color-brand-navy)];
+  }
+
+  .badge-preset-active {
+    @apply bg-[var(--color-brand-subtle)] text-[var(--color-brand-navy)] border-transparent font-semibold;
+  }
+
+  .badge-verified {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-pill)] bg-white/95 backdrop-blur-sm text-[var(--color-brand-navy)] text-[11px] font-semibold shadow-[var(--shadow-xs)];
+  }
+
+  .badge-updated {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--color-page)] text-[var(--color-text-muted)] text-[12px] font-medium;
+  }
+
+  .badge-updated-stale {
+    @apply bg-[var(--color-stale-bg)] text-[var(--color-stale-text)] border border-[var(--color-stale-border)];
+  }
+
+  /* Status Badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] font-medium;
+  }
+
+  .status-available {
+    @apply bg-[var(--color-available)]/10 text-[var(--color-available)];
+  }
+
+  .status-unavailable {
+    @apply bg-[var(--color-unavailable)]/10 text-[var(--color-unavailable)];
+  }
+
+  .status-unknown {
+    @apply bg-[var(--color-border)] text-[var(--color-unknown)];
+  }
+
+  .status-stale {
+    @apply bg-[var(--color-stale-bg)]/40 text-[var(--color-stale-text)];
+  }
+
+  /* Form Elements */
+  .select-field {
+    @apply appearance-none pl-10 pr-10 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-blue)] focus:border-transparent;
+  }
+
+  .input-field {
+    @apply w-full pl-10 pr-12 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-blue)] focus:border-transparent;
+  }
+
+  .field-label {
+    @apply block text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1.5;
+  }
+
+  .field-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-brand-blue)];
+  }
+
+  .field-divider {
+    @apply hidden lg:block w-px h-10 bg-[var(--color-border)] self-center;
+  }
+
+  /* Section Spacing */
+  .section-y-desktop {
+    @apply py-[64px];
+  }
+
+  .section-y-mobile {
+    @apply py-[40px];
+  }
+
+  .section-gap {
+    @apply gap-[32px];
+  }
+}

@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { useHospitals } from '../../hooks/useHospitals';
 import { HospitalCard } from './HospitalCard';
@@ -21,7 +22,6 @@ const sortOptions: { value: HospitalSort; label: string }[] = [
   { value: 'recentlyUpdated', label: 'Recently Updated' },
 ];
 
-// Custom sort select - text-button style per spec §9
 function SortSelect({ value, onChange }: { value: HospitalSort; onChange: (value: HospitalSort) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -81,6 +81,7 @@ function SortSelect({ value, onChange }: { value: HospitalSort; onChange: (value
 }
 
 export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
+  const navigate = useNavigate();
   const [sort, setSort] = useState<HospitalSort>('nearest');
   const { hospitals, isLoading, error, search } = useHospitals();
 
@@ -93,7 +94,6 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
     search(filters, sort);
   }, [filters, sort, search]);
 
-  // Skeleton card for loading state
   const SkeletonCard = () => (
     <article className="card-surface overflow-hidden animate-pulse">
       <div className="h-[96px] bg-[var(--color-border)]" />
@@ -119,18 +119,16 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {/* Header with Sort */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-[var(--color-brand-blue)] flex-shrink-0" />
-            <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)]">Nearby Hospitals</h2>
+            <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary]">Nearby Hospitals</h2>
           </div>
-          <p className="text-[var(--text-body)] text-[var(--color-text-secondary)]">
+          <p className="text-[var(--text-body)] text-[var(--color-text-secondary]">
             Showing hospitals near your location with available resources
           </p>
         </div>
 
-        {/* Skeleton Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
         </div>
@@ -144,7 +142,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-unavailable)]/10">
           <AlertCircle className="w-6 h-6 text-[var(--color-unavailable)]" />
         </div>
-        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
+        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary]">
           We couldn't load hospital availability
         </h3>
         <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
@@ -164,8 +162,10 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
   if (hospitals.length === 0) {
     return (
       <div className="text-center py-[48px] space-y-4">
-        <MapPin className="w-10 h-10 text-[var(--color-text-muted)] mx-auto" />
-        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
+        <div className="inline-flex items-center justify-center w-10 h-10 text-[var(--color-text-muted)] mx-auto">
+          <MapPin className="w-10 h-10" />
+        </div>
+        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary]">
           No matching hospitals found
         </h3>
         <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
@@ -188,29 +188,26 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header with Sort */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-[var(--color-brand-blue)] flex-shrink-0" />
-          <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)]">Nearby Hospitals</h2>
+          <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary]">Nearby Hospitals</h2>
         </div>
-        <p className="text-[var(--text-body)] text-[var(--color-text-secondary)]">
+        <p className="text-[var(--text-body)] text-[var(--color-text-secondary]">
           Showing {hospitals.length} hospital{hospitals.length !== 1 ? 's' : ''} near your location
         </p>
 
-        {/* Sort control - text-button style */}
         <div className="flex items-center gap-2 ml-auto">
           <SortSelect value={sort} onChange={handleSortChange} />
         </div>
       </div>
 
-      {/* Hospital Cards - vertical stack with gap */}
       <div className="space-y-4" role="list" aria-label="Hospital results">
         {hospitals.map(hospital => (
           <HospitalCard
             key={hospital.id}
             hospital={hospital}
-            onViewDetails={() => { /* TODO: navigate to hospital details */ }}
+            onViewDetails={() => navigate(`/hospitals/${hospital.id}`)}
             onCall={() => { /* TODO: initiate call */ }}
           />
         ))}

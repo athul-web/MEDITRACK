@@ -6,6 +6,7 @@
 
 import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { mockHospitals } from '../mock/hospitals';
+import { SupabaseHospitalRepository } from './supabaseHospitalRepository';
 
 export interface HospitalRepository {
   getHospitals(): Promise<Hospital[]>;
@@ -75,8 +76,8 @@ class MockHospitalRepository implements HospitalRepository {
   }
 }
 
-// Export singleton instance
-export const hospitalRepository: HospitalRepository = new MockHospitalRepository();
+// Export singleton instance - SWITCHED TO SUPABASE
+export const hospitalRepository: HospitalRepository = new SupabaseHospitalRepository();
 
 // Future implementations:
 // export class SupabaseHospitalRepository implements HospitalRepository { ... }

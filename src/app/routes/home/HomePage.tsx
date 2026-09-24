@@ -1,10 +1,50 @@
-import React from 'react';
-import { Activity, Search, MapPin, Heart, Wind, Flame, Zap, ShieldCheck, Phone } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Activity, MapPin, Heart, Wind, Flame, Zap, ShieldCheck, Phone } from 'lucide-react';
+import { SearchConsole } from '../../../components/hero/SearchConsole';
+import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
+import { emergencyPresets } from '../../../data/mock/emergencyTypes';
+import { HospitalSearchFilters } from '../../../types/public';
+import { HospitalCard } from '../../../components/hospitals/HospitalCard';
 
 /**
  * Home Page implementation based on gemini-code-1790186455331.html
  */
 export function HomePage() {
+  const navigate = useNavigate();
+  const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>({
+    requiredResources: [],
+  });
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+
+  const handlePresetClick = (presetId: string) => {
+    const preset = emergencyPresets.find(p => p.id === presetId);
+    if (!preset) return;
+
+    if (selectedPreset === presetId) {
+      setSelectedPreset(null);
+      setSearchFilters(prev => ({ ...prev, requiredResources: [] }));
+    } else {
+      setSelectedPreset(presetId);
+      setSearchFilters(prev => ({ ...prev, requiredResources: preset.resources }));
+    }
+  };
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchFilters.emergencyType) {
+      params.append('emergencyType', searchFilters.emergencyType);
+    }
+    if (searchFilters.requiredResources.length > 0) {
+      params.append('resources', searchFilters.requiredResources.join(','));
+    }
+    if (searchFilters.location?.label) {
+      params.append('location', searchFilters.location.label);
+    }
+
+    navigate(`/hospitals?${params.toString()}`);
+  };
+
   return (
     <div className="flex flex-col">
       {/* 1. Hero Section */}
@@ -39,42 +79,17 @@ export function HomePage() {
           {/* Search Box Card */}
           <div className="mt-10 bg-white rounded-2xl p-3 sm:p-4 shadow-2xl text-slate-800 border border-slate-100">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-
-              <div className="md:col-span-4 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
-                  Emergency Type
-                </label>
-                <select className="w-full bg-transparent font-semibold text-xs sm:text-sm text-slate-800 outline-none cursor-pointer mt-0.5">
-                  <option>Accident / Trauma</option>
-                  <option>Heart Emergency</option>
-                  <option>Breathing Crisis</option>
-                  <option>Burn Injury</option>
-                </select>
+              <div className="md:col-span-12">
+                <SearchConsole
+                  filters={searchFilters}
+                  onChange={setSearchFilters}
+                />
               </div>
-
-              <div className="md:col-span-4 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
-                  Required Resources
-                </label>
-                <select className="w-full bg-transparent font-semibold text-xs sm:text-sm text-slate-800 outline-none cursor-pointer mt-0.5">
-                  <option>ICU, Ventilator, CT Scan</option>
-                  <option>Emergency Room Only</option>
-                  <option>Pediatric ICU</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-4 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80 flex items-center justify-between">
-                <div className="w-full">
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                    Your Location
-                  </label>
-                  <input type="text" defaultValue="Use my location" className="w-full bg-transparent font-semibold text-xs sm:text-sm text-slate-800 outline-none mt-0.5" />
-                </div>
-                <MapPin className="w-4 h-4 text-cyan-600 shrink-0 ml-2" />
-              </div>
-
               <div className="md:col-span-12 flex justify-end mt-1">
-                <button className="w-full md:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                <button
+                  onClick={handleSearch}
+                  className="w-full md:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                >
                   <Search className="w-4 h-4" />
                   <span>Search</span>
                 </button>
@@ -84,22 +99,11 @@ export function HomePage() {
 
           {/* Quick Tag Pills */}
           <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-white text-slate-900 border border-white shadow-md">
-              <span className="text-cyan-600">⚠️</span>
-              <span>Accident / Trauma</span>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-white/10 text-white border border-white/20 hover:bg-white/20">
-              <Heart className="w-3.5 h-3.5 text-cyan-300" />
-              <span>Heart Emergency</span>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-white/10 text-white border border-white/20 hover:bg-white/20">
-              <Wind className="w-3.5 h-3.5 text-cyan-300" />
-              <span>Breathing Crisis</span>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-white/10 text-white border border-white/20 hover:bg-white/20">
-              <Flame className="w-3.5 h-3.5 text-cyan-300" />
-              <span>Burn Injury</span>
-            </button>
+            <EmergencyPresets
+              presets={emergencyPresets}
+              selectedId={selectedPreset}
+              onSelect={handlePresetClick}
+            />
           </div>
         </div>
       </div>

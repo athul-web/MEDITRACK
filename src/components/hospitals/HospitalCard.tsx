@@ -15,6 +15,7 @@ interface HospitalCardProps {
 }
 
 export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardProps) {
+  if (!hospital) return null;
   const formatDistance = (km?: number) => {
     if (!km) return '';
     return km < 1 ? `${Math.round(km * 1000)} m away` : `${km} km away`;
@@ -27,6 +28,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
   // Determine if data is stale (>30 minutes)
   // Parse "X mins ago" or "X hours ago" format from mock data
   const isStale = (() => {
+    if (!hospital.lastUpdated) return false;
     const match = hospital.lastUpdated.match(/(\d+)\s*(min|hour)s?\s*ago/i);
     if (!match) return false;
     const value = parseInt(match[1], 10);

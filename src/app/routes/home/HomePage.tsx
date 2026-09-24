@@ -4,7 +4,7 @@ import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react'
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../data/mock/emergencyTypes';
-import { HospitalSearchFilters, Hospital } from '../../../types/public';
+import { HospitalSearchFilters } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 import { useHospitals } from '../../../hooks/useHospitals';
 
@@ -85,6 +85,7 @@ export function HomePage() {
                 <SearchConsole
                   filters={searchFilters}
                   onChange={setSearchFilters}
+                  variant="horizontal"
                 />
               </div>
               <div className="md:col-span-12 flex justify-end mt-1">

@@ -55,6 +55,7 @@ export function HospitalsPage() {
       <SearchConsole
         filters={searchFilters}
         onChange={handleSearchChange}
+        variant="vertical"
       />
       <EmergencyPresets
         presets={emergencyPresets}
@@ -66,7 +67,6 @@ export function HospitalsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
-      <PublicHeader onMenuClick={() => setMobileMenuOpen(true)} />
       <MobileNavigation isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <main className="flex-1">

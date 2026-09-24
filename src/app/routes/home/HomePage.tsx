@@ -193,7 +193,7 @@ export function HomePage() {
               </p>
               <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
                 <span>Emergency Contacts</span>
-                <span className="text-xs">→</</span>
+                <span className="text-xs">{"→"}</span>
               </button>
             </div>
 
@@ -205,7 +205,7 @@ export function HomePage() {
                 </p>
                 <a href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-700 hover:text-cyan-800 mt-3">
                   <span>Staff Login</span>
-                  <span className="text-xs">→</</span>
+                  <span className="text-xs">{"→"}</span>
                 </a>
               </div>
               <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=200" alt="Staff" className="w-20 h-20 rounded-xl object-cover shrink-0" />

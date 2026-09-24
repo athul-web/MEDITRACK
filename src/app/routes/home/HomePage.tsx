@@ -4,14 +4,16 @@ import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react'
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../data/mock/emergencyTypes';
-import { HospitalSearchFilters } from '../../../types/public';
+import { HospitalSearchFilters, Hospital } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
+import { useHospitals } from '../../../hooks/useHospitals';
 
 /**
  * Home Page implementation
  */
 export function HomePage() {
   const navigate = useNavigate();
+  const { hospitals, isLoading } = useHospitals();
   const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>({
     requiredResources: [],
   });
@@ -143,37 +145,24 @@ export function HomePage() {
               </div>
             </div>
 
-            {/* Card 1 */}
-            <HospitalCardUI
-              name="City General Hospital"
-              distance="2.8 km away"
-              address="MG Road, Kochi, Kerala"
-              updated="2 mins ago"
-              image="https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&q=80&w=400"
-              resources={[
-                { name: 'Emergency Dept', available: true },
-                { name: 'ICU', available: true },
-                { name: 'Ventilator', available: true },
-                { name: 'Doctor', available: true },
-                { name: 'CT Scan', available: true },
-              ]}
-            />
-
-            {/* Card 2 */}
-            <HospitalCardUI
-              name="Metro Medical Center"
-              distance="4.1 km away"
-              address="NH Bypass, Kochi, Kerala"
-              updated="12 mins ago"
-              image="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400"
-              resources={[
-                { name: 'Emergency Dept', available: true },
-                { name: 'ICU', available: true },
-                { name: 'CT Scan', available: true },
-                { name: 'Doctor', available: true },
-                { name: 'Ventilator', available: false },
-              ]}
-            />
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2].map(i => (
+                  <div key={i} className="card-surface h-40 animate-pulse bg-slate-100 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {hospitals.slice(0, 2).map(hospital => (
+                  <HospitalCardUI
+                    key={hospital.id}
+                    hospital={hospital}
+                    onViewDetails={() => navigate(`/hospitals/${hospital.id}`)}
+                    onCall={() => { /* TODO: initiate call */ }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column */}

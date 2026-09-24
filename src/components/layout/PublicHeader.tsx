@@ -5,7 +5,7 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { Plus, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
 
 interface PublicHeaderProps {
   onMenuClick: () => void;
@@ -22,10 +22,11 @@ export function PublicHeader({ onMenuClick }: PublicHeaderProps) {
         <div className="grid grid-cols-[auto_1fr_auto] items-center h-full gap-4">
           {/* Left cluster: Logo + Wordmark + Tagline */}
           <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="MediTrack Home">
-            {/* Logo: medical-plus badge, 36x36px, rounded square (radius-sm), icon white on brand-blue fill */}
-            <div className="h-9 w-9 rounded-[var(--radius-sm)] bg-[var(--color-brand-blue)] flex items-center justify-center flex-shrink-0">
-              <Plus className="w-5 h-5 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="MediTrack Logo"
+              className="h-12 w-auto object-contain ml-2"
+            />
             <div className="hidden md:block">
               <span className="font-bold text-[20px] tracking-tight leading-tight">MediTrack</span>
               <p className="text-[var(--color-brand-light)] text-[12px] leading-none -mt-0.5">Emergency Resources | When It Matters</p>

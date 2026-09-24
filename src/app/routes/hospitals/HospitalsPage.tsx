@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { MobileNavigation } from '../../../components/layout/MobileNavigation';
@@ -9,14 +10,25 @@ import { EmergencyCallout } from '../../../components/sidebar/EmergencyCallout';
 import { HospitalPortalCard } from '../../../components/sidebar/HospitalPortalCard';
 import { MottoCard } from '../../../components/sidebar/MottoCard';
 import { emergencyPresets } from '../../../data/mock/emergencyTypes';
-import { HospitalSearchFilters } from '../../../types/public';
+import { HospitalSearchFilters, ResourceType } from '../../../types/public';
 
 export function HospitalsPage() {
+  const [searchParams] = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>({
-    requiredResources: [],
+
+  const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>(() => {
+    const resourcesParam = searchParams.get('resources');
+    const locationParam = searchParams.get('location');
+    return {
+      emergencyType: (searchParams.get('emergencyType') || undefined) as string | undefined,
+      requiredResources: (resourcesParam ? resourcesParam.split(',') : []) as ResourceType[],
+      location: locationParam ? { label: locationParam } : undefined,
+    };
   });
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(() => {
+    return searchParams.get('emergencyType') || null;
+  });
 
   const handlePresetClick = (presetId: string) => {
     const preset = emergencyPresets.find(p => p.id === presetId);

@@ -6,6 +6,7 @@ import { PublicLayout } from './app/routes/PublicLayout';
 
 import { HomePage } from './app/routes/home/HomePage';
 import { HospitalsPage } from './app/routes/hospitals/HospitalsPage';
+import { HospitalDetailsPage } from './app/routes/hospitals/HospitalDetailsPage';
 import { AboutPage } from './app/routes/about/AboutPage';
 import { ContactPage } from './app/routes/contact/ContactPage';
 import { Login } from './components/Login';
@@ -76,6 +77,15 @@ export default function AppRouter() {
           element={
             <PublicLayout>
               <HospitalsPage />
+            </PublicLayout>
+          }
+        />
+
+        <Route
+          path="/hospitals/:id"
+          element={
+            <PublicLayout>
+              <HospitalDetailsPage />
             </PublicLayout>
           }
         />

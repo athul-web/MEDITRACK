@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, MapPin, Heart, Wind, Flame, Zap, ShieldCheck, Phone } from 'lucide-react';
+import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../data/mock/emergencyTypes';
 import { HospitalSearchFilters } from '../../../types/public';
-import { HospitalCard } from '../../../components/hospitals/HospitalCard';
+import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 
 /**
- * Home Page implementation based on gemini-code-1790186455331.html
+ * Home Page implementation
  */
 export function HomePage() {
   const navigate = useNavigate();
@@ -144,7 +144,7 @@ export function HomePage() {
             </div>
 
             {/* Card 1 */}
-            <HospitalCard
+            <HospitalCardUI
               name="City General Hospital"
               distance="2.8 km away"
               address="MG Road, Kochi, Kerala"
@@ -160,7 +160,7 @@ export function HomePage() {
             />
 
             {/* Card 2 */}
-            <HospitalCard
+            <HospitalCardUI
               name="Metro Medical Center"
               distance="4.1 km away"
               address="NH Bypass, Kochi, Kerala"
@@ -193,7 +193,7 @@ export function HomePage() {
               </p>
               <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
                 <span>Emergency Contacts</span>
-                <span className="text-xs">→</span>
+                <span className="text-xs">{"→"}</span>
               </button>
             </div>
 
@@ -205,7 +205,7 @@ export function HomePage() {
                 </p>
                 <a href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-700 hover:text-cyan-800 mt-3">
                   <span>Staff Login</span>
-                  <span className="text-xs">→</span>
+                  <span className="text-xs">{"→"}</span>
                 </a>
               </div>
               <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=200" alt="Staff" className="w-20 h-20 rounded-xl object-cover shrink-0" />
@@ -235,60 +235,6 @@ function FeatureItem({ icon: Icon, title, description }: { icon: any; title: str
       <div>
         <h3 className="font-bold text-slate-900 text-sm">{title}</h3>
         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function HospitalCard({ name, distance, address, updated, image, resources }: any) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 hover:shadow-md transition-shadow">
-      <div className="flex flex-col sm:flex-row gap-5">
-        <div className="sm:w-36 h-32 sm:h-auto rounded-xl overflow-hidden shrink-0 bg-slate-100">
-          <img src={image} alt={name} className="w-full h-full object-cover" />
-        </div>
-
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-1.5">
-              {name}
-              <ShieldCheck className="w-4 h-4 text-cyan-600" />
-            </h3>
-            <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-              <span className="text-cyan-700 font-semibold">{distance}</span>
-              <span>•</span>
-              <span>{address}</span>
-            </div>
-            <div className="mt-2 inline-flex items-center gap-1 bg-slate-100 text-slate-500 text-[11px] px-2 py-0.5 rounded-full">
-              <span>🕒</span>
-              <span>Last updated: {updated}</span>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Available Resources</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4">
-              {resources.map((res: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-xs pr-2">
-                  <span className="text-slate-600">{res.name}</span>
-                  <span className={`flex items-center gap-1 font-semibold text-[11px] ${res.available ? 'text-emerald-600' : 'text-rose-500'}`}>
-                    {res.available ? '✅ Available' : '❌ Unavailable'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="sm:w-40 flex sm:flex-col justify-end sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
-          <button className="flex-1 sm:flex-none bg-cyan-700 hover:bg-cyan-800 text-white font-medium text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-            <span>📞</span> Call Hospital
-          </button>
-          <button className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-1">
-            <span>View Details</span>
-            <span className="text-xs">→</span>
-          </button>
-        </div>
       </div>
     </div>
   );

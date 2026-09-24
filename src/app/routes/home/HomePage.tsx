@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
@@ -181,10 +181,13 @@ export function HomePage() {
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                 Need immediate help? Call 108 or visit the nearest emergency department directly.
               </p>
-              <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+              <Link
+                to="/contact"
+                className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
                 <span>Emergency Contacts</span>
                 <span className="text-xs">{"→"}</span>
-              </button>
+              </Link>
             </div>
 
             <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center justify-between gap-4">

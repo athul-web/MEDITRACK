@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediTrack - About Us</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons Script -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800">
+
+  <!-- Header Hero Section -->
+  <div class="relative bg-gradient-to-r from-cyan-900 via-sky-800 to-slate-900 text-white overflow-hidden pb-16">
+    <!-- Background Image Overlay -->
+    <div 
+      class="absolute inset-0 opacity-15 bg-cover bg-center mix-blend-overlay pointer-events-none"
+      style="background-image: url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1600');"
+    ></div>
+
+    <!-- Navbar -->
+    <header class="relative z-10 border-b border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-cyan-500 p-1.5 rounded-lg text-slate-950">
+            <i data-lucide="activity" class="w-6 h-6 stroke-[3]"></i>
+          </div>
+          <a href="index.html" class="text-xl font-bold tracking-tight text-white">MediTrack</a>
+          <span class="hidden sm:inline-block text-xs text-cyan-200 border-l border-white/20 pl-3 py-0.5">
+            Emergency Resources When It Matters
+          </span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-200">
+          <a href="index.html" class="hover:text-cyan-300 transition-colors">Home</a>
+          <a href="hospitals.html" class="hover:text-cyan-300 transition-colors">Hospitals</a>
+          <a href="about.html" class="text-white font-semibold underline decoration-cyan-400 underline-offset-8">About</a>
+          <a href="#contact" class="hover:text-cyan-300 transition-colors">Contact</a>
+        </nav>
+
+        <button class="bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-full border border-white/20 backdrop-blur-md flex items-center gap-2 transition-all">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span>Hospital Staff Login</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Banner Title -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+      <div class="max-w-3xl">
+        <span class="text-xs font-semibold text-cyan-300 uppercase tracking-widest">Our Mission & Platform</span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mt-1 leading-tight">
+          Bridging the Gap Between Patients & Emergency Care
+        </h1>
+        <p class="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
+          MediTrack was built to eliminate critical delays during medical emergencies by providing real-time visibility into hospital beds, ICU units, ventilators, and emergency diagnostic facilities.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics / Stats Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xl">
+      <div class="text-center border-r last:border-r-0 border-slate-100 px-2">
+        <span class="text-2xl sm:text-4xl font-extrabold text-cyan-700">120+</span>
+        <p class="text-xs text-slate-500 mt-1 font-medium">Verified Hospitals</p>
+      </div>
+      <div class="text-center border-r last:border-r-0 border-slate-100 px-2">
+        <span class="text-2xl sm:text-4xl font-extrabold text-cyan-700">&lt; 2 min</span>
+        <p class="text-xs text-slate-500 mt-1 font-medium">Data Sync Refresh</p>
+      </div>
+      <div class="text-center border-r last:border-r-0 border-slate-100 px-2">
+        <span class="text-2xl sm:text-4xl font-extrabold text-cyan-700">15,000+</span>
+        <p class="text-xs text-slate-500 mt-1 font-medium">Searches Assisted</p>
+      </div>
+      <div class="text-center px-2">
+        <span class="text-2xl sm:text-4xl font-extrabold text-cyan-700">24 / 7</span>
+        <p class="text-xs text-slate-500 mt-1 font-medium">Network Availability</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Values & Overview -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+
+    <!-- Mission & Vision Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div>
+          <div class="w-12 h-12 bg-cyan-500/10 text-cyan-700 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="target" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900">The Problem We Solve</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+            During critical trauma, cardiac, or respiratory emergencies, families often waste precious minutes driving from hospital to hospital, only to find filled ICU beds or unavailable equipment. MediTrack stops this guesswork by showing direct live statuses before you leave home.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div>
+          <div class="w-12 h-12 bg-cyan-500/10 text-cyan-700 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900">Verified & Reliable Data</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+            Every hospital listed on MediTrack is authenticated with official administration dashboards or automated IoT triggers, ensuring that resource updates reflect true, on-ground status with accurate timestamps.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works Timeline -->
+    <section class="bg-slate-100/70 rounded-2xl border border-slate-200/80 p-6 sm:p-10">
+      <div class="max-w-2xl mx-auto text-center mb-8">
+        <h2 class="text-2xl font-bold text-slate-900">How MediTrack Operates</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">A simple three-step synchronization pipeline</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative">
+          <div class="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full w-fit mb-3">Step 01</div>
+          <h4 class="font-bold text-slate-900 text-base">Hospital Staff Updates</h4>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Staff update room and machinery availability via a quick one-tap portal whenever beds open up or close.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative">
+          <div class="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full w-fit mb-3">Step 02</div>
+          <h4 class="font-bold text-slate-900 text-base">Real-Time Processing</h4>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Data is formatted, tagged with high-priority emergency categories, and indexed with GPS proximity metadata.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative">
+          <div class="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full w-fit mb-3">Step 03</div>
+          <h4 class="font-bold text-slate-900 text-base">Instant Citizen Access</h4>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Patients and ambulance services search, filter by equipment needs, and connect with direct emergency desks instantly.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA Card -->
+    <div class="bg-gradient-to-r from-sky-900 to-slate-900 text-white rounded-2xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+      <div>
+        <h3 class="text-xl font-bold">Are you a healthcare facility manager?</h3>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+          Integrate your facility into the MediTrack emergency network to help redirect emergency patients to available beds seamlessly.
+        </p>
+      </div>
+      <button class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition-all shrink-0">
+        Register Your Hospital
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="bg-cyan-500 p-1 rounded-md text-slate-950">
+          <i data-lucide="activity" class="w-4 h-4 stroke-[3]"></i>
+        </div>
+        <span class="font-bold text-white text-sm">MediTrack</span>
+        <span class="text-slate-600">|</span>
+        <span>Emergency Resources Platform</span>
+      </div>
+      <p>© 2025 MediTrack. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

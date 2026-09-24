@@ -1,187 +1,147 @@
-/**
- * About Page
- * Per MediTrack UI Spec - Information about the platform
- */
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { MobileNavigation } from '../../../components/layout/MobileNavigation';
-import { Shield, Zap, MapPin, Phone, Users, Heart } from 'lucide-react';
+import { Target, ShieldCheck, Heart, Zap, MapPin, Phone, Users } from 'lucide-react';
 
-const values = [
-  {
-    icon: Shield,
-    title: 'Verified & Trusted',
-    description: 'Every hospital on MediTrack undergoes verification. We partner with healthcare authorities to ensure data accuracy and reliability.'
-  },
-  {
-    icon: Zap,
-    title: 'Real-Time Updates',
-    description: 'Resource availability updates in real-time. Know exactly what\'s available before you arrive - ICU beds, ventilators, CT scans, and more.'
-  },
-  {
-    icon: MapPin,
-    title: 'Location-Aware',
-    description: 'Find the nearest hospitals with the resources you need. Distance, travel time, and directions all in one place.'
-  },
-  {
-    icon: Phone,
-    title: 'Direct Connection',
-    description: 'One-tap calling to hospital emergency departments. No searching for numbers - connect immediately when seconds matter.'
-  },
-  {
-    icon: Users,
-    title: 'Community Focused',
-    description: 'Built for patients, families, and first responders. We understand the urgency of emergency situations.'
-  },
-  {
-    icon: Heart,
-    title: 'Mission Driven',
-    description: 'Every feature exists to save time in emergencies. Better information leads to better decisions and more lives saved.'
-  },
-];
-
+/**
+ * About Page implementation based on gemini-code-1790186876109.html
+ */
 export function AboutPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[var(--color-page)] flex flex-col">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
       <PublicHeader onMenuClick={() => setMobileMenuOpen(true)} />
       <MobileNavigation isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-[var(--color-brand-light)] pt-[64px] pb-[64px]">
-          <div className="container-page">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              <h1 className="text-[var(--text-hero)] font-bold text-[var(--color-text-primary)] leading-[1.15] tracking-tight">
-                About <span className="text-[var(--color-brand-blue)]">MediTrack</span>
+        {/* Header Hero Section */}
+        <div className="relative bg-gradient-to-r from-cyan-900 via-sky-800 to-slate-900 text-white overflow-hidden pb-16">
+          {/* Background Image Overlay */}
+          <div
+            className="absolute inset-0 opacity-15 bg-cover bg-center mix-blend-overlay pointer-events-none"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1600')" }}
+          />
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <div className="max-w-3xl">
+              <span className="text-xs font-semibold text-cyan-300 uppercase tracking-widest">Our Mission & Platform</span>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-1 leading-tight">
+                Bridging the Gap Between Patients & Emergency Care
               </h1>
-              <p className="text-[var(--text-body)] text-[var(--color-text-secondary)] leading-[1.6]">
-                MediTrack is an emergency resource discovery platform that helps you quickly locate hospitals with verified
-                emergency resources like ICU, ventilators, CT scans, and blood - when every second counts.
+              <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
+                MediTrack was built to eliminate critical delays during medical emergencies by providing real-time visibility into hospital beds, ICU units, ventilators, and emergency diagnostic facilities.
               </p>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Mission Section */}
-        <section className="bg-[var(--color-page)] py-[64px]">
-          <div className="container-page">
-            <div className="max-w-3xl mx-auto space-y-8">
-              <div className="text-center space-y-4">
-                <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)]">
-                  Our Mission
-                </h2>
-                <p className="text-[var(--text-body)] text-[var(--color-text-secondary)] leading-[1.7]">
-                  In a medical emergency, every second matters. Yet finding a hospital with the right resources - an available ICU bed,
-                  a working ventilator, a functional CT scanner - often involves frantic phone calls, wasted time, and uncertainty.
-                </p>
-                <p className="text-[var(--text-body)] text-[var(--color-text-secondary)] leading-[1.7]">
-                  MediTrack was built to solve this. We aggregate real-time resource availability from verified hospitals and present it
-                  in a clear, actionable format. Whether you're a patient, a family member, or a first responder, MediTrack gives you
-                  the information you need to make the right decision, fast.
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="card-surface p-6 space-y-4">
-                  <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
-                    What We Do
-                  </h3>
-                  <ul className="space-y-3 text-[var(--text-body)] text-[var(--color-text-secondary)]">
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Zap className="w-3 h-3" />
-                      </span>
-                      <span>Real-time resource availability tracking</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Shield className="w-3 h-3" />
-                      </span>
-                      <span>Verified hospital network</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <MapPin className="w-3 h-3" />
-                      </span>
-                      <span>Location-based search with distance sorting</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Phone className="w-3 h-3" />
-                      </span>
-                      <span>Direct emergency contact integration</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="card-surface p-6 space-y-4">
-                  <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
-                    Our Commitment
-                  </h3>
-                  <ul className="space-y-3 text-[var(--text-body)] text-[var(--color-text-secondary)]">
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Heart className="w-3 h-3" />
-                      </span>
-                      <span>Accuracy - Data freshness timestamps on every resource</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Shield className="w-3 h-3" />
-                      </span>
-                      <span>Transparency - Clear status: Available, Unavailable, Unknown</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Users className="w-3 h-3" />
-                      </span>
-                      <span>Accessibility - Works for everyone, on any device</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] flex items-center justify-center">
-                        <Zap className="w-3 h-3" />
-                      </span>
-                      <span>Speed - Search to call in under 30 seconds</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+        {/* Key Metrics / Stats Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xl">
+            <StatItem value="120+" label="Verified Hospitals" />
+            <StatItem value="< 2 min" label="Data Sync Refresh" />
+            <StatItem value="15,000+" label="Searches Assisted" />
+            <StatItem value="24 / 7" label="Network Availability" />
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="bg-[var(--color-page)] py-[64px]">
-          <div className="container-page">
-            <div className="text-center max-w-2xl mx-auto mb-[48px]">
-              <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)] mb-4">
-                Our Values
-              </h2>
-              <p className="text-[var(--text-body)] text-[var(--color-text-secondary)]">
-                These principles guide every decision we make
+        {/* Core Values & Overview */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+
+          {/* Mission & Vision Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div>
+                <div className="w-12 h-12 bg-cyan-500/10 text-cyan-700 rounded-xl flex items-center justify-center mb-4">
+                  <Target className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">The Problem We Solve</h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+                  During critical trauma, cardiac, or respiratory emergencies, families often waste precious minutes driving from hospital to hospital, only to find filled ICU beds or unavailable equipment. MediTrack stops this guesswork by showing direct live statuses before you leave home.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div>
+                <div className="w-12 h-12 bg-cyan-500/10 text-cyan-700 rounded-xl flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Verified & Reliable Data</h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+                  Every hospital listed on MediTrack is authenticated with official administration dashboards or automated IoT triggers, ensuring that resource updates reflect true, on-ground status with accurate timestamps.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* How It Works Timeline */}
+          <section className="bg-slate-100/70 rounded-2xl border border-slate-200/80 p-6 sm:p-10">
+            <div className="max-w-2xl mx-auto text-center mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">How MediTrack Operates</h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">A simple three-step synchronization pipeline</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StepCard
+                step="Step 01"
+                title="Hospital Staff Updates"
+                description="Staff update room and machinery availability via a quick one-tap portal whenever beds open up or close."
+              />
+              <StepCard
+                step="Step 02"
+                title="Real-Time Processing"
+                description="Data is formatted, tagged with high-priority emergency categories, and indexed with GPS proximity metadata."
+              />
+              <StepCard
+                step="Step 03"
+                title="Instant Citizen Access"
+                description="Patients and ambulance services search, filter by equipment needs, and connect with direct emergency desks instantly."
+              />
+            </div>
+          </section>
+
+          {/* Bottom CTA Card */}
+          <div className="bg-gradient-to-r from-sky-900 to-slate-900 text-white rounded-2xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+            <div>
+              <h3 className="text-xl font-bold">Are you a healthcare facility manager?</h3>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+                Integrate your facility into the MediTrack emergency network to help redirect emergency patients to available beds seamlessly.
               </p>
             </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {values.map((value, index) => (
-                <div key={index} className="card-surface p-6 space-y-4 hover:border-[var(--color-brand-blue)]/30 hover:-translate-y-[1px] transition-all duration-150">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-[var(--radius-md)] bg-[var(--color-brand-light)] text-[var(--color-brand-blue)] mx-auto">
-                    <value.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)] text-center">{value.title}</h3>
-                  <p className="text-[var(--text-body)] text-[var(--color-text-secondary)] text-center leading-[1.6]">{value.description}</p>
-                </div>
-              ))}
-            </div>
+            <button className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition-all shrink-0">
+              Register Your Hospital
+            </button>
           </div>
-        </section>
+        </div>
       </main>
 
       <PublicFooter />
+    </div>
+  );
+}
+
+function StatItem({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="text-center border-r last:border-r-0 border-slate-100 px-2">
+      <span className="text-2xl sm:text-4xl font-extrabold text-cyan-700">{value}</span>
+      <p className="text-xs text-slate-500 mt-1 font-medium">{label}</p>
+    </div>
+  );
+}
+
+function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
+  return (
+    <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative">
+      <div className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full w-fit mb-3">
+        {step}
+      </div>
+      <h4 className="font-bold text-slate-900 text-base">{title}</h4>
+      <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+        {description}
+      </p>
     </div>
   );
 }

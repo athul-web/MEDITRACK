@@ -68,14 +68,6 @@ export function HomePage() {
                 MediTrack helps you quickly locate hospitals with verified emergency resources like ICU, ventilators, CT scans and more — when every second counts.
               </p>
             </div>
-
-            <div className="hidden lg:block -rotate-3 text-right">
-              <p className="font-serif italic text-2xl text-cyan-200/90 leading-tight">
-                Right hospital.<br />
-                Right resources.<br />
-                <span className="underline decoration-cyan-400">Faster care.</span>
-              </p>
-            </div>
           </div>
 
           {/* Search Box Card */}
@@ -98,15 +90,6 @@ export function HomePage() {
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Quick Tag Pills */}
-          <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
-            <EmergencyPresets
-              presets={emergencyPresets}
-              selectedId={selectedPreset}
-              onSelect={handlePresetClick}
-            />
           </div>
         </div>
       </div>

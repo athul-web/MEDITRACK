@@ -12,6 +12,7 @@ import { emergencyPresets } from '../../data/mock/emergencyTypes';
 interface SearchConsoleProps {
   filters: HospitalSearchFilters;
   onChange: (filters: HospitalSearchFilters) => void;
+  variant?: 'horizontal' | 'vertical';
 }
 
 const resourceLabels: Record<ResourceType, string> = {
@@ -200,7 +201,7 @@ function MultiSelectDropdown({
   );
 }
 
-export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
+export function SearchConsole({ filters, onChange, variant = 'horizontal' }: SearchConsoleProps) {
   const [isLocationFocused, setIsLocationFocused] = useState(false);
 
   const handleEmergencyTypeChange = (emergencyType?: string) => {
@@ -238,16 +239,130 @@ export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
   const emergencyTypeOptions = emergencyPresets.map(p => ({ value: p.id, label: p.label }));
   const resourceOptions = Object.entries(resourceLabels).map(([value, label]) => ({ value, label }));
 
-  // Desktop (≥1024px): 4 segments in a row with vertical dividers
-  // Tablet (768-1023px): 2x2 grid
-  // Mobile (<768px): Single column stack
+  if (variant === 'vertical') {
+    return (
+      <div className="space-y-4 w-full">
+        <div className="relative">
+          <label className="field-label">Emergency Type</label>
+          <CustomSelect
+            label="Emergency Type"
+            value={filters.emergencyType}
+            options={emergencyTypeOptions}
+            onChange={handleEmergencyTypeChange}
+            icon={Stethoscope}
+            placeholder="Select emergency type"
+          />
+        </div>
+        <div className="relative">
+          <label className="field-label">Required Resources</label>
+          <MultiSelectDropdown
+            label="Required Resources"
+            selected={filters.requiredResources}
+            options={resourceOptions}
+            onChange={handleResourceToggle}
+            icon={BriefcaseMedical}
+            placeholder="Select resources"
+          />
+        </div>
+        <div className="relative">
+          <label className="field-label">Your Location</label>
+          <div className="relative">
+            <MapPin className="field-icon" />
+            <input
+              type="text"
+              value={filters.location?.label || ''}
+              onChange={e => handleLocationChange(e.target.value)}
+              onFocus={() => setIsLocationFocused(true)}
+              onBlur={() => setIsLocationFocused(false)}
+              placeholder="Your Location"
+              className="input-field pr-12"
+            />
+            <button
+              type="button"
+              onClick={handleUseMyLocation}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+              aria-label="Use my current location"
+            >
+              <Crosshair className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="btn-primary w-full h-[52px]"
+          aria-label="Search hospitals"
+        >
+          <Search className="w-5 h-5" />
+          <span className="ml-2">Search</span>
+        </button>
+        {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label) && (
+          <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
+            <span className="text-xs text-[var(--color-text-muted)]">Active:</span>
+            {filters.emergencyType && (
+              <span className="badge-preset badge-preset-active flex items-center gap-1.5">
+                {emergencyPresets.find(p => p.id === filters.emergencyType)?.label}
+                <button
+                  type="button"
+                  onClick={() => handleEmergencyTypeChange(undefined)}
+                  className="ml-1 hover:text-[var(--color-brand-blue)]"
+                  aria-label="Remove emergency type filter"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            )}
+            {filters.requiredResources.map(resource => (
+              <span key={resource} className="badge-preset badge-preset-active flex items-center gap-1.5">
+                {resourceLabels[resource]}
+                <button
+                  type="button"
+                  onClick={() => handleResourceToggle(filters.requiredResources.filter(r => r !== resource))}
+                  className="ml-1 hover:text-[var(--color-brand-blue)]"
+                  aria-label={`Remove ${resourceLabels[resource]} filter`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+            {filters.location?.label && (
+              <span className="badge-preset badge-preset-active flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" />
+                {filters.location.label}
+                <button
+                  type="button"
+                  onClick={() => handleLocationChange('')}
+                  className="ml-1 hover:text-[var(--color-brand-blue)]"
+                  aria-label="Remove location filter"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => onChange({ requiredResources: [] })}
+              className="text-xs text-[var(--color-brand-blue)] hover:underline ml-1"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 bg-white rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] p-5">
       {/* Desktop: Single row with 4 segments */}
-      <div className="hidden lg:grid lg:grid-cols-[1fr_1fr_1fr_auto] items-center gap-0">
+      <div className="hidden lg:flex lg:items-center gap-0 overflow-hidden">
         {/* Segment 1: Emergency Type - Custom Select Dropdown */}
-        <div className="relative px-4 py-3 border-r border-[var(--color-border)]">
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <CustomSelect
             label="Emergency Type"
             value={filters.emergencyType}
@@ -259,7 +374,7 @@ export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
         </div>
 
         {/* Segment 2: Required Resources */}
-        <div className="relative px-4 py-3 border-r border-[var(--color-border)]">
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <MultiSelectDropdown
             label="Required Resources"
             selected={filters.requiredResources}
@@ -271,8 +386,8 @@ export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
         </div>
 
         {/* Segment 3: Location */}
-        <div className="relative px-4 py-3 border-r border-[var(--color-border)]">
-          <div className="flex items-center gap-3">
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <MapPin className="w-5 h-5 flex-shrink-0" />
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Your Location</span>
@@ -300,14 +415,14 @@ export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
         </div>
 
         {/* Segment 4: Search Button */}
-        <div className="px-4 py-3 pl-6">
+        <div className="px-4 py-3 pl-6 shrink-0">
           <button
             type="button"
-            className="btn-primary"
+            className="btn-primary whitespace-nowrap"
             aria-label="Search hospitals"
           >
             <Search className="w-5 h-5" />
-            <span>Search</span>
+            <span className="ml-2">Search</span>
           </button>
         </div>
       </div>
@@ -471,7 +586,7 @@ export function SearchConsole({ filters, onChange }: SearchConsoleProps) {
                 onClick={() => handleResourceToggle(filters.requiredResources.filter(r => r !== resource))}
                 className="ml-1 hover:text-[var(--color-brand-blue)]"
                 aria-label={`Remove ${resourceLabels[resource]} filter`}
-              >
+                >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

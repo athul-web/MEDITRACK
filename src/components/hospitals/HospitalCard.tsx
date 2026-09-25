@@ -335,9 +335,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
-            {(hospital.contact.emergencyPhone || hospital.contact.phone) && (
+            {(hospital.contact?.emergencyPhone || hospital.contact?.phone) && (
               <div className="text-center text-[11px] text-[var(--color-text-muted)]">
-                Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact.emergencyPhone || hospital.contact.phone}</strong>
+                Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact?.emergencyPhone || hospital.contact?.phone}</strong>
               </div>
             )}
           </div>

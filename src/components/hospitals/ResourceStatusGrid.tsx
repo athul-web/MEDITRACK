@@ -23,6 +23,14 @@ interface ResourceStatusGridProps {
 }
 
 export function ResourceStatusGrid({ resources, size = 'sm' }: ResourceStatusGridProps) {
+  if (!resources || Object.keys(resources).length === 0) {
+    return (
+      <div className="py-2 text-center text-[var(--text-meta)] text-[var(--color-text-muted)] italic">
+        No resource data available
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-y-2 gap-x-6 pt-2" role="list" aria-label="Hospital resource availability">
       {resourceKeys.map(key => (

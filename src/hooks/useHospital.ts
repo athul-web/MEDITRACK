@@ -14,24 +14,30 @@ export function useHospital(id: string): UseHospitalResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHospital = async () => {
+  const fetchHospital = async (signal?: AbortSignal) => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await hospitalRepository.getHospitalById(id);
+      if (signal?.aborted) return;
       setHospital(data);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
       setError('Failed to load hospital details. Please try again.');
       console.error(`Error fetching hospital ${id}:`, err);
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     if (id) {
-      fetchHospital();
+      fetchHospital(controller.signal);
     }
+    return () => controller.abort();
   }, [id]);
 
   return {

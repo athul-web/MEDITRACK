@@ -1,4 +1,5 @@
-import { Hospital, HospitalRepository, HospitalSearchFilters, HospitalSort } from './hospitalRepository';
+import { HospitalRepository } from './hospitalRepository';
+import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { supabase, mapDbToFrontend } from '../../lib/supabase';
 
 export class SupabaseHospitalRepository implements HospitalRepository {
@@ -61,7 +62,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
     if (error) throw error;
 
-    const results = mapDbToFrontend(data);
+    const results = mapDbToFrontend<Hospital[]>(data);
 
     // 2. Sorting
     switch (sort) {

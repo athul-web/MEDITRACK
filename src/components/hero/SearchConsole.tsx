@@ -206,7 +206,11 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
   const [isLocationFocused, setIsLocationFocused] = useState(false);
 
   const handleEmergencyTypeChange = (emergencyType?: string) => {
-    onChange({ ...filters, emergencyType });
+    // Automatically update required resources based on the selected emergency type preset
+    const preset = emergencyPresets.find(p => p.id === emergencyType);
+    const requiredResources = preset ? preset.resources : filters.requiredResources;
+
+    onChange({ ...filters, emergencyType, requiredResources });
   };
 
   const handleResourceToggle = (resources: string[]) => {

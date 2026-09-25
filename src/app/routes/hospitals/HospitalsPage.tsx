@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
-import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { MobileNavigation } from '../../../components/layout/MobileNavigation';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
@@ -55,6 +54,7 @@ export function HospitalsPage() {
       <SearchConsole
         filters={searchFilters}
         onChange={handleSearchChange}
+        variant="vertical"
       />
       <EmergencyPresets
         presets={emergencyPresets}
@@ -66,7 +66,6 @@ export function HospitalsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
-      <PublicHeader onMenuClick={() => setMobileMenuOpen(true)} />
       <MobileNavigation isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <main className="flex-1">
@@ -133,8 +132,6 @@ export function HospitalsPage() {
           </div>
         </div>
       </main>
-
-      <PublicFooter />
     </div>
   );
 }

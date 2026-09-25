@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../data/mock/emergencyTypes';
-import { HospitalSearchFilters, Hospital } from '../../../types/public';
+import { HospitalSearchFilters } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 import { useHospitals } from '../../../hooks/useHospitals';
 
@@ -68,14 +68,6 @@ export function HomePage() {
                 MediTrack helps you quickly locate hospitals with verified emergency resources like ICU, ventilators, CT scans and more — when every second counts.
               </p>
             </div>
-
-            <div className="hidden lg:block -rotate-3 text-right">
-              <p className="font-serif italic text-2xl text-cyan-200/90 leading-tight">
-                Right hospital.<br />
-                Right resources.<br />
-                <span className="underline decoration-cyan-400">Faster care.</span>
-              </p>
-            </div>
           </div>
 
           {/* Search Box Card */}
@@ -85,6 +77,7 @@ export function HomePage() {
                 <SearchConsole
                   filters={searchFilters}
                   onChange={setSearchFilters}
+                  variant="horizontal"
                 />
               </div>
               <div className="md:col-span-12 flex justify-end mt-1">
@@ -97,15 +90,6 @@ export function HomePage() {
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Quick Tag Pills */}
-          <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
-            <EmergencyPresets
-              presets={emergencyPresets}
-              selectedId={selectedPreset}
-              onSelect={handlePresetClick}
-            />
           </div>
         </div>
       </div>
@@ -180,10 +164,13 @@ export function HomePage() {
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                 Need immediate help? Call 108 or visit the nearest emergency department directly.
               </p>
-              <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+              <Link
+                to="/contact"
+                className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
                 <span>Emergency Contacts</span>
                 <span className="text-xs">{"→"}</span>
-              </button>
+              </Link>
             </div>
 
             <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center justify-between gap-4">

@@ -138,7 +138,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
 
   if (error) {
     return (
-      <div className="text-center py-[48px] space-y-4">
+      <div className="text-center py-[48px] space-y-4 mt-6">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-unavailable)]/10">
           <AlertCircle className="w-6 h-6 text-[var(--color-unavailable)]" />
         </div>

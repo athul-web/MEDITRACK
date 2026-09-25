@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown } from 'lucide-react';
 import { HospitalSearchFilters, ResourceType } from '../../types/public';
 import { emergencyPresets } from '../../data/mock/emergencyTypes';

@@ -5,6 +5,7 @@
  */
 
 import { EmergencyType } from '../../types/public';
+import React from 'react';
 import { Car, Heart, Wind, Flame } from 'lucide-react';
 
 interface EmergencyPresetsProps {

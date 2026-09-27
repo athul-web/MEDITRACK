@@ -1,0 +1,25 @@
+# AI TODO List - Kerala Hospitals Integration
+
+## Phase 1: Integration & Search (Completed ✅)
+- [x] Create `TODO.md` file to track progress (Done)
+- [x] Analyze the provided Supabase SQL schema for `kerala_hospitals` (Done)
+- [x] Map the database schema to the application's existing types/models (Done)
+- [x] Implement the API layer/service to fetch hospital data from Supabase (Done)
+- [x] Create/Update the UI components to display the hospital list (Done)
+- [x] Implement search and filter functionality (District, Category) (Done)
+- [x] Test the integration and verify data flow (Done)
+- [x] Final polish and UI adjustments (Done)
+
+## Phase 2: Hospital Details & Interactive Features (Pending 🟡)
+- [ ] Implement `HospitalDetailsPage` to show comprehensive info from `kerala_hospitals` (Pending)
+- [ ] Create `HospitalDetails` component with:
+    - [ ] Hospital Category badge (Multi/Single specialty) (Pending)
+    - [ ] System of Medicine display (Pending)
+    - [ ] Contact section with phone/email from DB (Pending)
+    - [ ] Address and District section (Pending)
+- [ ] Implement "Call Hospital" and "Get Directions" functionality (Pending)
+- [ ] Integrate a Map view (e.g., Leaflet or Google Maps) using `coordinates` (Pending)
+- [ ] Add a "Report Resource Update" feature for hospitals to update their own ICU/Ventilator status (Pending)
+- [ ] Implement "Emergency Call" quick-action button (Pending)
+- [ ] Test detail page routing and data fetching (Pending)
+- [ ] Final UI polish for details view (Pending)

@@ -20,12 +20,20 @@ export interface HospitalResources {
   blood: ResourceStatus;
 }
 
+export type HospitalCategory = 'multi_specialty' | 'single_specialty';
+
 export interface Hospital {
   id: string;
   name: string;
+  category: HospitalCategory;
   address: string;
-  city: string;
-  state: string;
+  district: string;
+  phone1?: string;
+  phone2?: string;
+  email?: string;
+  systemOfMedicine?: string;
+  createdAt?: string;
+  updatedAt?: string;
   distanceKm?: number;
   verified: boolean;
   image?: string;
@@ -51,6 +59,8 @@ export interface EmergencyType {
 export interface HospitalSearchFilters {
   emergencyType?: string;
   requiredResources: ResourceType[];
+  district?: string;
+  category?: HospitalCategory;
   location?: {
     latitude?: number;
     longitude?: number;

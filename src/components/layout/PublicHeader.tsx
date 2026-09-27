@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard } from 'lucide-react';
 
 interface PublicHeaderProps {
-  onMenuClick: () => void;
+  onMenuClick?: () => void;
 }
 
 export function PublicHeader({ onMenuClick }: PublicHeaderProps) {

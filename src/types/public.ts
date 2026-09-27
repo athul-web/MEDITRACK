@@ -28,6 +28,8 @@ export interface Hospital {
   category: HospitalCategory;
   address: string;
   district: string;
+  city?: string;
+  state?: string;
   phone1?: string;
   phone2?: string;
   email?: string;

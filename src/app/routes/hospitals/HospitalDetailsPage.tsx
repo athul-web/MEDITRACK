@@ -137,7 +137,7 @@ export function HospitalDetailsPage() {
                   <div>
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Address</h4>
                     <p className="text-slate-900 font-medium leading-relaxed">
-                      {hospital.address}, {hospital.city}, {hospital.state}
+                      {[hospital.address, hospital.city || hospital.district, hospital.state].filter(Boolean).join(', ')}
                     </p>
                   </div>
                 </div>

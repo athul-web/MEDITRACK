@@ -9,6 +9,8 @@ import { HospitalsPage } from './app/routes/hospitals/HospitalsPage';
 import { HospitalDetailsPage } from './app/routes/hospitals/HospitalDetailsPage';
 import { AboutPage } from './app/routes/about/AboutPage';
 import { ContactPage } from './app/routes/contact/ContactPage';
+import { TermsPage } from './app/routes/terms/TermsPage';
+import { CookiesPage } from './app/routes/cookies/CookiesPage';
 import { Login } from './components/Login';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -107,6 +109,9 @@ export default function AppRouter() {
             </PublicLayout>
           }
         />
+
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

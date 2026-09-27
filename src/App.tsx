@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import {
   Equipment,
   Technician,
@@ -121,7 +120,7 @@ const technicianStatusForWorkload = (technician: Technician, workload: number): 
   return technician.status === 'Assigned' ? 'Available' : technician.status;
 };
 
-function MainAppContent() {
+export default function App() {
   // --- Core State ---
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
@@ -760,23 +759,22 @@ function MainAppContent() {
                       <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="text-blue-600 hover:underline ml-2">Clear All</button>
                     </div>
                   )}
-                  {filteredEquipment.length === 0 ? (
-                    <div className="py-16 text-center rounded-2xl bg-white border border-slate-200 p-8 space-y-3">
-                      <Activity className="w-10 h-10 text-slate-400 mx-auto" />
-                      <h4 className="text-base font-bold text-slate-900">No Medical Equipment Found</h4>
-                      <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">Reset Filters</button>
-                    </div>
-                  ) : viewMode === 'cards' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
-                    </div>
-                  ) : (
-                    <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
-                  )}
                 </div>
+                {filteredEquipment.length === 0 ? (
+                  <div className="py-16 text-center rounded-2xl bg-white border border-slate-200 p-8 space-y-3">
+                    <Activity className="w-10 h-10 text-slate-400 mx-auto" />
+                    <h4 className="text-base font-bold text-slate-900">No Medical Equipment Found</h4>
+                    <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">Reset Filters</button>
+                  </div>
+                ) : viewMode === 'cards' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
+                  </div>
+                ) : (
+                  <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
+                )}
               </div>
-            </div>
-          )}
+            )}
 
           {activeNav === 'workorders' && (
             <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
@@ -817,28 +815,5 @@ function MainAppContent() {
         <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
       </div>
     </ErrorBoundary>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50 text-center p-6">
-        <div className="max-w-md space-y-4">
-          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
-            <X className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900">A critical error occurred</h2>
-          <p className="text-slate-600">We're sorry, but the application encountered an unexpected problem. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()} className="btn-primary px-6 py-2">Refresh Page</button>
-        </div>
-      </div>}>
-        <Routes>
-          <Route path="/" element={<MainAppContent />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/cookies" element={<CookiesPage />} />
-        </Routes>
-      </ErrorBoundary>
-    </BrowserRouter>
   );
 }

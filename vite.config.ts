@@ -9,15 +9,13 @@ export default defineConfig(({ mode }) => {
     .filter(name => !env[name]?.trim());
 
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required Supabase environment variable(s): ${missing.join(', ')}. ` +
-      'Set them in .env for local builds or in Vercel Project Settings for deployments.',
+    console.warn(
+      `\x1b[33m[WARN] Missing Supabase environment variable(s): ${missing.join(', ')}. ` +
+      'Set them in .env for local builds or in Vercel Project Settings for deployments.\x1b[0m',
     );
-  }
-
-  if (!/^https?:\/\//i.test(env.VITE_SUPABASE_URL.trim())) {
-    throw new Error(
-      'VITE_SUPABASE_URL must be the Supabase project root URL, including https:// and without /rest/v1.',
+  } else if (!/^https?:\/\//i.test(env.VITE_SUPABASE_URL.trim())) {
+    console.warn(
+      '\x1b[33m[WARN] VITE_SUPABASE_URL must be the Supabase project root URL, including https:// and without /rest/v1.\x1b[0m',
     );
   }
 

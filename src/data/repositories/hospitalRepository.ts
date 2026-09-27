@@ -11,6 +11,7 @@ export interface HospitalRepository {
   getHospitals(): Promise<Hospital[]>;
   getHospitalById(id: string): Promise<Hospital | null>;
   searchHospitals(filters: HospitalSearchFilters, sort?: HospitalSort): Promise<Hospital[]>;
+  updateResources(id: string, resources: Record<string, string>): Promise<void>;
 }
 
 // Export singleton instance

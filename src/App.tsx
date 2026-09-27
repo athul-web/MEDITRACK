@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import {
+  Equipment,
   Equipment,
   Technician,
   ProblemReport,
@@ -656,13 +658,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/75 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
-      {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-xs font-medium shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-150">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 text-slate-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
+    <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50 text-center p-6">
+      <div className="max-w-md space-y-4">
+        <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+          <X className="w-8 h-8" />
         </div>
+        <h2 className="text-2xl font-bold text-slate-900">A critical error occurred</h2>
+        <p className="text-slate-600">We're sorry, but the application encountered an unexpected problem. Please try refreshing the page.</p>
+        <button onClick={() => window.location.reload()} className="btn-primary px-6 py-2">Refresh Page</button>
+      </div>
+    </div>}>
+      <div className="min-h-screen bg-slate-50/75 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
+        {toastMessage && (
+          <div className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-xs font-medium shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>{toastMessage}</span>
+            <button onClick={() => setToastMessage(null)} className="ml-2 text-slate-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
+          </div>
+        )}
       )}
 
       <Header

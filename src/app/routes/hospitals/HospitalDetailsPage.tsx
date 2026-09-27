@@ -38,7 +38,7 @@ function ResourceItem({ label, status }: { label: string; status: ResourceStatus
 export function HospitalDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hospital, isLoading, error, refresh } = useHospital(id!);
+  const { hospital, isLoading, error, refresh } = useHospital(id || '');
 
   if (isLoading) {
     return (
@@ -161,7 +161,7 @@ export function HospitalDetailsPage() {
                   <span className="text-xs text-slate-500 italic">Live data feed</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(hospital.resources).map(([key, status]) => (
+                  {Object.entries(hospital.resources || {}).map(([key, status]) => (
                     <ResourceItem
                       key={key}
                       label={key.replace(/([A-Z])/g, ' $1').trim()}
@@ -182,7 +182,7 @@ export function HospitalDetailsPage() {
             <div className="space-y-3">
               <button
                 className="w-full btn-primary flex items-center justify-center gap-2 py-4"
-                onClick={() => window.open(`tel:${hospital.contact.emergencyPhone || hospital.contact.phone}`)}
+                onClick={() => window.open(`tel:${hospital.contact?.emergencyPhone || hospital.contact?.phone}`)}
               >
                 <Phone className="w-5 h-5" />
                 <span className="font-bold">Emergency Call</span>
@@ -190,7 +190,7 @@ export function HospitalDetailsPage() {
 
               <button
                 className="w-full btn-outline flex items-center justify-center gap-2 py-4"
-                onClick={() => window.open(`tel:${hospital.contact.phone}`)}
+                onClick={() => window.open(`tel:${hospital.contact?.phone}`)}
               >
                 <Phone className="w-5 h-5" />
                 <span>Contact Facility</span>

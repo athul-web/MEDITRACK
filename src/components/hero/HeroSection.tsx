@@ -5,6 +5,7 @@
  */
 
 import { MapPin, Zap, Shield } from 'lucide-react';
+import React from 'react';
 
 interface HeroSectionProps {
   children?: React.ReactNode;

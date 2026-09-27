@@ -57,14 +57,14 @@ export const supabase: SupabaseClient = supabaseConfigError
 // Utility to map snake_case from DB to camelCase for Frontend
 export function mapDbToFrontend<T>(data: any): T {
   if (!data) return data;
-  if (Array.isArray(data)) return data.map(item => mapDbToFrontend(item)) as T;
+  if (Array.isArray(data)) return data.map(item => mapDbToFrontend(item)) as unknown as T;
 
   const mapped: any = {};
   for (const key in data) {
     const camelKey = key.replace(/(_\w)/g, (m) => m[1].toUpperCase());
     mapped[camelKey] = data[key];
   }
-  return mapped;
+  return mapped as unknown as T;
 }
 
 // Utility to map camelCase from Frontend to snake_case for DB

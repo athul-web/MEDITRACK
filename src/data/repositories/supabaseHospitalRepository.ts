@@ -1,10 +1,11 @@
-import { Hospital, HospitalRepository, HospitalSearchFilters, HospitalSort } from './hospitalRepository';
+import { HospitalRepository } from './hospitalRepository';
+import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { supabase, mapDbToFrontend } from '../../lib/supabase';
 
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
     const { data, error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .select('*')
       .order('name');
 
@@ -14,7 +15,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async getHospitalById(id: string): Promise<Hospital | null> {
     const { data, error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -24,7 +25,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   }
 
   async searchHospitals(filters: HospitalSearchFilters, sort: HospitalSort = 'nearest'): Promise<Hospital[]> {
-    let query = supabase.from('public_hospitals').select('*');
+    let query = supabase.from('kerala_hospitals').select('*');
 
     // 1. Resource Filtering (The core requirement)
     const requiredResources: Record<string, string> = {};
@@ -57,19 +58,26 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       query = query.filter('resources', 'cs', requiredResources);
     }
 
+    // 2. New Kerala Hospital Filters
+    if (filters.district) {
+      query = query.eq('district', filters.district);
+    }
+    if (filters.category) {
+      query = query.eq('category', filters.category);
+    }
+
     const { data, error } = await query;
 
     if (error) throw error;
 
-    const results = mapDbToFrontend(data);
+    const results = mapDbToFrontend<Hospital[]>(data);
 
-    // 2. Sorting
+    // 3. Sorting
     switch (sort) {
       case 'recentlyUpdated':
-        // Sorted by last_updated DESC in DB if we wanted, but let's stay consistent with UI
         results.sort((a, b) => {
-          const dateA = new Date(a.lastUpdated).getTime();
-          const dateB = new Date(b.lastUpdated).getTime();
+          const dateA = new Date(a.updatedAt || a.lastUpdated).getTime();
+          const dateB = new Date(b.updatedAt || b.lastUpdated).getTime();
           return dateB - dateA;
         });
         break;
@@ -81,8 +89,6 @@ export class SupabaseHospitalRepository implements HospitalRepository {
         });
         break;
       case 'nearest':
-        // In a real app, we'd pass user coordinates to the query or use PostGIS.
-        // For this phase, we maintain existing behavior (distanceKm is optional).
         results.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
         break;
     }

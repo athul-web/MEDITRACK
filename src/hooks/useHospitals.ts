@@ -20,17 +20,21 @@ export function useHospitals(): UseHospitalsResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = useCallback(async (filters: HospitalSearchFilters, sort: HospitalSort = 'nearest') => {
+  const search = useCallback(async (filters: HospitalSearchFilters, sort: HospitalSort = 'nearest', signal?: AbortSignal) => {
     setIsLoading(true);
     setError(null);
     try {
       const results = await hospitalRepository.searchHospitals(filters, sort);
+      if (signal?.aborted) return;
       setHospitals(results);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
       setError('Failed to load hospitals. Please try again.');
       setHospitals([]);
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -41,7 +45,9 @@ export function useHospitals(): UseHospitalsResult {
 
   // Load initial hospitals on mount
   useEffect(() => {
-    search({ requiredResources: [] }, 'nearest');
+    const controller = new AbortController();
+    search({ requiredResources: [] }, 'nearest', controller.signal);
+    return () => controller.abort();
   }, [search]);
 
   return { hospitals, isLoading, error, search, clearResults };

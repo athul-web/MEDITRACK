@@ -8,7 +8,7 @@ import { HospitalList } from '../../../components/hospitals/HospitalList';
 import { EmergencyCallout } from '../../../components/sidebar/EmergencyCallout';
 import { HospitalPortalCard } from '../../../components/sidebar/HospitalPortalCard';
 import { MottoCard } from '../../../components/sidebar/MottoCard';
-import { emergencyPresets } from '../../../data/mock/emergencyTypes';
+import { emergencyPresets } from '../../../constants/emergencyPresets';
 import { HospitalSearchFilters, ResourceType } from '../../../types/public';
 
 export function HospitalsPage() {

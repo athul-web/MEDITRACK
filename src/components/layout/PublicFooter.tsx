@@ -31,6 +31,8 @@ export function PublicFooter() {
             <Link to="/hospitals" className="text-[13px] text-white/75 hover:text-white underline-offset-2 hover:underline transition-colors">Hospitals</Link>
             <Link to="/about" className="text-[13px] text-white/75 hover:text-white underline-offset-2 hover:underline transition-colors">About</Link>
             <Link to="/contact" className="text-[13px] text-white/75 hover:text-white underline-offset-2 hover:underline transition-colors">Contact</Link>
+            <Link to="/terms" className="text-[13px] text-white/75 hover:text-white underline-offset-2 hover:underline transition-colors">Terms</Link>
+            <Link to="/cookies" className="text-[13px] text-white/75 hover:text-white underline-offset-2 hover:underline transition-colors">Cookies</Link>
           </nav>
 
           {/* Right cluster: copyright */}

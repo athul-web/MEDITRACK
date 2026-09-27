@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
-import { emergencyPresets } from '../../../data/mock/emergencyTypes';
+import { emergencyPresets } from '../../../constants/emergencyPresets';
 import { HospitalSearchFilters } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 import { useHospitals } from '../../../hooks/useHospitals';

@@ -224,6 +224,9 @@ function MainAppContent() {
         setFacilitySettings(
           facilitySettingsResult?.data ? mapDbToFrontend<FacilitySettings>(facilitySettingsResult.data) : null,
         );
+        if (profileRes.data) {
+          // setCurrentRole(profileRes.data.role);
+        }
       } catch (error: any) {
         console.error('Failed to initialize application data:', error);
         showToast(error?.message || 'Error loading system data from backend.');
@@ -774,51 +777,49 @@ function MainAppContent() {
                     <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
                   )}
                 </div>
+              )}
+
+              {activeNav === 'workorders' && (
+                <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
+              )}
+
+              {activeNav === 'history' && (
+                <MaintenanceHistoryView records={maintenanceRecords} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} />
+              )}
+
+              {activeNav === 'technicians' && (
+                <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
+              )}
+            </main>
+
+            <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+              <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <span>{facilitySettings?.hospitalName || 'Medical Center'} • Medical Equipment Uptime & Maintenance System</span>
+                <span>Emergency Dispatch: <strong>{facilitySettings?.primaryContactPhone || 'N/A'}</strong></span>
               </div>
-            </div>
-          )}
+            </footer>
 
-          {activeNav === 'workorders' && (
-            <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
-          )}
+            {selectedEquipment && (
+              <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
+            )}
 
-          {activeNav === 'history' && (
-            <MaintenanceHistoryView records={maintenanceRecords} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} />
-          )}
+            <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} />
 
-          {activeNav === 'technicians' && (
-            <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
-          )}
-        </main>
+            {assignTargetEquipment && (
+              <AssignTechModal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} equipment={assignTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === assignTargetEquipment.id && t.status !== 'Resolved')} technicians={technicians} onAssignTechnician={handleAssignTechnician} />
+            )}
 
-        <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>{facilitySettings?.hospitalName || 'Medical Center'} • Medical Equipment Uptime & Maintenance System</span>
-            <span>Emergency Dispatch: <strong>{facilitySettings?.primaryContactPhone || 'N/A'}</strong></span>
+            {resolveTargetEquipment && (
+              <ResolveRepairModal isOpen={isResolveModalOpen} onClose={() => setIsResolveModalOpen(false)} equipment={resolveTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === resolveTargetEquipment.id && t.status !== 'Resolved')} onResolveRepair={handleResolveRepair} />
+            )}
+
+            <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
+
+            <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
           </div>
-        </footer>
-
-        {selectedEquipment && (
-          <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
-        )}
-
-        <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} />
-
-        {assignTargetEquipment && (
-          <AssignTechModal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} equipment={assignTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === assignTargetEquipment.id && t.status !== 'Resolved')} technicians={technicians} onAssignTechnician={handleAssignTechnician} />
-        )}
-
-        {resolveTargetEquipment && (
-          <ResolveRepairModal isOpen={isResolveModalOpen} onClose={() => setIsResolveModalOpen(false)} equipment={resolveTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === resolveTargetEquipment.id && t.status !== 'Resolved')} onResolveRepair={handleResolveRepair} />
-        )}
-
-        <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
-
-        <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
-      </div>
-    </ErrorBoundary>
-  );
-}
+        </ErrorBoundary>
+      );
+    }
 
 export default function App() {
   return (

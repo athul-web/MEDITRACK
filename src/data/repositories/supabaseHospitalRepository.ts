@@ -24,6 +24,15 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     return data ? mapDbToFrontend(data) : null;
   }
 
+  async updateResources(id: string, resources: Record<string, string>): Promise<void> {
+    const { error } = await supabase
+      .from('kerala_hospitals')
+      .update({ resources })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
   async searchHospitals(filters: HospitalSearchFilters, sort: HospitalSort = 'nearest'): Promise<Hospital[]> {
     let query = supabase.from('kerala_hospitals').select('*');
 

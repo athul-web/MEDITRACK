@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import React from 'react';
 import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown, Landmark } from 'lucide-react';
 import { HospitalSearchFilters, ResourceType, HospitalCategory } from '../../types/public';
-import { emergencyPresets } from '../../data/mock/emergencyTypes';
+import { emergencyPresets } from '../../constants/emergencyPresets';
 import { getDistricts } from '../../services/hospitalService';
 
 interface SearchConsoleProps {

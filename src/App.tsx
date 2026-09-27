@@ -2,11 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import {
   Equipment,
-  Equipment,
   Technician,
   ProblemReport,
   MaintenanceRecord,
-  // UserRole removed – single role model now
   NotificationItem,
   FacilitySettings,
   EquipmentStatus,
@@ -129,7 +127,6 @@ export default function App() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [facilitySettings, setFacilitySettings] = useState<FacilitySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // const [currentRole, setCurrentRole] = useState<UserRole>('Staff');
 
   // --- Navigation & UI State ---
   const [activeNav, setActiveNav] = useState<'equipment' | 'workorders' | 'history' | 'technicians'>('equipment');
@@ -539,6 +536,7 @@ export default function App() {
       showToast(`Repair certified. ${data.equipmentId} is now Operational.`);
     } catch (error: any) {
       showToast(`Error: ${error.message || 'Resolution failed'}`);
+      }
     }
   };
 
@@ -555,9 +553,7 @@ export default function App() {
 
   const handleSaveEquipment = async (eq: Equipment) => {
     try {
-      // Get the authenticated user's hospital_id for tenant isolation
       const hospitalId = await getCurrentUserHospitalId();
-
       const equipmentRow = toEquipmentRow(eq);
       const { error } = await supabase
         .from('equipment')
@@ -676,150 +672,150 @@ export default function App() {
             <button onClick={() => setToastMessage(null)} className="ml-2 text-slate-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
           </div>
         )}
-      )}
 
-      <Header
-        notifications={notifications}
-        onMarkAllNotificationsRead={async () => {
-          const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
-          if (!error) {
-            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-            showToast('Notifications updated.');
-          }
-        }}
-        onNotificationClick={handleSelectEquipmentById}
-        onOpenReportModal={() => handleOpenReportModal(null)}
-        onOpenSettingsModal={() => {
-          setIsSettingsModalOpen(true);
-        }}
-        onLogout={handleLogout}
-        facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
-        fleetUptime={fleetUptime}
-      />
+        <Header
+          notifications={notifications}
+          onMarkAllNotificationsRead={async () => {
+            const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
+            if (!error) {
+              setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+              showToast('Notifications updated.');
+            }
+          }}
+          onNotificationClick={handleSelectEquipmentById}
+          onOpenReportModal={() => handleOpenReportModal(null)}
+          onOpenSettingsModal={() => {
+            setIsSettingsModalOpen(true);
+          }}
+          onLogout={handleLogout}
+          facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
+          fleetUptime={fleetUptime}
+        />
 
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
-            <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
-              <button onClick={() => setActiveNav('equipment')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'equipment' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                <Layers className="w-4 h-4" /> <span>Equipment Fleet ({equipmentList.length})</span>
-              </button>
-              <button onClick={() => setActiveNav('workorders')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'workorders' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                <Wrench className="w-4 h-4" /> <span>Work Orders ({problemReports.filter(t => t.status !== 'Resolved').length})</span>
-              </button>
-              <button onClick={() => setActiveNav('history')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'history' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                <FileText className="w-4 h-4" /> <span>Maintenance History</span>
-              </button>
-              <button onClick={() => setActiveNav('technicians')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'technicians' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                <Users className="w-4 h-4" /> <span>Team</span>
-              </button>
-            </nav>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">User Mode:</span>
-              <span className="px-2.5 py-1 rounded-full font-semibold bg-sky-100 text-sky-900 border border-sky-300">
-                Hospital Staff
-              </span>
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
+              <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+                <button onClick={() => setActiveNav('equipment')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'equipment' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
+                  <Layers className="w-4 h-4" /> <span>Equipment Fleet ({equipmentList.length})</span>
+                </button>
+                <button onClick={() => setActiveNav('workorders')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'workorders' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
+                  <Wrench className="w-4 h-4" /> <span>Work Orders ({problemReports.filter(t => t.status !== 'Resolved').length})</span>
+                </button>
+                <button onClick={() => setActiveNav('history')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'history' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
+                  <FileText className="w-4 h-4" /> <span>Maintenance History</span>
+                </button>
+                <button onClick={() => setActiveNav('technicians')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'technicians' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
+                  <Users className="w-4 h-4" /> <span>Team</span>
+                </button>
+              </nav>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-slate-500">User Mode:</span>
+                <span className="px-2.5 py-1 rounded-full font-semibold bg-sky-100 text-sky-900 border border-sky-300">
+                  Hospital Staff
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {activeNav === 'equipment' && (
-          <div className="space-y-6">
-            <StatsOverview equipment={equipmentList} onFilterStatus={setStatusFilter} selectedStatusFilter={statusFilter} onSelectEquipment={eq => { setSelectedEquipment(eq); setIsDetailOpen(true); }} />
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search equipment..." className="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                  {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <select value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} className="text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700">
-                    <option value="All">All Departments</option>
-                    {availableDepartments.map(dep => <option key={dep} value={dep}>{dep}</option>)}
-                  </select>
-                  <select value={criticalityFilter} onChange={e => setCriticalityFilter(e.target.value)} className="text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700">
-                    <option value="All">All Criticalities</option>
-                    <option value="Life Support">Life Support</option>
-                    <option value="Critical Diagnostic">Critical Diagnostic</option>
-                    <option value="Patient Monitoring">Patient Monitoring</option>
-                    <option value="General Clinical">General Clinical</option>
-                  </select>
-                  <div className="flex items-center p-0.5 rounded-lg border border-slate-300 bg-slate-100">
-                    <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><LayoutGrid className="w-4 h-4" /></button>
-                    <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><List className="w-4 h-4" /></button>
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {activeNav === 'equipment' && (
+            <div className="space-y-6">
+              <StatsOverview equipment={equipmentList} onFilterStatus={setStatusFilter} selectedStatusFilter={statusFilter} onSelectEquipment={eq => { setSelectedEquipment(eq); setIsDetailOpen(true); }} />
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search equipment..." className="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                    {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>}
                   </div>
-                    <button onClick={() => { setEditEquipmentTarget(null); setIsAddEditModalOpen(true); }} className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 shrink-0 shadow-xs">
-                      <Plus className="w-3.5 h-3.5" /> <span>Add Equipment</span>
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} className="text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700">
+                      <option value="All">All Departments</option>
+                      {availableDepartments.map(dep => <option key={dep} value={dep}>{dep}</option>)}
+                    </select>
+                    <select value={criticalityFilter} onChange={e => setCriticalityFilter(e.target.value)} className="text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700">
+                      <option value="All">All Criticalities</option>
+                      <option value="Life Support">Life Support</option>
+                      <option value="Critical Diagnostic">Critical Diagnostic</option>
+                      <option value="Patient Monitoring">Patient Monitoring</option>
+                      <option value="General Clinical">General Clinical</option>
+                    </select>
+                    <div className="flex items-center p-0.5 rounded-lg border border-slate-300 bg-slate-100">
+                      <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><LayoutGrid className="w-4 h-4" /></button>
+                      <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}><List className="w-4 h-4" /></button>
+                    </div>
+                      <button onClick={() => { setEditEquipmentTarget(null); setIsAddEditModalOpen(true); }} className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 shrink-0 shadow-xs">
+                        <Plus className="w-3.5 h-3.5" /> <span>Add Equipment</span>
+                      </button>
+                  </div>
                 </div>
+                {(statusFilter !== 'All' || departmentFilter !== 'All' || criticalityFilter !== 'All' || searchQuery) && (
+                  <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-slate-500">Active Filters:</span>
+                    {statusFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Status: {statusFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setStatusFilter('All')} /></span>}
+                    {departmentFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Dept: {departmentFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setDepartmentFilter('All')} /></span>}
+                    {criticalityFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Crit: {criticalityFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setCriticalityFilter('All')} /></span>}
+                    {searchQuery && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Query: "{searchQuery}" <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchQuery('')} /></span>}
+                    <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="text-blue-600 hover:underline ml-2">Clear All</button>
+                  </div>
+                )}
               </div>
-              {(statusFilter !== 'All' || departmentFilter !== 'All' || criticalityFilter !== 'All' || searchQuery) && (
-                <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-slate-500">Active Filters:</span>
-                  {statusFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Status: {statusFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setStatusFilter('All')} /></span>}
-                  {departmentFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Dept: {departmentFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setDepartmentFilter('All')} /></span>}
-                  {criticalityFilter !== 'All' && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Crit: {criticalityFilter} <X className="w-3 h-3 cursor-pointer" onClick={() => setCriticalityFilter('All')} /></span>}
-                  {searchQuery && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 flex items-center gap-1">Query: "{searchQuery}" <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchQuery('')} /></span>}
-                  <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="text-blue-600 hover:underline ml-2">Clear All</button>
+              {filteredEquipment.length === 0 ? (
+                <div className="py-16 text-center rounded-2xl bg-white border border-slate-200 p-8 space-y-3">
+                  <Activity className="w-10 h-10 text-slate-400 mx-auto" />
+                  <h4 className="text-base font-bold text-slate-900">No Medical Equipment Found</h4>
+                  <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">Reset Filters</button>
                 </div>
+              ) : viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
+                </div>
+              ) : (
+                <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
               )}
             </div>
-            {filteredEquipment.length === 0 ? (
-              <div className="py-16 text-center rounded-2xl bg-white border border-slate-200 p-8 space-y-3">
-                <Activity className="w-10 h-10 text-slate-400 mx-auto" />
-                <h4 className="text-base font-bold text-slate-900">No Medical Equipment Found</h4>
-                <button onClick={() => { setStatusFilter('All'); setDepartmentFilter('All'); setCriticalityFilter('All'); setSearchQuery(''); }} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">Reset Filters</button>
-              </div>
-            ) : viewMode === 'cards' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
-              </div>
-            ) : (
-              <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
-            )}
+          )}
+
+          {activeNav === 'workorders' && (
+            <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
+          )}
+
+          {activeNav === 'history' && (
+            <MaintenanceHistoryView records={maintenanceRecords} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} />
+          )}
+
+          {activeNav === 'technicians' && (
+            <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
+          )}
+        </main>
+
+        <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>{facilitySettings?.hospitalName || 'Medical Center'} • Medical Equipment Uptime & Maintenance System</span>
+            <span>Emergency Dispatch: <strong>{facilitySettings?.primaryContactPhone || 'N/A'}</strong></span>
           </div>
+        </footer>
+
+        {selectedEquipment && (
+          <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
         )}
 
-        {activeNav === 'workorders' && (
-          <WorkOrdersView tickets={problemReports} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} onOpenReportModal={() => handleOpenReportModal(null)} onOpenAssignModal={handleOpenAssignModal} onOpenResolveModal={handleOpenResolveModal} onStartRepair={handleStartRepair} />
+        <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} />
+
+        {assignTargetEquipment && (
+          <AssignTechModal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} equipment={assignTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === assignTargetEquipment.id && t.status !== 'Resolved')} technicians={technicians} onAssignTechnician={handleAssignTechnician} />
         )}
 
-        {activeNav === 'history' && (
-          <MaintenanceHistoryView records={maintenanceRecords} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} />
+        {resolveTargetEquipment && (
+          <ResolveRepairModal isOpen={isResolveModalOpen} onClose={() => setIsResolveModalOpen(false)} equipment={resolveTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === resolveTargetEquipment.id && t.status !== 'Resolved')} onResolveRepair={handleResolveRepair} />
         )}
 
-        {activeNav === 'technicians' && (
-          <TechniciansView technicians={technicians} equipmentList={equipmentList} tickets={problemReports} onFilterEquipmentByTech={name => { setSearchQuery(name); setActiveNav('equipment'); }} />
-        )}
-      </main>
+        <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
 
-      <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>{facilitySettings?.hospitalName || 'Medical Center'} • Medical Equipment Uptime & Maintenance System</span>
-          <span>Emergency Dispatch: <strong>{facilitySettings?.primaryContactPhone || 'N/A'}</strong></span>
-        </div>
-      </footer>
-
-      {selectedEquipment && (
-        <EquipmentDetailModal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} equipment={selectedEquipment} activeTicket={problemReports.find(t => t.equipmentId === selectedEquipment.id && t.status !== 'Resolved')} maintenanceHistory={maintenanceRecords.filter(r => r.equipmentId === selectedEquipment.id)} onReportProblem={eq => { setIsDetailOpen(false); handleOpenReportModal(eq); }} onOpenAssignModal={eq => { setIsDetailOpen(false); handleOpenAssignModal(eq); }} onOpenResolveModal={eq => { setIsDetailOpen(false); handleOpenResolveModal(eq); }} onStartRepair={handleStartRepair} onUpdateStatus={handleUpdateStatus} onAddTicketNote={handleAddTicketNote} />
-      )}
-
-      <ReportProblemModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} equipmentList={equipmentList} preselectedEquipment={reportTargetEquipment} onSubmitReport={handleSubmitProblemReport} />
-
-      {assignTargetEquipment && (
-        <AssignTechModal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} equipment={assignTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === assignTargetEquipment.id && t.status !== 'Resolved')} technicians={technicians} onAssignTechnician={handleAssignTechnician} />
-      )}
-
-      {resolveTargetEquipment && (
-        <ResolveRepairModal isOpen={isResolveModalOpen} onClose={() => setIsResolveModalOpen(false)} equipment={resolveTargetEquipment} activeTicket={problemReports.find(t => t.equipmentId === resolveTargetEquipment.id && t.status !== 'Resolved')} onResolveRepair={handleResolveRepair} />
-      )}
-
-      <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
-
-      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
-    </div>
+        <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
+      </div>
+    </ErrorBoundary>
   );
 }

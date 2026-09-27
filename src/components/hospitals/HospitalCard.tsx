@@ -22,7 +22,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
   };
 
   const formatAddress = (hospital: Hospital) => {
-    return `${hospital.address}, ${hospital.city}, ${hospital.state}`;
+    return [hospital.address, hospital.city || hospital.district, hospital.state].filter(Boolean).join(', ');
   };
 
   // Determine if data is stale (>30 minutes)

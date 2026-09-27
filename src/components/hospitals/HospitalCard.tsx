@@ -125,7 +125,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
             type="button"
             onClick={onCall}
             className="btn-secondary-filled w-full justify-center gap-2"
-            aria-label={hospital.contact.emergencyPhone || hospital.contact.phone ? `Call ${hospital.contact.emergencyPhone || hospital.contact.phone}` : 'Call hospital'}
+            aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -147,9 +147,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           </button>
 
           {/* Emergency phone number */}
-          {(hospital.contact.emergencyPhone || hospital.contact.phone) && (
+          {(hospital.contact?.emergencyPhone || hospital.contact?.phone) && (
             <div className="text-center text-[11px] text-[var(--color-text-muted)] pt-1">
-              Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact.emergencyPhone || hospital.contact.phone}</strong>
+              Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact?.emergencyPhone || hospital.contact?.phone}</strong>
             </div>
           )}
         </div>
@@ -225,7 +225,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
               type="button"
               onClick={onCall}
               className="btn-secondary-filled flex-1 justify-center gap-2"
-              aria-label={hospital.contact.emergencyPhone || hospital.contact.phone ? `Call ${hospital.contact.emergencyPhone || hospital.contact.phone}` : 'Call hospital'}
+              aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -317,7 +317,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
               type="button"
               onClick={onCall}
               className="btn-secondary-filled w-full h-[48px] justify-center gap-2"
-              aria-label={hospital.contact.emergencyPhone || hospital.contact.phone ? `Call ${hospital.contact.emergencyPhone || hospital.contact.phone}` : 'Call hospital'}
+              aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />

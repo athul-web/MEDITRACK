@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Activity, Search, MapPin, ShieldCheck, Phone, Zap } from 'lucide-react';
+import { Activity, Search, MapPin, ShieldCheck, Phone, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
 import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../constants/emergencyPresets';
@@ -14,11 +14,52 @@ import { hospitalRepository } from '../../../data/repositories/hospitalRepositor
  */
 export function HomePage() {
   const navigate = useNavigate();
-  const { hospitals, isLoading } = useHospitals();
+  const { hospitals, isLoading, search } = useHospitals();
   const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>({
     requiredResources: [],
   });
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  // Load nearby hospitals on mount using geolocation
+  const loadNearbyHospitals = useCallback(async () => {
+    if ('geolocation' in navigator) {
+      setIsLocating(true);
+      setLocationError(null);
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000,
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+        await search(
+          {
+            requiredResources: [],
+            location: { latitude, longitude, label: 'Current Location' },
+          },
+          'nearest'
+        );
+      } catch (error) {
+        console.warn('Geolocation failed, loading without location:', error);
+        setLocationError('Could not get your location. Showing all hospitals.');
+        await search({ requiredResources: [] }, 'nearest');
+      } finally {
+        setIsLocating(false);
+      }
+    } else {
+      setLocationError('Geolocation not supported. Showing all hospitals.');
+      await search({ requiredResources: [] }, 'nearest');
+    }
+  }, [search]);
+
+  useEffect(() => {
+    loadNearbyHospitals();
+  }, [loadNearbyHospitals]);
 
   const handlePresetClick = (presetId: string) => {
     const preset = emergencyPresets.find(p => p.id === presetId);
@@ -56,12 +97,14 @@ export function HomePage() {
   };
 
   const handleSearchWithLocation = async () => {
-    // The SearchConsole will handle geolocation and update searchFilters
-    // We just need to wait a bit for the state to update, then navigate
-    // Using a small delay to allow the state update to propagate
+    // Trigger geolocation and search via SearchConsole, then navigate
     setTimeout(() => {
       handleSearch();
     }, 100);
+  };
+
+  const handleUseMyLocation = () => {
+    loadNearbyHospitals();
   };
 
   return (
@@ -122,12 +165,18 @@ export function HomePage() {
 
           {/* Hospital Cards Column */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-cyan-600" />
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">Nearby Hospitals</h2>
-                  <p className="text-xs text-slate-500">Showing hospitals near your location with available resources</p>
+                  <p className="text-xs text-slate-500">
+                    {isLocating
+                      ? 'Finding your location...'
+                      : locationError
+                        ? 'Showing all hospitals (location unavailable)'
+                        : 'Showing hospitals near your location with available resources'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -136,8 +185,34 @@ export function HomePage() {
                   <span>Nearest</span>
                   <span className="text-slate-400">⚙️</span>
                 </div>
+                {(isLocating || locationError) && (
+                  <button
+                    onClick={handleUseMyLocation}
+                    disabled={isLocating}
+                    className="btn-text text-xs whitespace-nowrap"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Locating...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="w-3.5 h-3.5" />
+                        Use My Location
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
+
+            {locationError && !isLocating && (
+              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{locationError}</span>
+              </div>
+            )}
 
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

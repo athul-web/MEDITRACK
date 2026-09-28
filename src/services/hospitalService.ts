@@ -1,6 +1,24 @@
 import { supabase, mapDbToFrontend } from '../lib/supabase';
 import type { Hospital, HospitalSearchFilters, HospitalCategory } from '../types/public';
 
+// Fallback Kerala districts in case database query fails
+const KERALA_DISTRICTS_FALLBACK = [
+  'Alappuzha',
+  'Ernakulam',
+  'Idukki',
+  'Kannur',
+  'Kasaragod',
+  'Kollam',
+  'Kottayam',
+  'Kozhikode',
+  'Malappuram',
+  'Palakkad',
+  'Pathanamthitta',
+  'Thiruvananthapuram',
+  'Thrissur',
+  'Wayanad',
+];
+
 export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Promise<Hospital[]> {
   let query = supabase
     .from('kerala_hospitals')
@@ -45,19 +63,27 @@ export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
 }
 
 export async function getDistricts(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('kerala_hospitals')
-    .select('city, district');
+  try {
+    const { data, error } = await supabase
+      .from('kerala_hospitals')
+      .select('city, district');
 
-  if (error) {
-    console.error('Error fetching districts:', error);
-    throw error;
+    if (error) {
+      console.warn('Error fetching districts from DB, using fallback:', error);
+      return KERALA_DISTRICTS_FALLBACK;
+    }
+
+    const values = (data ?? [])
+      .flatMap((h: any) => [h.city, h.district].filter(Boolean))
+      .map((value: string) => value.trim())
+      .filter(Boolean);
+
+    const uniqueValues = [...new Set(values)].sort((a, b) => a.localeCompare(b));
+
+    // If we got results from DB, use them; otherwise fallback
+    return uniqueValues.length > 0 ? uniqueValues : KERALA_DISTRICTS_FALLBACK;
+  } catch (err) {
+    console.warn('Error in getDistricts, using fallback:', err);
+    return KERALA_DISTRICTS_FALLBACK;
   }
-
-  const values = (data ?? [])
-    .flatMap((h: any) => [h.city, h.district].filter(Boolean))
-    .map((value: string) => value.trim())
-    .filter(Boolean);
-
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }

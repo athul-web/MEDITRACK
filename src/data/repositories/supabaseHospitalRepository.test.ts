@@ -63,14 +63,14 @@ describe('SupabaseHospitalRepository', () => {
     expect(supabase.from).toHaveBeenCalledWith('kerala_hospitals');
   });
 
-  it('should apply district filter using city and address columns', async () => {
+  it('should apply district filter using city, district, and address columns', async () => {
     const mockFilters: HospitalSearchFilters = {
       requiredResources: [],
       district: 'Ernakulam',
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,district.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
   });
 
   it('should apply category filter when provided', async () => {
@@ -91,7 +91,7 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,district.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
     expect(mockClient.eq).toHaveBeenCalledWith('category', 'single_specialty');
   });
 

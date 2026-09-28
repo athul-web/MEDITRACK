@@ -60,7 +60,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     if (filters.district) {
       const districtText = filters.district.trim();
       query = query.or(
-        `city.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+        `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
       );
     }
 

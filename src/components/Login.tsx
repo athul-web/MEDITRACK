@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './Login.css';
 
@@ -128,17 +129,26 @@ export function Login() {
       {/* Right Side Form */}
       <div className="right-panel">
         <div className="form-container">
-          <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <div className="form-header" style={{ marginBottom: 0 }}>
               <h2>Sign in</h2>
               <p>Enter your credentials to access your dashboard.</p>
             </div>
-            <Link
-              to="/hospitals"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
-            >
-              Back to Search
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/hospitals"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700 hover:bg-cyan-50/50"
+              >
+                <Search className="w-3.5 h-3.5 text-cyan-600" />
+                Back to Search
+              </Link>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
+              >
+                Home
+              </Link>
+            </div>
           </div>
 
           {errorMessage && (

@@ -14,6 +14,7 @@ import { getDistricts } from '../../services/hospitalService';
 interface SearchConsoleProps {
   filters: HospitalSearchFilters;
   onChange: (filters: HospitalSearchFilters) => void;
+  onSearch?: () => void;
   variant?: 'horizontal' | 'vertical';
 }
 
@@ -208,8 +209,9 @@ function MultiSelectDropdown({
   );
 }
 
-export function SearchConsole({ filters, onChange, variant = 'horizontal' }: SearchConsoleProps) {
+export function SearchConsole({ filters, onChange, onSearch, variant = 'horizontal' }: SearchConsoleProps) {
   const [isLocationFocused, setIsLocationFocused] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [districts, setDistricts] = useState<string[]>([]);
 
   useEffect(() => {
@@ -231,7 +233,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
   };
 
   const handleLocationChange = (label: string) => {
-    onChange({ ...filters, location: { ...filters.location, label } });
+    onChange({
+      ...filters,
+      location: label ? { ...filters.location, label } : undefined,
+    });
   };
 
   const handleDistrictChange = (district?: string) => {
@@ -240,8 +245,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
 
   const handleUseMyLocation = () => {
     if ('geolocation' in navigator) {
+      setIsLocating(true);
       navigator.geolocation.getCurrentPosition(
         pos => {
+          setIsLocating(false);
           onChange({
             ...filters,
             location: {
@@ -251,10 +258,15 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             },
           });
         },
-        () => {
-          // Fallback or error handling
-        }
+        error => {
+          setIsLocating(false);
+          console.warn('Geolocation access error:', error);
+          alert('Could not determine current location. Please check browser location permissions.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
+    } else {
+      alert('Geolocation is not supported by your browser.');
     }
   };
 
@@ -317,6 +329,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -325,7 +338,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             <button
               type="button"
               onClick={handleUseMyLocation}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+              disabled={isLocating}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] transition-colors ${
+                isLocating ? 'text-[var(--color-brand-blue)] animate-spin' : 'text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)]'
+              }`}
               aria-label="Use my current location"
             >
               <Crosshair className="w-5 h-5" />
@@ -427,7 +443,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
 
   return (
     <div className="mt-8 bg-white rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] p-5">
-      {/* Desktop: Single row with 4 segments */}
+      {/* Desktop: Single row with 6 segments */}
       <div className="hidden lg:flex lg:items-center gap-0 overflow-hidden">
         {/* Segment 1: Emergency Type */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
@@ -441,7 +457,31 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
           />
         </div>
 
-        {/* Segment 2: Required Resources */}
+        {/* Segment 2: Hospital Category */}
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
+          <CustomSelect
+            label="Hospital Category"
+            value={filters.category}
+            options={categoryOptions}
+            onChange={handleCategoryChange}
+            icon={Landmark}
+            placeholder="Select category"
+          />
+        </div>
+
+        {/* Segment 3: District */}
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
+          <CustomSelect
+            label="District"
+            value={filters.district}
+            options={districtOptions}
+            onChange={handleDistrictChange}
+            icon={MapPin}
+            placeholder="Select district"
+          />
+        </div>
+
+        {/* Segment 4: Required Resources */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <MultiSelectDropdown
             label="Required Resources"
@@ -453,7 +493,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
           />
         </div>
 
-        {/* Segment 3: Location */}
+        {/* Segment 5: Location */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <div className="flex items-center gap-3 min-w-0">
             <MapPin className="w-5 h-5 flex-shrink-0" />
@@ -464,6 +504,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
                   type="text"
                   value={filters.location?.label || ''}
                   onChange={e => handleLocationChange(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
                   onFocus={() => setIsLocationFocused(true)}
                   onBlur={() => setIsLocationFocused(false)}
                   placeholder="Your Location"
@@ -472,7 +513,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
                 <button
                   type="button"
                   onClick={handleUseMyLocation}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+                  disabled={isLocating}
+                  className={`absolute right-0 top-1/2 -translate-y-1/2 p-2 transition-colors ${
+                    isLocating ? 'text-[var(--color-brand-blue)] animate-spin' : 'text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)]'
+                  }`}
                   aria-label="Use my current location"
                 >
                   <Crosshair className="w-5 h-5" />
@@ -482,11 +526,12 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
           </div>
         </div>
 
-        {/* Segment 4: Search Button */}
+        {/* Segment 6: Search Button */}
         <div className="px-4 py-3 pl-6 shrink-0">
           <button
             type="button"
-            className="btn-primary whitespace-nowrap"
+            onClick={onSearch}
+            className="btn-primary whitespace-nowrap cursor-pointer"
             aria-label="Search hospitals"
           >
             <Search className="w-5 h-5" />
@@ -495,8 +540,8 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
         </div>
       </div>
 
-      {/* Tablet: 2x2 grid */}
-      <div className="lg:hidden md:grid md:grid-cols-2 gap-4">
+      {/* Tablet: 3x2 grid */}
+      <div className="lg:hidden md:grid md:grid-cols-3 gap-4">
         <div className="relative">
           <label htmlFor="emergency-type" className="field-label">Emergency Type</label>
           <CustomSelect
@@ -510,6 +555,30 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
         </div>
 
         <div className="relative">
+          <label htmlFor="category" className="field-label">Hospital Category</label>
+          <CustomSelect
+            label="Hospital Category"
+            value={filters.category}
+            options={categoryOptions}
+            onChange={handleCategoryChange}
+            icon={Landmark}
+            placeholder="Select category"
+          />
+        </div>
+
+        <div className="relative">
+          <label htmlFor="district" className="field-label">District</label>
+          <CustomSelect
+            label="District"
+            value={filters.district}
+            options={districtOptions}
+            onChange={handleDistrictChange}
+            icon={MapPin}
+            placeholder="Select district"
+          />
+        </div>
+
+        <div className="md:col-span-3 relative">
           <label htmlFor="required-resources" className="field-label">Required Resources</label>
           <MultiSelectDropdown
             label="Required Resources"
@@ -521,7 +590,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
           />
         </div>
 
-        <div className="md:col-span-2 relative">
+        <div className="md:col-span-3 relative">
           <label htmlFor="location" className="field-label">Your Location</label>
           <div className="relative">
             <MapPin className="field-icon" />
@@ -530,6 +599,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -538,7 +608,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             <button
               type="button"
               onClick={handleUseMyLocation}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+              disabled={isLocating}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] transition-colors ${
+                isLocating ? 'text-[var(--color-brand-blue)] animate-spin' : 'text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)]'
+              }`}
               aria-label="Use my current location"
             >
               <Crosshair className="w-5 h-5" />
@@ -546,10 +619,11 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
           </div>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-3">
           <button
             type="button"
-            className="btn-primary w-full h-[52px]"
+            onClick={onSearch}
+            className="btn-primary w-full h-[52px] cursor-pointer"
             aria-label="Search hospitals"
           >
             <Search className="w-5 h-5" />
@@ -569,6 +643,30 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             onChange={handleEmergencyTypeChange}
             icon={Stethoscope}
             placeholder="Select emergency type"
+          />
+        </div>
+
+        <div className="relative">
+          <label htmlFor="category-mobile" className="field-label">Hospital Category</label>
+          <CustomSelect
+            label="Hospital Category"
+            value={filters.category}
+            options={categoryOptions}
+            onChange={handleCategoryChange}
+            icon={Landmark}
+            placeholder="Select category"
+          />
+        </div>
+
+        <div className="relative">
+          <label htmlFor="district-mobile" className="field-label">District</label>
+          <CustomSelect
+            label="District"
+            value={filters.district}
+            options={districtOptions}
+            onChange={handleDistrictChange}
+            icon={MapPin}
+            placeholder="Select district"
           />
         </div>
 
@@ -593,6 +691,7 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -601,7 +700,10 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             <button
               type="button"
               onClick={handleUseMyLocation}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+              disabled={isLocating}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] transition-colors ${
+                isLocating ? 'text-[var(--color-brand-blue)] animate-spin' : 'text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)]'
+              }`}
               aria-label="Use my current location"
             >
               <Crosshair className="w-5 h-5" />
@@ -611,7 +713,8 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
 
         <button
           type="button"
-          className="btn-primary w-full h-[52px]"
+          onClick={onSearch}
+          className="btn-primary w-full h-[52px] cursor-pointer"
           aria-label="Search hospitals"
         >
           <Search className="w-5 h-5" />

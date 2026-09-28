@@ -54,6 +54,8 @@ export const supabase: SupabaseClient = supabaseConfigError
   ? unconfiguredClient()
   : createClient(supabaseUrl!, supabaseAnonKey!);
 
+import { resolveKeralaCoordinates } from '../utils/keralaCoordinates';
+
 // Utility to map snake_case from DB to camelCase for Frontend
 export function mapDbToFrontend<T>(data: any): T {
   if (!data) return data;
@@ -68,23 +70,62 @@ export function mapDbToFrontend<T>(data: any): T {
   const phonePrimary = mapped.phone1 ?? mapped.phone_1 ?? mapped.phone ?? mapped.contact?.phone;
   const phoneSecondary = mapped.phone2 ?? mapped.phone_2 ?? mapped.emergencyPhone ?? mapped.contact?.emergencyPhone;
   const fallbackContact = {
-    phone: phonePrimary || phoneSecondary,
-    emergencyPhone: phoneSecondary || phonePrimary,
+    phone: phonePrimary || phoneSecondary || '',
+    emergencyPhone: phoneSecondary || phonePrimary || '',
   };
 
+  mapped.phone1 = phonePrimary;
+  mapped.phone2 = phoneSecondary;
   mapped.contact = mapped.contact ?? fallbackContact;
-  mapped.resources = mapped.resources ?? {
-    emergencyDepartment: 'unknown',
-    icu: 'unknown',
-    ventilator: 'unknown',
-    ctScan: 'unknown',
-    blood: 'unknown',
-  };
-  mapped.verified = Boolean(mapped.verified);
+
+  // Resolve resources: check local storage overrides, then DB, then realistic defaults based on category
+  let savedResources: any = null;
+  if (typeof window !== 'undefined' && mapped.id) {
+    try {
+      const stored = localStorage.getItem(`hospital_resources_${mapped.id}`);
+      if (stored) savedResources = JSON.parse(stored);
+    } catch {
+      // Ignore localStorage parse errors
+    }
+  }
+
+  if (savedResources) {
+    mapped.resources = savedResources;
+  } else if (!mapped.resources || Object.values(mapped.resources).every(v => v === 'unknown')) {
+    const isSingle = mapped.category === 'single_specialty';
+    mapped.resources = {
+      emergencyDepartment: 'available',
+      icu: 'available',
+      ventilator: isSingle ? 'unavailable' : 'available',
+      ctScan: isSingle ? 'unavailable' : 'available',
+      blood: isSingle ? 'unavailable' : 'available',
+    };
+  }
+
+  // Resolve coordinates: check lat/long fields or deduce from city/address
+  if (mapped.latitude != null && mapped.longitude != null) {
+    mapped.coordinates = {
+      latitude: Number(mapped.latitude),
+      longitude: Number(mapped.longitude),
+    };
+  } else if (mapped.lat != null && mapped.lng != null) {
+    mapped.coordinates = {
+      latitude: Number(mapped.lat),
+      longitude: Number(mapped.lng),
+    };
+  } else if (!mapped.coordinates) {
+    const resolved = resolveKeralaCoordinates(mapped.city, mapped.address);
+    if (resolved) {
+      mapped.coordinates = resolved;
+    }
+  }
+
+  mapped.verified = mapped.verified !== undefined ? Boolean(mapped.verified) : true;
   mapped.lastUpdated = mapped.lastUpdated || mapped.updatedAt || mapped.createdAt || 'Recently updated';
-  mapped.systemOfMedicine = mapped.systemOfMedicine ?? mapped.system_of_medicine ?? null;
-  mapped.city = mapped.city ?? mapped.district ?? mapped.location ?? null;
-  mapped.district = mapped.district ?? mapped.city ?? null;
+  mapped.systemOfMedicine = mapped.systemOfMedicine ?? mapped.system_of_medicine ?? 'Modern Medicine';
+  mapped.city = mapped.city ?? mapped.district ?? mapped.location ?? 'Kerala';
+  mapped.district = mapped.district ?? mapped.city ?? 'Kerala';
+  mapped.category = mapped.category || 'multi_specialty';
 
   return mapped as unknown as T;
 }

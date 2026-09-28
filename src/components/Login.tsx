@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './Login.css';
 
@@ -128,9 +128,17 @@ export function Login() {
       {/* Right Side Form */}
       <div className="right-panel">
         <div className="form-container">
-          <div className="form-header">
-            <h2>Sign in</h2>
-            <p>Enter your credentials to access your dashboard.</p>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="form-header" style={{ marginBottom: 0 }}>
+              <h2>Sign in</h2>
+              <p>Enter your credentials to access your dashboard.</p>
+            </div>
+            <Link
+              to="/hospitals"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
+            >
+              Back to Search
+            </Link>
           </div>
 
           {errorMessage && (

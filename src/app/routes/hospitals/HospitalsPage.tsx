@@ -18,9 +18,13 @@ export function HospitalsPage() {
   const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>(() => {
     const resourcesParam = searchParams.get('resources');
     const locationParam = searchParams.get('location');
+    const districtParam = searchParams.get('district');
+    const categoryParam = searchParams.get('category');
     return {
       emergencyType: (searchParams.get('emergencyType') || undefined) as string | undefined,
       requiredResources: (resourcesParam ? resourcesParam.split(',') : []) as ResourceType[],
+      district: districtParam || undefined,
+      category: categoryParam as HospitalSearchFilters['category'] | undefined,
       location: locationParam ? { label: locationParam } : undefined,
     };
   });

@@ -163,6 +163,7 @@ export default function App() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       showToast('Signed out successfully.');
+      window.location.href = '/hospitals';
     } catch (error: any) {
       showToast(`Error: ${error.message || 'Logout failed'}`);
     }

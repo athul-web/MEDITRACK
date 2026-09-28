@@ -63,6 +63,7 @@ export interface HospitalSearchFilters {
   requiredResources: ResourceType[];
   district?: string;
   category?: HospitalCategory;
+  query?: string;
   location?: {
     latitude?: number;
     longitude?: number;

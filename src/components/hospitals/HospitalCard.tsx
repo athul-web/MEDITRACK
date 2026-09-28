@@ -123,7 +123,10 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           {/* Call Hospital - Primary Action */}
           <button
             type="button"
-            onClick={onCall}
+            onClick={() => {
+  const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone;
+  if (phone) window.open(`tel:${phone}`);
+}}
             className="btn-secondary-filled w-full justify-center gap-2"
             aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
           >

@@ -85,6 +85,10 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
   const [sort, setSort] = useState<HospitalSort>('nearest');
   const { hospitals, isLoading, error, search } = useHospitals();
 
+  useEffect(() => {
+    search(filters, sort);
+  }, [filters, sort, search]);
+
   const handleSortChange = useCallback((newSort: HospitalSort) => {
     setSort(newSort);
     search(filters, newSort);
@@ -208,7 +212,12 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
             key={hospital.id}
             hospital={hospital}
             onViewDetails={() => navigate(`/hospitals/${hospital.id}`)}
-            onCall={() => { /* TODO: initiate call */ }}
+            onCall={() => {
+              const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone || hospital.phone1 || hospital.phone2;
+              if (phone) {
+                window.open(`tel:${phone}`);
+              }
+            }}
           />
         ))}
       </div>

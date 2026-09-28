@@ -7,6 +7,7 @@ import { emergencyPresets } from '../../../constants/emergencyPresets';
 import { HospitalSearchFilters } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 import { useHospitals } from '../../../hooks/useHospitals';
+import { hospitalRepository } from '../../../data/repositories/hospitalRepository';
 
 /**
  * Home Page implementation
@@ -47,14 +48,20 @@ export function HomePage() {
       params.append('lat', String(searchFilters.location.latitude));
       params.append('lng', String(searchFilters.location.longitude));
     }
-    if (searchFilters.district) {
-      params.append('district', searchFilters.district);
-    }
     if (searchFilters.category) {
       params.append('category', searchFilters.category);
     }
 
     navigate(`/hospitals?${params.toString()}`);
+  };
+
+  const handleSearchWithLocation = async () => {
+    // The SearchConsole will handle geolocation and update searchFilters
+    // We just need to wait a bit for the state to update, then navigate
+    // Using a small delay to allow the state update to propagate
+    setTimeout(() => {
+      handleSearch();
+    }, 100);
   };
 
   return (
@@ -88,17 +95,9 @@ export function HomePage() {
                   filters={searchFilters}
                   onChange={setSearchFilters}
                   onSearch={handleSearch}
+                  onSearchWithLocation={handleSearchWithLocation}
                   variant="horizontal"
                 />
-              </div>
-              <div className="md:col-span-12 flex justify-end mt-1">
-                <button
-                  onClick={handleSearch}
-                  className="w-full md:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Search</span>
-                </button>
               </div>
             </div>
           </div>

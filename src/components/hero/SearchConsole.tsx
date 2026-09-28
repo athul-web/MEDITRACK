@@ -6,15 +6,15 @@
 
 import { useState, useRef, useEffect } from 'react';
 import React from 'react';
-import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown, Landmark } from 'lucide-react';
+import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown, Landmark, AlertCircle } from 'lucide-react';
 import { HospitalSearchFilters, ResourceType, HospitalCategory } from '../../types/public';
 import { emergencyPresets } from '../../constants/emergencyPresets';
-import { getDistricts } from '../../services/hospitalService';
 
 interface SearchConsoleProps {
   filters: HospitalSearchFilters;
   onChange: (filters: HospitalSearchFilters) => void;
   onSearch?: () => void;
+  onSearchWithLocation?: () => Promise<void>;
   variant?: 'horizontal' | 'vertical';
 }
 
@@ -209,14 +209,10 @@ function MultiSelectDropdown({
   );
 }
 
-export function SearchConsole({ filters, onChange, onSearch, variant = 'horizontal' }: SearchConsoleProps) {
+export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocation, variant = 'horizontal' }: SearchConsoleProps) {
   const [isLocationFocused, setIsLocationFocused] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
-  const [districts, setDistricts] = useState<string[]>([]);
-
-  useEffect(() => {
-    getDistricts().then(setDistricts).catch(console.error);
-  }, []);
+  const [geolocationError, setGeolocationError] = useState<string | null>(null);
 
   const handleEmergencyTypeChange = (emergencyType?: string) => {
     const preset = emergencyPresets.find(p => p.id === emergencyType);
@@ -237,15 +233,13 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
       ...filters,
       location: label ? { ...filters.location, label } : undefined,
     });
-  };
-
-  const handleDistrictChange = (district?: string) => {
-    onChange({ ...filters, district });
+    setGeolocationError(null);
   };
 
   const handleUseMyLocation = () => {
     if ('geolocation' in navigator) {
       setIsLocating(true);
+      setGeolocationError(null);
       navigator.geolocation.getCurrentPosition(
         pos => {
           setIsLocating(false);
@@ -261,18 +255,66 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
         error => {
           setIsLocating(false);
           console.warn('Geolocation access error:', error);
-          alert('Could not determine current location. Please check browser location permissions.');
+          setGeolocationError('Could not determine current location. Please check browser location permissions.');
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
     } else {
-      alert('Geolocation is not supported by your browser.');
+      setGeolocationError('Geolocation is not supported by your browser.');
+    }
+  };
+
+  const handleSearchWithAutoLocation = async () => {
+    // If there's already a location with coordinates, use it
+    if (filters.location?.latitude !== undefined && filters.location?.longitude !== undefined) {
+      onSearchWithLocation?.();
+      return;
+    }
+
+    // If there's a location label but no coordinates, try to use it as-is
+    if (filters.location?.label) {
+      onSearchWithLocation?.();
+      return;
+    }
+
+    // No location set - automatically get user's current location
+    if ('geolocation' in navigator) {
+      setIsLocating(true);
+      setGeolocationError(null);
+      try {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          });
+        });
+
+        setIsLocating(false);
+        onChange({
+          ...filters,
+          location: {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            label: 'Current Location',
+          },
+        });
+        onSearchWithLocation?.();
+      } catch (error) {
+        setIsLocating(false);
+        console.warn('Geolocation access error:', error);
+        setGeolocationError('Could not determine current location. Please check browser location permissions or enter a location manually.');
+        // Still allow search to proceed without location
+        onSearchWithLocation?.();
+      }
+    } else {
+      setGeolocationError('Geolocation is not supported by your browser. Please enter a location manually.');
+      onSearchWithLocation?.();
     }
   };
 
   const emergencyTypeOptions = emergencyPresets.map(p => ({ value: p.id, label: p.label }));
   const resourceOptions = Object.entries(resourceLabels).map(([value, label]) => ({ value, label }));
-  const districtOptions = districts.map(d => ({ value: d, label: d }));
 
   if (variant === 'vertical') {
     return (
@@ -300,17 +342,6 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
           />
         </div>
         <div className="relative">
-          <label className="field-label">District</label>
-          <CustomSelect
-            label="District"
-            value={filters.district}
-            options={districtOptions}
-            onChange={handleDistrictChange}
-            icon={MapPin}
-            placeholder="Select district"
-          />
-        </div>
-        <div className="relative">
           <label className="field-label">Required Resources</label>
           <MultiSelectDropdown
             label="Required Resources"
@@ -329,7 +360,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearchWithAutoLocation(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -347,8 +378,14 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
               <Crosshair className="w-5 h-5" />
             </button>
           </div>
+          {geolocationError && (
+            <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              {geolocationError}
+            </p>
+          )}
         </div>
-        {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.district || filters.category) && (
+        {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category) && (
           <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
             <span className="text-xs text-[var(--color-text-muted)]">Active:</span>
             {filters.emergencyType && (
@@ -374,22 +411,6 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
                   onClick={() => handleCategoryChange(undefined)}
                   className="ml-1 hover:text-[var(--color-brand-blue)]"
                   aria-label="Remove category filter"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </span>
-            )}
-            {filters.district && (
-              <span className="badge-preset badge-preset-active flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                {filters.district}
-                <button
-                  type="button"
-                  onClick={() => handleDistrictChange(undefined)}
-                  className="ml-1 hover:text-[var(--color-brand-blue)]"
-                  aria-label="Remove district filter"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -443,7 +464,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
 
   return (
     <div className="mt-8 bg-white rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] p-5">
-      {/* Desktop: Single row with 6 segments */}
+      {/* Desktop: Single row with 5 segments (removed district) */}
       <div className="hidden lg:flex lg:items-center gap-0 overflow-hidden">
         {/* Segment 1: Emergency Type */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
@@ -469,19 +490,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
           />
         </div>
 
-        {/* Segment 3: District */}
-        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
-          <CustomSelect
-            label="District"
-            value={filters.district}
-            options={districtOptions}
-            onChange={handleDistrictChange}
-            icon={MapPin}
-            placeholder="Select district"
-          />
-        </div>
-
-        {/* Segment 4: Required Resources */}
+        {/* Segment 3: Required Resources */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <MultiSelectDropdown
             label="Required Resources"
@@ -493,7 +502,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
           />
         </div>
 
-        {/* Segment 5: Location */}
+        {/* Segment 4: Location (was Segment 5) */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <div className="flex items-center gap-3 min-w-0">
             <MapPin className="w-5 h-5 flex-shrink-0" />
@@ -504,7 +513,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
                   type="text"
                   value={filters.location?.label || ''}
                   onChange={e => handleLocationChange(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSearchWithAutoLocation(); }}
                   onFocus={() => setIsLocationFocused(true)}
                   onBlur={() => setIsLocationFocused(false)}
                   placeholder="Your Location"
@@ -526,11 +535,11 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
           </div>
         </div>
 
-        {/* Segment 6: Search Button */}
+        {/* Segment 5: Search Button (was Segment 6) */}
         <div className="px-4 py-3 pl-6 shrink-0">
           <button
             type="button"
-            onClick={onSearch}
+            onClick={handleSearchWithAutoLocation}
             className="btn-primary whitespace-nowrap cursor-pointer"
             aria-label="Search hospitals"
           >
@@ -540,7 +549,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
         </div>
       </div>
 
-      {/* Tablet: 3x2 grid */}
+      {/* Tablet: 3x2 grid (adjusted to 3 columns without district) */}
       <div className="lg:hidden md:grid md:grid-cols-3 gap-4">
         <div className="relative">
           <label htmlFor="emergency-type" className="field-label">Emergency Type</label>
@@ -566,18 +575,6 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
           />
         </div>
 
-        <div className="relative">
-          <label htmlFor="district" className="field-label">District</label>
-          <CustomSelect
-            label="District"
-            value={filters.district}
-            options={districtOptions}
-            onChange={handleDistrictChange}
-            icon={MapPin}
-            placeholder="Select district"
-          />
-        </div>
-
         <div className="md:col-span-3 relative">
           <label htmlFor="required-resources" className="field-label">Required Resources</label>
           <MultiSelectDropdown
@@ -599,7 +596,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearchWithAutoLocation(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -622,7 +619,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
         <div className="md:col-span-3">
           <button
             type="button"
-            onClick={onSearch}
+            onClick={handleSearchWithAutoLocation}
             className="btn-primary w-full h-[52px] cursor-pointer"
             aria-label="Search hospitals"
           >
@@ -659,18 +656,6 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
         </div>
 
         <div className="relative">
-          <label htmlFor="district-mobile" className="field-label">District</label>
-          <CustomSelect
-            label="District"
-            value={filters.district}
-            options={districtOptions}
-            onChange={handleDistrictChange}
-            icon={MapPin}
-            placeholder="Select district"
-          />
-        </div>
-
-        <div className="relative">
           <label htmlFor="required-resources-mobile" className="field-label">Required Resources</label>
           <MultiSelectDropdown
             label="Required Resources"
@@ -691,7 +676,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
               type="text"
               value={filters.location?.label || ''}
               onChange={e => handleLocationChange(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') onSearch?.(); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearchWithAutoLocation(); }}
               onFocus={() => setIsLocationFocused(true)}
               onBlur={() => setIsLocationFocused(false)}
               placeholder="Your Location"
@@ -713,7 +698,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
 
         <button
           type="button"
-          onClick={onSearch}
+          onClick={handleSearchWithAutoLocation}
           className="btn-primary w-full h-[52px] cursor-pointer"
           aria-label="Search hospitals"
         >
@@ -722,7 +707,7 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
         </button>
       </div>
 
-      {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.district || filters.category) && (
+      {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category) && (
         <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">Active:</span>
           {filters.emergencyType && (
@@ -748,22 +733,6 @@ export function SearchConsole({ filters, onChange, onSearch, variant = 'horizont
                 onClick={() => handleCategoryChange(undefined)}
                 className="ml-1 hover:text-[var(--color-brand-blue)]"
                 aria-label="Remove category filter"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
-          {filters.district && (
-            <span className="badge-preset badge-preset-active flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
-              {filters.district}
-              <button
-                type="button"
-                onClick={() => handleDistrictChange(undefined)}
-                className="ml-1 hover:text-[var(--color-brand-blue)]"
-                aria-label="Remove district filter"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

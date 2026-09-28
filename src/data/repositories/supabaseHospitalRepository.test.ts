@@ -9,6 +9,8 @@ const createSupabaseMock = () => {
     from: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
     filter: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     // Make the final call resolve to data/error
@@ -16,7 +18,6 @@ const createSupabaseMock = () => {
       return Promise.resolve({ data: [], error: null }).then(onfulfilled);
     }),
   };
-  // To allow `await query` to work, the mock needs to be a Thenable
   return mock;
 };
 
@@ -25,6 +26,8 @@ vi.mock('../../lib/supabase', () => ({
     from: vi.fn(),
     select: vi.fn(),
     eq: vi.fn(),
+    or: vi.fn(),
+    ilike: vi.fn(),
     filter: vi.fn(),
     order: vi.fn(),
   },
@@ -43,9 +46,10 @@ describe('SupabaseHospitalRepository', () => {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
       filter: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
-      // This allows the query to be awaited
       then: vi.fn().mockImplementation(function(callback) {
         return Promise.resolve({ data: [], error: null }).then(callback);
       }),
@@ -59,14 +63,14 @@ describe('SupabaseHospitalRepository', () => {
     expect(supabase.from).toHaveBeenCalledWith('kerala_hospitals');
   });
 
-  it('should apply district filter when provided', async () => {
+  it('should apply district filter using city and address columns', async () => {
     const mockFilters: HospitalSearchFilters = {
       requiredResources: [],
       district: 'Ernakulam',
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.eq).toHaveBeenCalledWith('district', 'Ernakulam');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
   });
 
   it('should apply category filter when provided', async () => {
@@ -87,7 +91,21 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.eq).toHaveBeenCalledWith('district', 'Trivandrum');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
     expect(mockClient.eq).toHaveBeenCalledWith('category', 'single_specialty');
+  });
+
+  it('should not perform string query matching for GPS "Current Location"', async () => {
+    const mockFilters: HospitalSearchFilters = {
+      requiredResources: [],
+      location: {
+        latitude: 9.9816,
+        longitude: 76.2999,
+        label: 'Current Location',
+      },
+    };
+
+    await repo.searchHospitals(mockFilters);
+    expect(mockClient.or).not.toHaveBeenCalled();
   });
 });

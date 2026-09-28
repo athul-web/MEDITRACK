@@ -26,19 +26,32 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   }
 
   async updateResources(id: string, resources: Record<string, string>): Promise<void> {
-    const { error } = await supabase
-      .from('kerala_hospitals')
-      .update({ resources })
-      .eq('id', id);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`hospital_resources_${id}`, JSON.stringify(resources));
+      } catch {
+        // Ignore localStorage error
+      }
+    }
 
-    if (error) throw error;
+    try {
+      await supabase
+        .from('kerala_hospitals')
+        .update({ resources })
+        .eq('id', id);
+    } catch (err) {
+      console.warn('Backend resources column may not exist, cached locally:', err);
+    }
   }
 
   async searchHospitals(filters: HospitalSearchFilters, sort: HospitalSort = 'nearest'): Promise<Hospital[]> {
     let query = supabase.from('kerala_hospitals').select('*');
 
-    const locationText = (filters.location?.label || filters.district || filters.query || '').trim();
-    const normalizedLocationText = locationText.toLowerCase();
+    const isCurrentLocation = (label?: string) => {
+      if (!label) return false;
+      const lower = label.trim().toLowerCase();
+      return lower === 'current location' || lower === 'my location' || lower === 'use my location';
+    };
 
     if (filters.category) {
       query = query.eq('category', filters.category);
@@ -47,20 +60,24 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     if (filters.district) {
       const districtText = filters.district.trim();
       query = query.or(
-        `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+        `city.ilike.%${districtText}%,address.ilike.%${districtText}%`,
       );
     }
 
-    if (normalizedLocationText) {
+    const customLocationText = filters.location?.label && !isCurrentLocation(filters.location.label)
+      ? filters.location.label.trim()
+      : '';
+
+    if (customLocationText) {
       query = query.or(
-        `name.ilike.%${normalizedLocationText}%,city.ilike.%${normalizedLocationText}%,district.ilike.%${normalizedLocationText}%,address.ilike.%${normalizedLocationText}%,email.ilike.%${normalizedLocationText}%,id::text.ilike.%${normalizedLocationText}%`,
+        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,email.ilike.%${customLocationText}%`,
       );
     }
 
     if (filters.query && filters.query.trim()) {
       const trimmedQuery = filters.query.trim();
       query = query.or(
-        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%,id::text.ilike.%${trimmedQuery}%`,
+        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
       );
     }
 
@@ -69,8 +86,8 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
     let results = mapDbToFrontend<Hospital[]>(data ?? []);
 
-    if (locationText) {
-      const match = locationText.toLowerCase();
+    if (customLocationText) {
+      const match = customLocationText.toLowerCase();
       results = results.filter(hospital => {
         const haystack = [
           hospital.name,
@@ -78,10 +95,6 @@ export class SupabaseHospitalRepository implements HospitalRepository {
           hospital.address,
           hospital.district,
           hospital.email,
-          hospital.id,
-          hospital.systemOfMedicine,
-          hospital.contact?.phone,
-          hospital.contact?.emergencyPhone,
         ]
           .filter(Boolean)
           .join(' ')
@@ -101,17 +114,29 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       });
     }
 
-    if (filters.location?.latitude !== undefined && filters.location?.longitude !== undefined) {
-      const { latitude, longitude } = filters.location;
+    // Determine reference coordinates for distance calculations
+    let userLat = filters.location?.latitude;
+    let userLng = filters.location?.longitude;
+
+    if ((userLat === undefined || userLng === undefined) && filters.district) {
+      const { resolveKeralaCoordinates } = await import('../../utils/keralaCoordinates');
+      const resolved = resolveKeralaCoordinates(filters.district);
+      if (resolved) {
+        userLat = resolved.latitude;
+        userLng = resolved.longitude;
+      }
+    }
+
+    if (userLat !== undefined && userLng !== undefined) {
       results.forEach(h => {
         if (h.coordinates?.latitude && h.coordinates?.longitude) {
           const dist = calculateDistanceKm(
-            latitude,
-            longitude,
+            userLat!,
+            userLng!,
             h.coordinates.latitude,
             h.coordinates.longitude,
           );
-          h.distanceKm = dist ?? undefined;
+          h.distanceKm = dist != null ? Math.round(dist * 10) / 10 : undefined;
         }
       });
     }
@@ -133,7 +158,14 @@ export class SupabaseHospitalRepository implements HospitalRepository {
         break;
       case 'nearest':
       default:
-        results.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
+        results.sort((a, b) => {
+          if (a.distanceKm != null && b.distanceKm != null) {
+            return a.distanceKm - b.distanceKm;
+          }
+          if (a.distanceKm != null) return -1;
+          if (b.distanceKm != null) return 1;
+          return a.name.localeCompare(b.name);
+        });
         break;
     }
 

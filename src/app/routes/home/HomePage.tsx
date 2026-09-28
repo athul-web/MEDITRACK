@@ -43,6 +43,10 @@ export function HomePage() {
     if (searchFilters.location?.label) {
       params.append('location', searchFilters.location.label);
     }
+    if (searchFilters.location?.latitude !== undefined && searchFilters.location?.longitude !== undefined) {
+      params.append('lat', String(searchFilters.location.latitude));
+      params.append('lng', String(searchFilters.location.longitude));
+    }
     if (searchFilters.district) {
       params.append('district', searchFilters.district);
     }
@@ -83,6 +87,7 @@ export function HomePage() {
                 <SearchConsole
                   filters={searchFilters}
                   onChange={setSearchFilters}
+                  onSearch={handleSearch}
                   variant="horizontal"
                 />
               </div>
@@ -151,7 +156,7 @@ export function HomePage() {
                     onCall={() => {
                       const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone || hospital.phone1 || hospital.phone2;
                       if (phone) {
-                        window.open(`tel:${phone}`);
+                        window.location.href = `tel:${phone.replace(/[^\d+]/g, '')}`;
                       }
                     }}
                   />

@@ -215,7 +215,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
             onCall={() => {
               const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone || hospital.phone1 || hospital.phone2;
               if (phone) {
-                window.open(`tel:${phone}`);
+                window.location.href = `tel:${phone.replace(/[^\d+]/g, '')}`;
               }
             }}
           />

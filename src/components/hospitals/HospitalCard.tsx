@@ -21,6 +21,26 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
     return km < 1 ? `${Math.round(km * 1000)} m away` : `${km} km away`;
   };
 
+  const contactPhone =
+    hospital.contact?.emergencyPhone ||
+    hospital.contact?.phone ||
+    hospital.phone2 ||
+    hospital.phone1;
+
+  const handleCall = () => {
+    if (onCall) {
+      onCall();
+      return;
+    }
+    if (contactPhone) {
+      window.location.href = `tel:${contactPhone.replace(/[^\d+]/g, '')}`;
+    } else if (hospital.email) {
+      window.location.href = `mailto:${hospital.email}`;
+    } else {
+      alert('Contact information is not available for this hospital.');
+    }
+  };
+
   const formatAddress = (hospital: Hospital) => {
     return [hospital.address, hospital.city || hospital.district, hospital.state].filter(Boolean).join(', ');
   };
@@ -123,12 +143,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           {/* Call Hospital - Primary Action */}
           <button
             type="button"
-            onClick={() => {
-  const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone;
-  if (phone) window.open(`tel:${phone}`);
-}}
-            className="btn-secondary-filled w-full justify-center gap-2"
-            aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
+            onClick={handleCall}
+            className="btn-secondary-filled w-full justify-center gap-2 cursor-pointer"
+            aria-label={contactPhone ? `Call ${contactPhone}` : 'Call hospital'}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -140,7 +157,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           <button
             type="button"
             onClick={onViewDetails}
-            className="btn-text w-full justify-center gap-1.5"
+            className="btn-text w-full justify-center gap-1.5 cursor-pointer"
             aria-label="View hospital details"
           >
             <span>View Details</span>
@@ -149,10 +166,10 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
             </svg>
           </button>
 
-          {/* Emergency phone number */}
-          {(hospital.contact?.emergencyPhone || hospital.contact?.phone) && (
+          {/* Contact phone number */}
+          {contactPhone && (
             <div className="text-center text-[11px] text-[var(--color-text-muted)] pt-1">
-              Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact?.emergencyPhone || hospital.contact?.phone}</strong>
+              Contact: <strong className="text-[var(--color-text-primary)]">{contactPhone}</strong>
             </div>
           )}
         </div>
@@ -226,9 +243,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-border)]">
             <button
               type="button"
-              onClick={onCall}
-              className="btn-secondary-filled flex-1 justify-center gap-2"
-              aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
+              onClick={handleCall}
+              className="btn-secondary-filled flex-1 justify-center gap-2 cursor-pointer"
+              aria-label={contactPhone ? `Call ${contactPhone}` : 'Call hospital'}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -238,7 +255,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
             <button
               type="button"
               onClick={onViewDetails}
-              className="btn-text whitespace-nowrap"
+              className="btn-text whitespace-nowrap cursor-pointer"
               aria-label="View hospital details"
             >
               <span>View Details</span>
@@ -318,9 +335,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
           <div className="space-y-2 pt-2 border-t border-[var(--color-border)]">
             <button
               type="button"
-              onClick={onCall}
-              className="btn-secondary-filled w-full h-[48px] justify-center gap-2"
-              aria-label={hospital.contact?.emergencyPhone || hospital.contact?.phone ? `Call ${hospital.contact?.emergencyPhone || hospital.contact?.phone}` : 'Call hospital'}
+              onClick={handleCall}
+              className="btn-secondary-filled w-full h-[48px] justify-center gap-2 cursor-pointer"
+              aria-label={contactPhone ? `Call ${contactPhone}` : 'Call hospital'}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -330,7 +347,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
             <button
               type="button"
               onClick={onViewDetails}
-              className="btn-text w-full justify-center gap-1.5"
+              className="btn-text w-full justify-center gap-1.5 cursor-pointer"
               aria-label="View hospital details"
             >
               <span>View Details</span>
@@ -338,9 +355,9 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
-            {(hospital.contact?.emergencyPhone || hospital.contact?.phone) && (
+            {contactPhone && (
               <div className="text-center text-[11px] text-[var(--color-text-muted)]">
-                Emergency: <strong className="text-[var(--color-text-primary)]">{hospital.contact?.emergencyPhone || hospital.contact?.phone}</strong>
+                Contact: <strong className="text-[var(--color-text-primary)]">{contactPhone}</strong>
               </div>
             )}
           </div>

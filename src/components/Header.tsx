@@ -13,7 +13,8 @@ import {
   PlusCircle,
   Stethoscope,
   Wrench,
-  LogOut
+  LogOut,
+  Search
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -46,9 +47,9 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo and Facility Brand */}
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-xs">
+            <Link to="/" className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-xs hover:bg-slate-800 transition-colors" title="MediTrack Home">
               <Activity className="w-5 h-5 text-emerald-400" />
-            </div>
+            </Link>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-slate-900 tracking-tight text-base sm:text-lg">
@@ -68,10 +69,18 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Center/Right Action Bar */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
+              to="/hospitals"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700 hover:bg-cyan-50/50"
+              title="Return to hospital search directory"
             >
-              Back to Home
+              <Search className="w-3.5 h-3.5 text-cyan-600" />
+              <span>Back to Search</span>
+            </Link>
+            <Link
+              to="/"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
+            >
+              Home
             </Link>
 
             {/* Quick Report Button */}

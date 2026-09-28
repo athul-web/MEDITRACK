@@ -18,20 +18,66 @@ export function HospitalsPage() {
   const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>(() => {
     const resourcesParam = searchParams.get('resources');
     const locationParam = searchParams.get('location');
+    const latParam = searchParams.get('lat');
+    const lngParam = searchParams.get('lng');
     const districtParam = searchParams.get('district');
     const categoryParam = searchParams.get('category');
+    const queryParam = searchParams.get('query');
+
+    let location: HospitalSearchFilters['location'] = undefined;
+    if (locationParam || (latParam && lngParam)) {
+      location = {
+        label: locationParam || 'Current Location',
+        latitude: latParam ? parseFloat(latParam) : undefined,
+        longitude: lngParam ? parseFloat(lngParam) : undefined,
+      };
+    }
+
     return {
       emergencyType: (searchParams.get('emergencyType') || undefined) as string | undefined,
       requiredResources: (resourcesParam ? resourcesParam.split(',') : []) as ResourceType[],
       district: districtParam || undefined,
       category: categoryParam as HospitalSearchFilters['category'] | undefined,
-      location: locationParam ? { label: locationParam } : undefined,
+      query: queryParam || undefined,
+      location,
     };
   });
 
   const [selectedPreset, setSelectedPreset] = useState<string | null>(() => {
     return searchParams.get('emergencyType') || null;
   });
+
+  useEffect(() => {
+    const resourcesParam = searchParams.get('resources');
+    const locationParam = searchParams.get('location');
+    const latParam = searchParams.get('lat');
+    const lngParam = searchParams.get('lng');
+    const districtParam = searchParams.get('district');
+    const categoryParam = searchParams.get('category');
+    const queryParam = searchParams.get('query');
+    const emergencyTypeParam = searchParams.get('emergencyType');
+
+    let location: HospitalSearchFilters['location'] = undefined;
+    if (locationParam || (latParam && lngParam)) {
+      location = {
+        label: locationParam || 'Current Location',
+        latitude: latParam ? parseFloat(latParam) : undefined,
+        longitude: lngParam ? parseFloat(lngParam) : undefined,
+      };
+    }
+
+    setSearchFilters({
+      emergencyType: emergencyTypeParam || undefined,
+      requiredResources: (resourcesParam ? resourcesParam.split(',') : []) as ResourceType[],
+      district: districtParam || undefined,
+      category: categoryParam as HospitalSearchFilters['category'] | undefined,
+      query: queryParam || undefined,
+      location,
+    });
+    if (emergencyTypeParam) {
+      setSelectedPreset(emergencyTypeParam);
+    }
+  }, [searchParams]);
 
   const handlePresetClick = (presetId: string) => {
     const preset = emergencyPresets.find(p => p.id === presetId);
@@ -58,6 +104,7 @@ export function HospitalsPage() {
       <SearchConsole
         filters={searchFilters}
         onChange={handleSearchChange}
+        onSearch={() => setSearchFilters(prev => ({ ...prev }))}
         variant="vertical"
       />
       <EmergencyPresets

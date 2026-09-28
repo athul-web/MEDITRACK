@@ -7,6 +7,8 @@ export type UserCoordinates = {
   longitude: number;
 };
 
+export { resolveKeralaCoordinates, KERALA_DISTRICT_COORDINATES, KERALA_TOWN_COORDINATES } from './keralaCoordinates';
+
 /**
  * Calculates the distance between two points on the Earth's surface using the Haversine formula.
  * @returns Distance in kilometers.

@@ -127,16 +127,40 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       }
     }
 
+    // If user location is available, calculate distances
     if (userLat !== undefined && userLng !== undefined) {
+      // Import resolveKeralaCoordinates for hospital fallback
+      const { resolveKeralaCoordinates } = await import('../../utils/keralaCoordinates');
+
       results.forEach(h => {
-        if (h.coordinates?.latitude && h.coordinates?.longitude) {
+        // Use hospital's own coordinates if available
+        let hospitalLat = h.coordinates?.latitude;
+        let hospitalLng = h.coordinates?.longitude;
+
+        // If hospital doesn't have coordinates, try to resolve from city/address
+        if (hospitalLat === undefined || hospitalLng === undefined) {
+          const resolved = resolveKeralaCoordinates(h.city, h.address);
+          if (resolved) {
+            hospitalLat = resolved.latitude;
+            hospitalLng = resolved.longitude;
+            // Cache the resolved coordinates on the hospital object
+            h.coordinates = { latitude: hospitalLat, longitude: hospitalLng };
+          }
+        }
+
+        if (hospitalLat !== undefined && hospitalLng !== undefined) {
           const dist = calculateDistanceKm(
             userLat!,
             userLng!,
-            h.coordinates.latitude,
-            h.coordinates.longitude,
+            hospitalLat,
+            hospitalLng,
           );
           h.distanceKm = dist != null ? Math.round(dist * 10) / 10 : undefined;
+
+          // Debug logging (can be removed in production)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Distance to ${h.name}: ${h.distanceKm} km (user: ${userLat}, ${userLng}, hospital: ${hospitalLat}, ${hospitalLng})`);
+          }
         }
       });
     }

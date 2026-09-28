@@ -243,6 +243,16 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
                 window.location.href = `tel:${phone.replace(/[^\d+]/g, '')}`;
               }
             }}
+            onGetDirections={() => {
+              let url = '';
+              if (hospital.coordinates?.latitude && hospital.coordinates?.longitude) {
+                url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.latitude},${hospital.coordinates.longitude}`;
+              } else {
+                const destination = encodeURIComponent(`${hospital.name}, ${hospital.address || ''}, ${hospital.city || ''}`);
+                url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+              }
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }}
           />
         ))}
       </div>

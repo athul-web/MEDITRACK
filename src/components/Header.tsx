@@ -68,10 +68,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Center/Right Action Bar */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              to="/hospitals"
+              to="/"
               className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
             >
-              Search Hospitals
+              Back to Home
             </Link>
 
             {/* Quick Report Button */}

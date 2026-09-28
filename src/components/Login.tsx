@@ -134,10 +134,10 @@ export function Login() {
               <p>Enter your credentials to access your dashboard.</p>
             </div>
             <Link
-              to="/hospitals"
+              to="/"
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
             >
-              Back to Search
+              Back to Home
             </Link>
           </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 // Removed UserRole import as role concept is deprecated
 import { NotificationItem, FacilitySettings } from '../types';
 import {
@@ -66,6 +67,13 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Center/Right Action Bar */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/hospitals"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-700"
+            >
+              Search Hospitals
+            </Link>
+
             {/* Quick Report Button */}
             <button
               id="header-report-btn"

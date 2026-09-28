@@ -47,13 +47,17 @@ export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
 export async function getDistricts(): Promise<string[]> {
   const { data, error } = await supabase
     .from('kerala_hospitals')
-    .select('district');
+    .select('city, district');
 
   if (error) {
     console.error('Error fetching districts:', error);
     throw error;
   }
 
-  // Return unique districts
-  return [...new Set(data.map(h => h.district))].filter(Boolean).sort();
+  const values = (data ?? [])
+    .flatMap((h: any) => [h.city, h.district].filter(Boolean))
+    .map((value: string) => value.trim())
+    .filter(Boolean);
+
+  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }

@@ -43,6 +43,12 @@ export function HomePage() {
     if (searchFilters.location?.label) {
       params.append('location', searchFilters.location.label);
     }
+    if (searchFilters.district) {
+      params.append('district', searchFilters.district);
+    }
+    if (searchFilters.category) {
+      params.append('category', searchFilters.category);
+    }
 
     navigate(`/hospitals?${params.toString()}`);
   };
@@ -142,7 +148,12 @@ export function HomePage() {
                     key={hospital.id}
                     hospital={hospital}
                     onViewDetails={() => navigate(`/hospitals/${hospital.id}`)}
-                    onCall={() => { /* TODO: initiate call */ }}
+                    onCall={() => {
+                      const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone || hospital.phone1 || hospital.phone2;
+                      if (phone) {
+                        window.open(`tel:${phone}`);
+                      }
+                    }}
                   />
                 ))}
               </div>

@@ -332,14 +332,6 @@ export function SearchConsole({ filters, onChange, variant = 'horizontal' }: Sea
             </button>
           </div>
         </div>
-        <button
-          type="button"
-          className="btn-primary w-full h-[52px]"
-          aria-label="Search hospitals"
-        >
-          <Search className="w-5 h-5" />
-          <span className="ml-2">Search</span>
-        </button>
         {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.district || filters.category) && (
           <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
             <span className="text-xs text-[var(--color-text-muted)]">Active:</span>

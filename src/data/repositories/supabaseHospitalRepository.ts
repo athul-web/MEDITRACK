@@ -1,6 +1,7 @@
 import { HospitalRepository } from './hospitalRepository';
 import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { supabase, mapDbToFrontend } from '../../lib/supabase';
+import { calculateDistanceKm } from '../../utils/distance';
 
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
@@ -36,52 +37,85 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   async searchHospitals(filters: HospitalSearchFilters, sort: HospitalSort = 'nearest'): Promise<Hospital[]> {
     let query = supabase.from('kerala_hospitals').select('*');
 
-    // 1. Resource Filtering (The core requirement)
-    const requiredResources: Record<string, string> = {};
+    const locationText = (filters.location?.label || filters.district || filters.query || '').trim();
+    const normalizedLocationText = locationText.toLowerCase();
 
-    // Direct required resources
-    if (filters.requiredResources && filters.requiredResources.length > 0) {
-      filters.requiredResources.forEach(res => {
-        requiredResources[res] = 'available';
-      });
-    }
-
-    // Emergency Type Presets
-    if (filters.emergencyType) {
-      const presets: Record<string, string[]> = {
-        accident: ['icu', 'ventilator', 'ctScan'],
-        heart: ['emergencyDepartment', 'icu'],
-        breathing: ['emergencyDepartment', 'icu', 'ventilator'],
-        burn: ['emergencyDepartment', 'icu'],
-      };
-      const presetResources = presets[filters.emergencyType];
-      if (presetResources) {
-        presetResources.forEach(res => {
-          requiredResources[res] = 'available';
-        });
-      }
-    }
-
-    // Apply resource filter using JSONB 'contains' operator (@>)
-    if (Object.keys(requiredResources).length > 0) {
-      query = query.filter('resources', 'cs', requiredResources);
-    }
-
-    // 2. New Kerala Hospital Filters
-    if (filters.district) {
-      query = query.eq('district', filters.district);
-    }
     if (filters.category) {
       query = query.eq('category', filters.category);
     }
 
-    const { data, error } = await query;
+    if (filters.district) {
+      const districtText = filters.district.trim();
+      query = query.or(
+        `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+      );
+    }
 
+    if (normalizedLocationText) {
+      query = query.or(
+        `name.ilike.%${normalizedLocationText}%,city.ilike.%${normalizedLocationText}%,district.ilike.%${normalizedLocationText}%,address.ilike.%${normalizedLocationText}%,email.ilike.%${normalizedLocationText}%,id::text.ilike.%${normalizedLocationText}%`,
+      );
+    }
+
+    if (filters.query && filters.query.trim()) {
+      const trimmedQuery = filters.query.trim();
+      query = query.or(
+        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%,id::text.ilike.%${trimmedQuery}%`,
+      );
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
 
-    const results = mapDbToFrontend<Hospital[]>(data);
+    let results = mapDbToFrontend<Hospital[]>(data ?? []);
 
-    // 3. Sorting
+    if (locationText) {
+      const match = locationText.toLowerCase();
+      results = results.filter(hospital => {
+        const haystack = [
+          hospital.name,
+          hospital.city,
+          hospital.address,
+          hospital.district,
+          hospital.email,
+          hospital.id,
+          hospital.systemOfMedicine,
+          hospital.contact?.phone,
+          hospital.contact?.emergencyPhone,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        return haystack.includes(match);
+      });
+    }
+
+    if (filters.requiredResources && filters.requiredResources.length > 0) {
+      results = results.filter(hospital => {
+        const resourceMap = hospital.resources ?? {};
+        return filters.requiredResources.every(resource => {
+          const value = resourceMap[resource as keyof typeof resourceMap];
+          return value === 'available';
+        });
+      });
+    }
+
+    if (filters.location?.latitude !== undefined && filters.location?.longitude !== undefined) {
+      const { latitude, longitude } = filters.location;
+      results.forEach(h => {
+        if (h.coordinates?.latitude && h.coordinates?.longitude) {
+          const dist = calculateDistanceKm(
+            latitude,
+            longitude,
+            h.coordinates.latitude,
+            h.coordinates.longitude,
+          );
+          h.distanceKm = dist ?? undefined;
+        }
+      });
+    }
+
     switch (sort) {
       case 'recentlyUpdated':
         results.sort((a, b) => {
@@ -92,12 +126,13 @@ export class SupabaseHospitalRepository implements HospitalRepository {
         break;
       case 'availability':
         results.sort((a, b) => {
-          const aAvailable = Object.values(a.resources).filter(r => r === 'available').length;
-          const bAvailable = Object.values(b.resources).filter(r => r === 'available').length;
+          const aAvailable = Object.values(a.resources ?? {}).filter(r => r === 'available').length;
+          const bAvailable = Object.values(b.resources ?? {}).filter(r => r === 'available').length;
           return bAvailable - aAvailable;
         });
         break;
       case 'nearest':
+      default:
         results.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
         break;
     }

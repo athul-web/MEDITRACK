@@ -64,6 +64,28 @@ export function mapDbToFrontend<T>(data: any): T {
     const camelKey = key.replace(/(_\w)/g, (m) => m[1].toUpperCase());
     mapped[camelKey] = data[key];
   }
+
+  const phonePrimary = mapped.phone1 ?? mapped.phone_1 ?? mapped.phone ?? mapped.contact?.phone;
+  const phoneSecondary = mapped.phone2 ?? mapped.phone_2 ?? mapped.emergencyPhone ?? mapped.contact?.emergencyPhone;
+  const fallbackContact = {
+    phone: phonePrimary || phoneSecondary,
+    emergencyPhone: phoneSecondary || phonePrimary,
+  };
+
+  mapped.contact = mapped.contact ?? fallbackContact;
+  mapped.resources = mapped.resources ?? {
+    emergencyDepartment: 'unknown',
+    icu: 'unknown',
+    ventilator: 'unknown',
+    ctScan: 'unknown',
+    blood: 'unknown',
+  };
+  mapped.verified = Boolean(mapped.verified);
+  mapped.lastUpdated = mapped.lastUpdated || mapped.updatedAt || mapped.createdAt || 'Recently updated';
+  mapped.systemOfMedicine = mapped.systemOfMedicine ?? mapped.system_of_medicine ?? null;
+  mapped.city = mapped.city ?? mapped.district ?? mapped.location ?? null;
+  mapped.district = mapped.district ?? mapped.city ?? null;
+
   return mapped as unknown as T;
 }
 

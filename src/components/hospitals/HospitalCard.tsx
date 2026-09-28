@@ -14,7 +14,7 @@ interface HospitalCardProps {
   onGetDirections?: () => void;
 }
 
-export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardProps) {
+export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections }: HospitalCardProps) {
   if (!hospital) return null;
   const formatDistance = (km?: number) => {
     if (!km) return '';

@@ -5,13 +5,13 @@
  */
 
 import { Hospital } from '../../types/public';
-import { CheckCircle2, MapPin, Clock, Image as ImageIcon, AlertTriangle } from 'lucide-react';
-import { ResourceStatusGrid } from './ResourceStatusGrid';
+import { CheckCircle2, MapPin, Clock, Image as ImageIcon, AlertTriangle, Navigation } from 'lucide-react';
 
 interface HospitalCardProps {
   hospital: Hospital;
   onViewDetails?: () => void;
   onCall?: () => void;
+  onGetDirections?: () => void;
 }
 
 export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardProps) {
@@ -43,6 +43,21 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
 
   const formatAddress = (hospital: Hospital) => {
     return [hospital.address, hospital.city || hospital.district, hospital.state].filter(Boolean).join(', ');
+  };
+
+  const handleGetDirections = () => {
+    if (onGetDirections) {
+      onGetDirections();
+      return;
+    }
+    let url = '';
+    if (hospital.coordinates?.latitude && hospital.coordinates?.longitude) {
+      url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.latitude},${hospital.coordinates.longitude}`;
+    } else {
+      const destination = encodeURIComponent(`${hospital.name}, ${formatAddress(hospital)}`);
+      url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Determine if data is stale (>30 minutes)
@@ -133,9 +148,6 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
               )}
             </span>
           </div>
-
-          {/* Resource Status Grid - 2-column grid within Column B */}
-          <ResourceStatusGrid resources={hospital.resources} size="sm" />
         </div>
 
         {/* Column C: Actions - 200px, right-aligned, stacked vertically */}
@@ -153,7 +165,18 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
             <span>Call Hospital</span>
           </button>
 
-          {/* View Details → - Secondary Action */}
+          {/* Get Directions - Secondary Action */}
+          <button
+            type="button"
+            onClick={handleGetDirections}
+            className="btn-text w-full justify-center gap-1.5 cursor-pointer"
+            aria-label="Get directions to hospital"
+          >
+            <Navigation className="w-4 h-4" />
+            <span>Get Directions</span>
+          </button>
+
+          {/* View Details → - Tertiary Action */}
           <button
             type="button"
             onClick={onViewDetails}
@@ -238,7 +261,6 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
               )}
             </span>
           </div>
-          <ResourceStatusGrid resources={hospital.resources} size="sm" />
           {/* Actions horizontal on tablet */}
           <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-border)]">
             <button
@@ -251,6 +273,15 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
               <span>Call Hospital</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleGetDirections}
+              className="btn-text whitespace-nowrap cursor-pointer"
+              aria-label="Get directions to hospital"
+            >
+              <Navigation className="w-4 h-4" />
+              <span>Get Directions</span>
             </button>
             <button
               type="button"
@@ -330,7 +361,6 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
               )}
             </span>
           </div>
-          <ResourceStatusGrid resources={hospital.resources} size="sm" />
           {/* Actions stacked on mobile */}
           <div className="space-y-2 pt-2 border-t border-[var(--color-border)]">
             <button
@@ -343,6 +373,15 @@ export function HospitalCard({ hospital, onViewDetails, onCall }: HospitalCardPr
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
               <span>Call Hospital</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleGetDirections}
+              className="btn-text w-full justify-center gap-1.5 cursor-pointer"
+              aria-label="Get directions to hospital"
+            >
+              <Navigation className="w-4 h-4" />
+              <span>Get Directions</span>
             </button>
             <button
               type="button"

@@ -465,7 +465,7 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
   return (
     <div className="mt-8 bg-white rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] p-5">
       {/* Desktop: Single row with 5 segments (removed district) */}
-      <div className="hidden lg:flex lg:items-center gap-0 overflow-hidden">
+      <div className="hidden lg:flex lg:items-center gap-0">
         {/* Segment 1: Emergency Type */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <CustomSelect

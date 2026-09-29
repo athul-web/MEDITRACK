@@ -75,7 +75,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
   return (
     <article className="card-surface card-surface-hover overflow-hidden" role="listitem">
       {/* Desktop: 3-column grid. Tablet: Image + Content stacked, Actions horizontal below. Mobile: Full vertical stack. */}
-      <div className="grid lg:grid-cols-[96px_1fr_200px] gap-5 items-start p-5">
+      <div className="hidden lg:grid lg:grid-cols-[96px_1fr_200px] gap-5 items-start p-5">
         {/* Column A: Image - 96x96px, radius-sm */}
         <div className="relative lg:h-[96px] w-full lg:w-[96px] lg:flex-shrink-0">
           <div className="relative h-full w-full rounded-[var(--radius-sm)] overflow-hidden bg-[var(--color-page)]">
@@ -199,7 +199,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
       </div>
 
       {/* Tablet (768-1023px): Image 72x72, Content + Actions horizontal below */}
-      <div className="lg:hidden md:flex md:items-start md:gap-4 p-5">
+      <div className="hidden md:flex lg:hidden md:items-start md:gap-4 p-5">
         <div className="relative h-[72px] w-[72px] flex-shrink-0">
           <div className="relative h-full w-full rounded-[var(--radius-sm)] overflow-hidden bg-[var(--color-page)]">
             {hospital.image ? (

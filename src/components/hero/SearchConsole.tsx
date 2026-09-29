@@ -550,7 +550,7 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
       </div>
 
       {/* Tablet: 3x2 grid (adjusted to 3 columns without district) */}
-      <div className="lg:hidden md:grid md:grid-cols-3 gap-4">
+      <div className="hidden md:grid lg:hidden md:grid-cols-3 gap-4">
         <div className="relative">
           <label htmlFor="emergency-type" className="field-label">Emergency Type</label>
           <CustomSelect

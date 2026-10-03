@@ -92,14 +92,14 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
     if (customLocationText) {
       query = query.or(
-        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,email.ilike.%${customLocationText}%`,
+        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,district.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,email.ilike.%${customLocationText}%`,
       );
     }
 
     if (filters.query && filters.query.trim()) {
       const trimmedQuery = filters.query.trim();
       query = query.or(
-        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
+        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,district.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
       );
     }
 

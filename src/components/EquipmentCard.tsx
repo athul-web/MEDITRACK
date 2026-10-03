@@ -1,31 +1,24 @@
-import React from 'react';
 import { Equipment } from '../types';
 import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge } from './StatusBadge';
-import { 
-  MapPin, 
-  Calendar, 
-  User, 
-  Wrench, 
-  AlertTriangle, 
-  Eye, 
-  CheckCircle2, 
-  Clock,
-  ArrowRight
+import {
+  MapPin,
+  Calendar,
+  User,
+  AlertTriangle,
+  Eye
 } from 'lucide-react';
 
 interface EquipmentCardProps {
   equipment: Equipment;
   onSelect: (equipment: Equipment) => void;
   onReportProblem: (equipment: Equipment) => void;
-  onQuickStatusChange?: (equipment: Equipment, status: Equipment['status']) => void;
 }
 
-export const EquipmentCard: React.FC<EquipmentCardProps> = ({
+export const EquipmentCard = ({
   equipment,
   onSelect,
   onReportProblem,
-  onQuickStatusChange,
 }) => {
   return (
     <div 

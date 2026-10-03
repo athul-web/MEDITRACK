@@ -1,8 +1,4 @@
-import React, { useState } from 'react';
-import { PublicHeader } from '../../../components/layout/PublicHeader';
-import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { MobileNavigation } from '../../../components/layout/MobileNavigation';
-import { Target, ShieldCheck, Heart, Zap, MapPin, Phone, Users } from 'lucide-react';
+import { Target, ShieldCheck } from 'lucide-react';
 
 /**
  * About Page implementation based on gemini-code-1790186876109.html

@@ -8,7 +8,6 @@ interface EquipmentTableProps {
   equipment: Equipment[];
   onSelect: (equipment: Equipment) => void;
   onReportProblem: (equipment: Equipment) => void;
-  onQuickStatusChange?: (equipment: Equipment, status: Equipment['status']) => void;
 }
 
 export const EquipmentTable: React.FC<EquipmentTableProps> = ({

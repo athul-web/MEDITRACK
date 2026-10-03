@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
-import { PublicHeader } from '../../../components/layout/PublicHeader';
-import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { MobileNavigation } from '../../../components/layout/MobileNavigation';
-import { Mail, Phone, MapPin, Clock, AlertCircle, Send, Loader2, PhoneCall } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Phone, MapPin, AlertCircle, Send, PhoneCall } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
 /**
  * Contact Page implementation based on gemini-code-1790187003514.html
  */
 export function ContactPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({

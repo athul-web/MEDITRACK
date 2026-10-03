@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Equipment, ProblemReport, MaintenanceRecord, Technician } from '../types';
+import { useState } from 'react';
+import { Equipment, ProblemReport, MaintenanceRecord } from '../types';
 import { calculateUptimeHours } from '../utils/equipment';
 import { EquipmentStatusBadge, CriticalityBadge, SeverityBadge, TicketStatusBadge } from './StatusBadge';
 import {
@@ -10,13 +10,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  FileText,
   Plus,
-  User,
-  ShieldCheck,
-  ChevronRight,
-  Info,
-  DollarSign
+  User
 } from 'lucide-react';
 
 interface EquipmentDetailModalProps {

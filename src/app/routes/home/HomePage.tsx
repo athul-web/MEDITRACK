@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Activity, Search, MapPin, ShieldCheck, Phone, Zap, Loader2, AlertCircle } from 'lucide-react';
+import { Activity, MapPin, ShieldCheck, Phone, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { SearchConsole } from '../../../components/hero/SearchConsole';
-import { EmergencyPresets } from '../../../components/hero/EmergencyPresets';
 import { emergencyPresets } from '../../../constants/emergencyPresets';
 import { HospitalSearchFilters } from '../../../types/public';
 import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
 import { useHospitals } from '../../../hooks/useHospitals';
-import { hospitalRepository } from '../../../data/repositories/hospitalRepository';
 import { getDirectionsUrl } from '../../../utils/directions';
 
 /**
@@ -61,19 +59,6 @@ export function HomePage() {
   useEffect(() => {
     loadNearbyHospitals();
   }, [loadNearbyHospitals]);
-
-  const handlePresetClick = (presetId: string) => {
-    const preset = emergencyPresets.find(p => p.id === presetId);
-    if (!preset) return;
-
-    if (selectedPreset === presetId) {
-      setSelectedPreset(null);
-      setSearchFilters(prev => ({ ...prev, requiredResources: [] }));
-    } else {
-      setSelectedPreset(presetId);
-      setSearchFilters(prev => ({ ...prev, requiredResources: preset.resources }));
-    }
-  };
 
   const handleSearch = () => {
     const params = new URLSearchParams();

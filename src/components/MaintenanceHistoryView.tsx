@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
-import { MaintenanceRecord, Equipment } from '../types';
-import { Download, FileText, Filter, Calendar, Wrench, DollarSign, Clock, Search } from 'lucide-react';
+import { useState } from 'react';
+import { MaintenanceRecord } from '../types';
+import { Download, FileText, DollarSign, Clock, Search } from 'lucide-react';
 
 interface MaintenanceHistoryViewProps {
   records: MaintenanceRecord[];
-  equipmentList: Equipment[];
   onSelectEquipmentById: (id: string) => void;
 }
 
-export const MaintenanceHistoryView: React.FC<MaintenanceHistoryViewProps> = ({
+export const MaintenanceHistoryView = ({
   records,
-  equipmentList,
   onSelectEquipmentById,
 }) => {
   const [selectedType, setSelectedType] = useState<string>('All');

@@ -231,7 +231,9 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
   const handleLocationChange = (label: string) => {
     onChange({
       ...filters,
-      location: label ? { ...filters.location, label } : undefined,
+      // Editing the text invalidates any earlier GPS fix: keep only the label so
+      // distances are measured from the place that is now typed, not a stale position.
+      location: label ? { label } : undefined,
     });
     setGeolocationError(null);
   };

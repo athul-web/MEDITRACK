@@ -36,7 +36,11 @@ export interface Hospital {
   systemOfMedicine?: string;
   createdAt?: string;
   updatedAt?: string;
+  /** Driving distance in km ('road') or a flagged straight-line estimate ('estimate'). */
   distanceKm?: number;
+  /** Driving time in minutes. Only present when distanceSource is 'road'. */
+  durationMin?: number;
+  distanceSource?: 'road' | 'estimate';
   verified: boolean;
   image?: string;
   lastUpdated: string;
@@ -49,6 +53,8 @@ export interface Hospital {
     latitude: number;
     longitude: number;
   };
+  /** True when coordinates were guessed from city/address (town or district centre). */
+  coordinatesApproximate?: boolean;
 }
 
 export interface EmergencyType {

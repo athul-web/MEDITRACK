@@ -1,7 +1,10 @@
 import { HospitalRepository } from './hospitalRepository';
 import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { supabase, mapDbToFrontend } from '../../lib/supabase';
-import { calculateDistanceKm } from '../../utils/distance';
+import { attachDistances, isValidCoordinate, type DistanceOrigin } from '../../utils/distance';
+import { resolveKeralaCoordinates } from '../../utils/keralaCoordinates';
+import { geocodeKeralaPlace, type GeocodedPlace } from '../../utils/nominatim';
+import { isAbortError } from '../../utils/http';
 
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
@@ -44,7 +47,11 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     }
   }
 
-  async searchHospitals(filters: HospitalSearchFilters, sort: HospitalSort = 'nearest'): Promise<Hospital[]> {
+  async searchHospitals(
+    filters: HospitalSearchFilters,
+    sort: HospitalSort = 'nearest',
+    options?: { signal?: AbortSignal },
+  ): Promise<Hospital[]> {
     let query = supabase.from('kerala_hospitals').select('*');
 
     const isCurrentLocation = (label?: string) => {
@@ -52,6 +59,23 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       const lower = label.trim().toLowerCase();
       return lower === 'current location' || lower === 'my location' || lower === 'use my location';
     };
+
+    // A typed place ("Aluva") is geocoded with OpenStreetMap Nominatim and used as
+    // the point distances are measured from. If it can't be resolved we fall back
+    // to the old behaviour: treat the text as a filter on hospital name/address.
+    const typedLocation = filters.location?.label && !isCurrentLocation(filters.location.label)
+      ? filters.location.label.trim()
+      : '';
+    let geocoded: GeocodedPlace | null = null;
+
+    if (typedLocation) {
+      try {
+        geocoded = await geocodeKeralaPlace(typedLocation, options?.signal);
+      } catch (err) {
+        if (isAbortError(err)) throw err;
+        console.warn('Nominatim lookup failed, filtering by text instead:', err);
+      }
+    }
 
     if (filters.category) {
       query = query.eq('category', filters.category);
@@ -64,9 +88,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       );
     }
 
-    const customLocationText = filters.location?.label && !isCurrentLocation(filters.location.label)
-      ? filters.location.label.trim()
-      : '';
+    const customLocationText = geocoded ? '' : typedLocation;
 
     if (customLocationText) {
       query = query.or(
@@ -114,55 +136,30 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       });
     }
 
-    // Determine reference coordinates for distance calculations
-    let userLat = filters.location?.latitude;
-    let userLng = filters.location?.longitude;
+    // Work out where distances are measured from, best source first:
+    //  1. a place the user typed, found by Nominatim
+    //  2. the user's GPS position
+    //  3. a district centre (rough, so estimates only)
+    let origin: DistanceOrigin | null = null;
 
-    if ((userLat === undefined || userLng === undefined) && filters.district) {
-      const { resolveKeralaCoordinates } = await import('../../utils/keralaCoordinates');
+    if (geocoded) {
+      origin = {
+        latitude: geocoded.latitude,
+        longitude: geocoded.longitude,
+        approximate: !geocoded.precise,
+      };
+    } else if (isValidCoordinate(filters.location?.latitude, filters.location?.longitude)) {
+      origin = {
+        latitude: filters.location!.latitude!,
+        longitude: filters.location!.longitude!,
+      };
+    } else if (filters.district) {
       const resolved = resolveKeralaCoordinates(filters.district);
-      if (resolved) {
-        userLat = resolved.latitude;
-        userLng = resolved.longitude;
-      }
+      if (resolved) origin = { ...resolved, approximate: true };
     }
 
-    // If user location is available, calculate distances
-    if (userLat !== undefined && userLng !== undefined) {
-      // Import resolveKeralaCoordinates for hospital fallback
-      const { resolveKeralaCoordinates } = await import('../../utils/keralaCoordinates');
-
-      results.forEach(h => {
-        // Use hospital's own coordinates if available
-        let hospitalLat = h.coordinates?.latitude;
-        let hospitalLng = h.coordinates?.longitude;
-
-        // If hospital doesn't have coordinates, try to resolve from city/address
-        if (hospitalLat === undefined || hospitalLng === undefined) {
-          const resolved = resolveKeralaCoordinates(h.city, h.address);
-          if (resolved) {
-            hospitalLat = resolved.latitude;
-            hospitalLng = resolved.longitude;
-            // Cache the resolved coordinates on the hospital object
-            h.coordinates = { latitude: hospitalLat, longitude: hospitalLng };
-          }
-        }
-
-        if (hospitalLat !== undefined && hospitalLng !== undefined) {
-          const dist = calculateDistanceKm(
-            userLat!,
-            userLng!,
-            hospitalLat,
-            hospitalLng,
-          );
-          h.distanceKm = dist != null ? Math.round(dist * 10) / 10 : undefined;
-
-          // Debug logging (can be removed in production)
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`Distance to ${h.name}: ${h.distanceKm} km (user: ${userLat}, ${userLng}, hospital: ${hospitalLat}, ${hospitalLng})`);
-          }
-        }
-      });
+    if (origin) {
+      results = await attachDistances(results, origin, options?.signal);
     }
 
     switch (sort) {

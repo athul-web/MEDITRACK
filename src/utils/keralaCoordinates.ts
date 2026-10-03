@@ -74,37 +74,42 @@ export const KERALA_TOWN_COORDINATES: Record<string, Coordinates> = {
   kaloor: { latitude: 9.9934, longitude: 76.2921 },
 };
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Longest names first so "sulthan bathery" wins over a shorter overlapping name. */
+function buildMatchers(table: Record<string, Coordinates>) {
+  return Object.entries(table)
+    .sort(([a], [b]) => b.length - a.length)
+    .map(([name, coords]) => ({
+      coords,
+      // Whole-word match: "pala" must not match "Palakkad" or "Palarivattom".
+      pattern: new RegExp(`(^|[^a-z])${escapeRegExp(name)}([^a-z]|$)`),
+    }));
+}
+
+const TOWN_MATCHERS = buildMatchers(KERALA_TOWN_COORDINATES);
+const DISTRICT_MATCHERS = buildMatchers(KERALA_DISTRICT_COORDINATES);
+
+const findIn = (text: string, matchers: ReturnType<typeof buildMatchers>): Coordinates | null => {
+  if (!text) return null;
+  const hit = matchers.find(m => m.pattern.test(text));
+  return hit ? hit.coords : null;
+};
+
 /**
- * Resolves coordinates for a given city and/or address in Kerala.
+ * Resolves *approximate* coordinates (a town or district centre) from a city
+ * and/or address. Callers must treat the result as approximate: it is only good
+ * for rough ordering, never for routing or "get directions".
  */
 export function resolveKeralaCoordinates(city?: string | null, address?: string | null): Coordinates | null {
   const normCity = (city || '').toLowerCase().trim();
   const normAddress = (address || '').toLowerCase();
 
-  // 1. Check known towns inside address for high precision
-  for (const [town, coords] of Object.entries(KERALA_TOWN_COORDINATES)) {
-    if (normAddress.includes(town)) {
-      return coords;
-    }
-  }
-
-  // 2. Check known town matching city
-  if (normCity && KERALA_TOWN_COORDINATES[normCity]) {
-    return KERALA_TOWN_COORDINATES[normCity];
-  }
-
-  // 3. Check known district matching city
-  if (normCity && KERALA_DISTRICT_COORDINATES[normCity]) {
-    return KERALA_DISTRICT_COORDINATES[normCity];
-  }
-
-  // 4. Check known district inside address
-  for (const [district, coords] of Object.entries(KERALA_DISTRICT_COORDINATES)) {
-    if (normAddress.includes(district)) {
-      return coords;
-    }
-  }
-
-  // 5. Default fallback to central Kerala (Kochi/Ernakulam) if completely unknown
-  return null;
+  return (
+    findIn(normCity, TOWN_MATCHERS) ??
+    findIn(normAddress, TOWN_MATCHERS) ??
+    findIn(normCity, DISTRICT_MATCHERS) ??
+    findIn(normAddress, DISTRICT_MATCHERS) ??
+    null
+  );
 }

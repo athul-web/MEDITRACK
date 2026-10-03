@@ -55,6 +55,7 @@ export const supabase: SupabaseClient = supabaseConfigError
   : createClient(supabaseUrl!, supabaseAnonKey!);
 
 import { resolveKeralaCoordinates } from '../utils/keralaCoordinates';
+import { isValidCoordinate } from '../utils/distance';
 
 // Utility to map snake_case from DB to camelCase for Frontend
 export function mapDbToFrontend<T>(data: any): T {
@@ -103,21 +104,27 @@ export function mapDbToFrontend<T>(data: any): T {
   }
 
   // Resolve coordinates: check lat/long fields or deduce from city/address
-  if (mapped.latitude != null && mapped.longitude != null) {
-    mapped.coordinates = {
-      latitude: Number(mapped.latitude),
-      longitude: Number(mapped.longitude),
-    };
-  } else if (mapped.lat != null && mapped.lng != null) {
-    mapped.coordinates = {
-      latitude: Number(mapped.lat),
-      longitude: Number(mapped.lng),
-    };
-  } else if (!mapped.coordinates) {
+  const readCoordinates = (lat: unknown, lng: unknown) => {
+    if (lat == null || lng == null || lat === '' || lng === '') return null;
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+    return isValidCoordinate(latitude, longitude) ? { latitude, longitude } : null;
+  };
+
+  const exact =
+    readCoordinates(mapped.latitude, mapped.longitude) ??
+    readCoordinates(mapped.lat, mapped.lng) ??
+    (mapped.coordinates ? readCoordinates(mapped.coordinates.latitude, mapped.coordinates.longitude) : null);
+
+  if (exact) {
+    mapped.coordinates = exact;
+    mapped.coordinatesApproximate = false;
+  } else {
+    // No usable stored coordinates: fall back to a town/district centre. This is
+    // only good for rough ordering, so flag it and never route or navigate to it.
     const resolved = resolveKeralaCoordinates(mapped.city, mapped.address);
-    if (resolved) {
-      mapped.coordinates = resolved;
-    }
+    mapped.coordinates = resolved ?? undefined;
+    mapped.coordinatesApproximate = resolved ? true : undefined;
   }
 
   mapped.verified = mapped.verified !== undefined ? Boolean(mapped.verified) : true;

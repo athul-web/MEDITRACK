@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Hospital, HospitalSearchFilters, HospitalSort } from '../../types/public';
 import { useHospitals } from '../../hooks/useHospitals';
 import { HospitalCard } from './HospitalCard';
+import { getDirectionsUrl } from '../../utils/directions';
 import { ArrowUpDown, Loader2, AlertCircle, MapPin, ChevronLeft, ChevronRight, ChevronDown, MoreHorizontal } from 'lucide-react';
 
 interface HospitalListProps {
@@ -244,13 +245,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
               }
             }}
             onGetDirections={() => {
-              let url = '';
-              if (hospital.coordinates?.latitude && hospital.coordinates?.longitude) {
-                url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.latitude},${hospital.coordinates.longitude}`;
-              } else {
-                const destination = encodeURIComponent(`${hospital.name}, ${hospital.address || ''}, ${hospital.city || ''}`);
-                url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-              }
+              const url = getDirectionsUrl(hospital);
               window.open(url, '_blank', 'noopener,noreferrer');
             }}
           />

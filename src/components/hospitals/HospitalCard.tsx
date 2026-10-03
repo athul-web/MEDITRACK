@@ -25,8 +25,9 @@ function DistanceRow({ hospital }: { hospital: Hospital }) {
   if (hospital.distanceKm == null) return null;
 
   const isRoad = hospital.distanceSource === 'road';
+  const durationMin = hospital.durationMin != null ? Math.round(hospital.durationMin) : null;
   const label = isRoad
-    ? `${formatDistance(hospital.distanceKm)}${hospital.durationMin != null ? ` · ${hospital.durationMin} min drive` : ' by road'}`
+    ? `${formatDistance(hospital.distanceKm)}${durationMin != null ? ` · ${durationMin} min drive` : ' by road'}`
     : `~${formatDistance(hospital.distanceKm)} (estimate)`;
 
   const pinColor = isRoad ? 'text-[var(--color-brand-blue)]' : 'text-[var(--color-text-muted)]';

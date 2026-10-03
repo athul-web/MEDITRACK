@@ -6,6 +6,7 @@
 
 import { Hospital } from '../../types/public';
 import { CheckCircle2, MapPin, Clock, Image as ImageIcon, AlertTriangle, Navigation } from 'lucide-react';
+import { getDirectionsUrl } from '../../utils/directions';
 
 interface HospitalCardProps {
   hospital: Hospital;
@@ -14,13 +15,42 @@ interface HospitalCardProps {
   onGetDirections?: () => void;
 }
 
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(1)} km`;
+}
+
+/** "12.4 km · 25 min drive" for OSRM road data, "~15.2 km (estimate)" otherwise. */
+function DistanceRow({ hospital }: { hospital: Hospital }) {
+  if (hospital.distanceKm == null) return null;
+
+  const isRoad = hospital.distanceSource === 'road';
+  const label = isRoad
+    ? `${formatDistance(hospital.distanceKm)}${hospital.durationMin != null ? ` · ${hospital.durationMin} min drive` : ' by road'}`
+    : `~${formatDistance(hospital.distanceKm)} (estimate)`;
+
+  const pinColor = isRoad ? 'text-[var(--color-brand-blue)]' : 'text-[var(--color-text-muted)]';
+  const textColor = isRoad ? 'text-[var(--color-brand-navy)]' : 'text-[var(--color-text-secondary)]';
+  const title = isRoad ? 'Driving distance from your location' : 'Estimated distance (straight-line × 1.3). Road distance unavailable.';
+
+  return (
+    <div
+      className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]"
+      title={title}
+    >
+      <MapPin className={`w-3.5 h-3.5 flex-shrink-0 ${pinColor}`} />
+      <span className={`font-medium ${textColor}`}>{label}</span>
+      {!isRoad && (
+        <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-medium text-[var(--color-text-muted)] bg-[var(--color-page)] rounded" title="Estimated distance - road routing unavailable">
+          ?
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections }: HospitalCardProps) {
   if (!hospital) return null;
-  const formatDistance = (km?: number) => {
-    if (!km) return '';
-    return km < 1 ? `${Math.round(km * 1000)} m away` : `${km} km away`;
-  };
-
   const contactPhone =
     hospital.contact?.emergencyPhone ||
     hospital.contact?.phone ||
@@ -50,13 +80,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
       onGetDirections();
       return;
     }
-    let url = '';
-    if (hospital.coordinates?.latitude && hospital.coordinates?.longitude) {
-      url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.latitude},${hospital.coordinates.longitude}`;
-    } else {
-      const destination = encodeURIComponent(`${hospital.name}, ${formatAddress(hospital)}`);
-      url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-    }
+    const url = getDirectionsUrl(hospital);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -119,12 +143,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
           </div>
 
           {/* Distance row */}
-          {hospital.distanceKm && (
-            <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
-              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-text-muted)]" />
-              <span className="font-medium text-[var(--color-brand-navy)]">{formatDistance(hospital.distanceKm)}</span>
-            </div>
-          )}
+          <DistanceRow hospital={hospital} />
 
           {/* Address row */}
           <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
@@ -236,12 +255,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
               </span>
             )}
           </div>
-          {hospital.distanceKm && (
-            <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
-              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-text-muted)]" />
-              <span className="font-medium text-[var(--color-brand-navy)]">{formatDistance(hospital.distanceKm)}</span>
-            </div>
-          )}
+          <DistanceRow hospital={hospital} />
           <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-text-muted)]" />
             <span className="truncate">{formatAddress(hospital)}</span>
@@ -336,12 +350,7 @@ export function HospitalCard({ hospital, onViewDetails, onCall, onGetDirections 
               </span>
             )}
           </div>
-          {hospital.distanceKm && (
-            <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
-              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-text-muted)]" />
-              <span className="font-medium text-[var(--color-brand-navy)]">{formatDistance(hospital.distanceKm)}</span>
-            </div>
-          )}
+          <DistanceRow hospital={hospital} />
           <div className="flex items-center gap-1.5 text-[var(--text-meta)] text-[var(--color-text-secondary)]">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-text-muted)]" />
             <span className="truncate">{formatAddress(hospital)}</span>

@@ -10,7 +10,11 @@ import { SupabaseHospitalRepository } from './supabaseHospitalRepository';
 export interface HospitalRepository {
   getHospitals(): Promise<Hospital[]>;
   getHospitalById(id: string): Promise<Hospital | null>;
-  searchHospitals(filters: HospitalSearchFilters, sort?: HospitalSort): Promise<Hospital[]>;
+  searchHospitals(
+    filters: HospitalSearchFilters,
+    sort?: HospitalSort,
+    options?: { signal?: AbortSignal },
+  ): Promise<Hospital[]>;
   updateResources(id: string, resources: Record<string, string>): Promise<void>;
 }
 

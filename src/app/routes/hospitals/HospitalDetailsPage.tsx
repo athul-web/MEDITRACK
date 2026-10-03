@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHospital } from '../../../hooks/useHospital';
 import { ResourceStatus } from '../../../types/public';
+import { getDirectionsUrl } from '../../../utils/directions';
 import { ReportResourceUpdateModal } from '../../../components/modals/ReportResourceUpdateModal';
 import {
   ArrowLeft,
@@ -117,13 +118,7 @@ export function HospitalDetailsPage() {
   };
 
   const handleGetDirections = () => {
-    let url = '';
-    if (hospital.coordinates?.latitude && hospital.coordinates?.longitude) {
-      url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.latitude},${hospital.coordinates.longitude}`;
-    } else {
-      const destination = encodeURIComponent(`${hospital.name}, ${hospital.address || ''}, ${hospital.city || ''}`);
-      url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-    }
+    const url = getDirectionsUrl(hospital);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 

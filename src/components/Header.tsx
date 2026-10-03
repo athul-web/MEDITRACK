@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 // Removed UserRole import as role concept is deprecated
 import { NotificationItem, FacilitySettings } from '../types';
 import {
   Activity,
   Bell,
-  ShieldCheck,
-  User,
   Settings as SettingsIcon,
   AlertTriangle,
   Check,
-  PlusCircle,
-  Stethoscope,
-  Wrench,
   LogOut,
   Search
 } from 'lucide-react';

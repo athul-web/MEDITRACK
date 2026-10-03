@@ -769,10 +769,10 @@ export default function App() {
                   </div>
                 ) : viewMode === 'cards' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />)}
+                    {filteredEquipment.map(eq => <EquipmentCard key={eq.id} equipment={eq} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} />)}
                   </div>
                 ) : (
-                  <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} onQuickStatusChange={(equipment, status) => handleUpdateStatus(equipment.id, status)} />
+                  <EquipmentTable equipment={filteredEquipment} onSelect={e => { setSelectedEquipment(e); setIsDetailOpen(true); }} onReportProblem={handleOpenReportModal} />
                 )}
               </div>
             )}
@@ -782,7 +782,7 @@ export default function App() {
           )}
 
           {activeNav === 'history' && (
-            <MaintenanceHistoryView records={maintenanceRecords} equipmentList={equipmentList} onSelectEquipmentById={handleSelectEquipmentById} />
+            <MaintenanceHistoryView records={maintenanceRecords} onSelectEquipmentById={handleSelectEquipmentById} />
           )}
 
           {activeNav === 'technicians' && (

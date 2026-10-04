@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PublicHeader } from '../../components/layout/PublicHeader';
+import { PublicFooter } from '../../components/layout/PublicFooter';
 import { MobileNavigation } from '../../components/layout/MobileNavigation';
 
 interface PublicLayoutProps {
@@ -18,6 +19,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <main className="flex-1">
         {children}
       </main>
+      <PublicFooter />
     </div>
   );
 }

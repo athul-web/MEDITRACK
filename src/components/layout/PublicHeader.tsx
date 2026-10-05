@@ -25,11 +25,11 @@ export function PublicHeader({ onMenuClick }: PublicHeaderProps) {
             <img
               src="/logo.png"
               alt="MediTrack Logo"
-              className="h-12 w-auto object-contain ml-2"
+              className="h-10 w-auto object-contain ml-2"
             />
-            <div className="hidden md:block">
-              <span className="font-bold text-[20px] tracking-tight leading-tight">MediTrack</span>
-              <p className="text-[var(--color-brand-light)] text-[12px] leading-none -mt-0.5">Emergency Resources | When It Matters</p>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-[18px] sm:text-[20px] tracking-tight leading-tight truncate">MediTrack</span>
+              <p className="text-[var(--color-brand-light)] text-[10px] sm:text-[12px] leading-none -mt-0.5 truncate">Emergency Resources | When It Matters</p>
             </div>
           </Link>
 

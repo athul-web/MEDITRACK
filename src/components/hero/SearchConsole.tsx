@@ -4,9 +4,10 @@
  * Primary interaction - single horizontal row with 4 segments on desktop
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import React from 'react';
-import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown, Landmark, AlertCircle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Search, MapPin, Crosshair, Stethoscope, BriefcaseMedical, ChevronDown, Landmark, AlertCircle, X } from 'lucide-react';
 import { HospitalSearchFilters, ResourceType, HospitalCategory } from '../../types/public';
 import { emergencyPresets } from '../../constants/emergencyPresets';
 
@@ -48,27 +49,134 @@ function CustomSelect({
   placeholder: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
+  // Detect mobile on mount and resize
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      // Prevent body scroll on mobile when sheet is open
+      if (isMobile) document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, isMobile]);
+
+  // Escape key handler
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen]);
 
   const displayValue = value
     ? options.find(o => o.value === value)?.label || value
     : placeholder;
 
+  const handleSelect = useCallback((optionValue: string) => {
+    onChange(optionValue);
+    setIsOpen(false);
+  }, [onChange]);
+
+  const handleOpen = useCallback(() => setIsOpen(true), []);
+
+  // Mobile: render as bottom sheet via portal
+  if (isMobile && isOpen) {
+    return createPortal(
+      <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`${label} options`}>
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40 animate-in fade-in duration-200"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+        {/* Bottom Sheet */}
+        <div
+          ref={sheetRef}
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[var(--radius-lg)] shadow-[var(--shadow-xl)] animate-in slide-in-from-bottom duration-300 ease-out"
+          style={{ maxHeight: '70vh' }}
+        >
+          {/* Handle bar */}
+          <div className="flex items-center justify-center pt-3 pb-2">
+            <div className="w-10 h-1 bg-slate-300 rounded-full" />
+          </div>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+            <div className="flex items-center gap-3">
+              <Icon className="w-5 h-5 text-slate-600" />
+              <span className="font-semibold text-slate-900">{label}</span>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {/* Options */}
+          <ul className="max-h-[50vh] overflow-y-auto overscroll-contain" role="listbox" style={{ overscrollBehavior: 'contain' }}>
+            {options.map(option => (
+              <li key={option.value} role="option" aria-selected={value === option.value}>
+                <button
+                  type="button"
+                  onClick={() => handleSelect(option.value)}
+                  className={`w-full px-4 py-4 text-base font-medium text-left transition-colors flex items-center justify-between gap-2 ${
+                    value === option.value
+                      ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-navy)] font-semibold'
+                      : 'text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{option.label}</span>
+                  {value === option.value && (
+                    <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-brand-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {/* Safe area padding */}
+          <div className="pb-safe-area-inset-bottom" />
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // Desktop: traditional dropdown
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpen}
         className="w-full flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white text-left transition-colors hover:bg-[var(--color-page)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-blue)] focus:border-transparent"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
@@ -82,20 +190,17 @@ function CustomSelect({
             </span>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-[var(--color-border)] rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] overflow-hidden">
-          <ul className="max-h-60 overflow-auto" role="listbox">
+      {isOpen && !isMobile && (
+        <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-[var(--color-border)] rounded-[var(--radius-sm)] shadow-[var(--shadow-lg)] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+          <ul className="max-h-60 overflow-auto overscroll-contain" role="listbox" style={{ overscrollBehavior: 'contain' }}>
             {options.map(option => (
               <li key={option.value} role="option" aria-selected={value === option.value}>
                 <button
                   type="button"
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => handleSelect(option.value)}
                   className={`w-full px-4 py-3 text-sm font-medium text-left transition-colors flex items-center justify-between gap-2 ${
                     value === option.value
                       ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-navy)] font-semibold'
@@ -135,29 +240,138 @@ function MultiSelectDropdown({
   placeholder: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
+  // Detect mobile on mount and resize
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      // Prevent body scroll on mobile when sheet is open
+      if (isMobile) document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, isMobile]);
 
-  const handleToggle = (value: string) => {
+  // Escape key handler
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen]);
+
+  const handleToggle = useCallback((value: string) => {
     const newSelected = selected.includes(value)
       ? selected.filter(v => v !== value)
       : [...selected, value];
     onChange(newSelected);
-  };
+  }, [selected, onChange]);
 
   const displayValue = selected.length > 0
     ? selected.map(v => options.find(o => o.value === v)?.label || v).join(', ')
     : placeholder;
 
+  // Mobile: render as bottom sheet via portal
+  if (isMobile && isOpen) {
+    return createPortal(
+      <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`${label} options`}>
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40 animate-in fade-in duration-200"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+        {/* Bottom Sheet */}
+        <div
+          ref={sheetRef}
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[var(--radius-lg)] shadow-[var(--shadow-xl)] animate-in slide-in-from-bottom duration-300 ease-out"
+          style={{ maxHeight: '75vh' }}
+        >
+          {/* Handle bar */}
+          <div className="flex items-center justify-center pt-3 pb-2">
+            <div className="w-10 h-1 bg-slate-300 rounded-full" />
+          </div>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+            <div className="flex items-center gap-3">
+              <Icon className="w-5 h-5 text-slate-600" />
+              <span className="font-semibold text-slate-900">{label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {selected.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onChange([])}
+                  className="text-sm text-[var(--color-brand-blue)] hover:underline font-medium"
+                >
+                  Clear all
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          {/* Options */}
+          <ul className="max-h-[55vh] overflow-y-auto overscroll-contain" role="listbox" style={{ overscrollBehavior: 'contain' }}>
+            {options.map(option => (
+              <li key={option.value} role="option" aria-selected={selected.includes(option.value)}>
+                <button
+                  type="button"
+                  onClick={() => handleToggle(option.value)}
+                  className={`w-full px-4 py-4 text-base font-medium text-left transition-colors flex items-center justify-between gap-2 ${
+                    selected.includes(option.value)
+                      ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-navy)] font-semibold'
+                      : 'text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{option.label}</span>
+                  {selected.includes(option.value) && (
+                    <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-brand-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {/* Safe area padding */}
+          <div className="pb-safe-area-inset-bottom" />
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // Desktop: traditional dropdown
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -176,12 +390,12 @@ function MultiSelectDropdown({
             </span>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-[var(--color-border)] rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] overflow-hidden">
-          <ul className="max-h-60 overflow-auto" role="listbox">
+      {isOpen && !isMobile && (
+        <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-[var(--color-border)] rounded-[var(--radius-sm)] shadow-[var(--shadow-lg)] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+          <ul className="max-h-60 overflow-auto overscroll-contain" role="listbox" style={{ overscrollBehavior: 'contain' }}>
             {options.map(option => (
               <li key={option.value} role="option" aria-selected={selected.includes(option.value)}>
                 <button

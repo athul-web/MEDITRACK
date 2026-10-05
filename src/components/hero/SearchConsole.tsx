@@ -43,27 +43,36 @@ function HospitalNameSearch({
   onSearch: () => void;
   placeholder?: string;
 }) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <div className="relative">
       <label className="field-label">Search by Name</label>
       <div className="relative">
-        <Search className="field-icon" />
+        <button
+          type="button"
+          onClick={onSearch}
+          className="absolute right-0 top-0 bottom-0 w-12 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] hover:bg-[var(--color-page)] transition-colors rounded-r-[var(--radius-md)]"
+          aria-label="Search hospitals"
+          tabIndex={-1}
+        >
+          <Search className="w-5 h-5" />
+        </button>
         <input
           type="text"
           value={value || ''}
           onChange={e => onChange(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') onSearch(); }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="input-field pr-12"
+          className="w-full pl-10 pr-12 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-sm transition-colors
+            focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-blue)] focus:border-transparent
+            ${isFocused ? 'ring-2 ring-[var(--color-brand-blue)] border-transparent' : ''}"
         />
-        <button
-          type="button"
-          onClick={onSearch}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
-          aria-label="Search hospitals"
-        >
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-brand-blue)] pointer-events-none">
           <Search className="w-5 h-5" />
-        </button>
+        </div>
       </div>
     </div>
   );

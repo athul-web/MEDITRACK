@@ -78,6 +78,9 @@ export function HomePage() {
     if (searchFilters.category) {
       params.append('category', searchFilters.category);
     }
+    if (searchFilters.query) {
+      params.append('query', searchFilters.query);
+    }
 
     navigate(`/hospitals?${params.toString()}`);
   };

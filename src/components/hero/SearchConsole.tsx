@@ -32,6 +32,43 @@ const categoryOptions: { value: HospitalCategory; label: string }[] = [
   { value: 'single_specialty', label: 'Single-Specialty' },
 ];
 
+function HospitalNameSearch({
+  value,
+  onChange,
+  onSearch,
+  placeholder = "Search hospitals by name..."
+}: {
+  value: string | undefined;
+  onChange: (value: string) => void;
+  onSearch: () => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <label className="field-label">Search by Name</label>
+      <div className="relative">
+        <Search className="field-icon" />
+        <input
+          type="text"
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') onSearch(); }}
+          placeholder={placeholder}
+          className="input-field pr-12"
+        />
+        <button
+          type="button"
+          onClick={onSearch}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-brand-blue)] transition-colors"
+          aria-label="Search hospitals"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Single-select dropdown component for Emergency Type / Category
 function CustomSelect({
   label,
@@ -535,6 +572,11 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
   if (variant === 'vertical') {
     return (
       <div className="space-y-4 w-full">
+        <HospitalNameSearch
+          value={filters.query}
+          onChange={query => onChange({ ...filters, query })}
+          onSearch={handleSearchWithAutoLocation}
+        />
         <div className="relative">
           <label className="field-label">Emergency Type</label>
           <CustomSelect
@@ -601,9 +643,25 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
             </p>
           )}
         </div>
-        {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category) && (
+        {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category || filters.query) && (
           <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
             <span className="text-xs text-[var(--color-text-muted)]">Active:</span>
+            {filters.query && (
+              <span className="badge-preset badge-preset-active flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5" />
+                {filters.query}
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...filters, query: undefined })}
+                  className="ml-1 hover:text-[var(--color-brand-blue)]"
+                  aria-label="Remove search query"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            )}
             {filters.emergencyType && (
               <span className="badge-preset badge-preset-active flex items-center gap-1.5">
                 {emergencyPresets.find(p => p.id === filters.emergencyType)?.label}
@@ -682,6 +740,15 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
     <div className="mt-8 bg-white rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] p-5">
       {/* Desktop: Single row with 5 segments (removed district) */}
       <div className="hidden lg:flex lg:items-center gap-0">
+        {/* Segment 0: Search by Hospital Name */}
+        <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0 max-w-xs">
+          <HospitalNameSearch
+            value={filters.query}
+            onChange={query => onChange({ ...filters, query })}
+            onSearch={handleSearchWithAutoLocation}
+            placeholder="Search by name..."
+          />
+        </div>
         {/* Segment 1: Emergency Type */}
         <div className="relative px-4 py-3 border-r border-[var(--color-border)] flex-1 min-w-0">
           <CustomSelect
@@ -767,6 +834,13 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
 
       {/* Tablet: 3x2 grid (adjusted to 3 columns without district) */}
       <div className="hidden md:grid lg:hidden md:grid-cols-3 gap-4">
+        <div className="md:col-span-3 relative">
+          <HospitalNameSearch
+            value={filters.query}
+            onChange={query => onChange({ ...filters, query })}
+            onSearch={handleSearchWithAutoLocation}
+          />
+        </div>
         <div className="relative">
           <label htmlFor="emergency-type" className="field-label">Emergency Type</label>
           <CustomSelect
@@ -847,6 +921,11 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
 
       {/* Mobile: Single column stack */}
       <div className="md:hidden space-y-4">
+        <HospitalNameSearch
+          value={filters.query}
+          onChange={query => onChange({ ...filters, query })}
+          onSearch={handleSearchWithAutoLocation}
+        />
         <div className="relative">
           <label htmlFor="emergency-type-mobile" className="field-label">Emergency Type</label>
           <CustomSelect
@@ -923,9 +1002,25 @@ export function SearchConsole({ filters, onChange, onSearch, onSearchWithLocatio
         </button>
       </div>
 
-      {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category) && (
+      {(filters.emergencyType || filters.requiredResources.length > 0 || filters.location?.label || filters.category || filters.query) && (
         <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">Active:</span>
+          {filters.query && (
+            <span className="badge-preset badge-preset-active flex items-center gap-1.5">
+              <Search className="w-3.5 h-3.5" />
+              {filters.query}
+              <button
+                type="button"
+                onClick={() => onChange({ ...filters, query: undefined })}
+                className="ml-1 hover:text-[var(--color-brand-blue)]"
+                aria-label="Remove search query"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </span>
+          )}
           {filters.emergencyType && (
             <span className="badge-preset badge-preset-active flex items-center gap-1.5">
               {emergencyPresets.find(p => p.id === filters.emergencyType)?.label}

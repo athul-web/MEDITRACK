@@ -105,6 +105,7 @@ export function HospitalsPage() {
         filters={searchFilters}
         onChange={handleSearchChange}
         onSearch={() => setSearchFilters(prev => ({ ...prev }))}
+        onSearchWithLocation={async () => {}}
         variant="vertical"
       />
       <EmergencyPresets

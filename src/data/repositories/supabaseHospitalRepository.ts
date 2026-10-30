@@ -9,7 +9,7 @@ import { isAbortError } from '../../utils/http';
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
     const { data, error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .select('*')
       .order('name');
 
@@ -19,7 +19,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async getHospitalById(id: string): Promise<Hospital | null> {
     const { data, error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -30,7 +30,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async updateResources(id: string, resources: Record<string, string>): Promise<void> {
     const { error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .update({ resources })
       .eq('id', id);
 
@@ -60,7 +60,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    let query = supabase.from('public_hospitals').select('*');
+    let query = supabase.from('kerala_hospitals').select('*');
 
     const isCurrentLocation = (label?: string) => {
       if (!label) return false;

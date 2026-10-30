@@ -20,6 +20,31 @@ export function Login() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    let isActive = true;
+
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!isActive || !session?.user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (isActive && (profile?.role === 'Staff' || profile?.role === 'Admin')) {
+        navigate('/dashboard', { replace: true });
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

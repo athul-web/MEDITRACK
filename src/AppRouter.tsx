@@ -15,35 +15,62 @@ import { Login } from './components/Login';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    async function checkSession() {
+    let isActive = true;
+
+    async function checkAccess() {
       try {
+        setIsLoading(true);
         const {
           data: { session },
-          error,
+          error: sessionError,
         } = await supabase.auth.getSession();
 
-        if (error) throw error;
+        if (sessionError) throw sessionError;
+        if (!session?.user) {
+          if (isActive) setIsAuthorized(false);
+          return;
+        }
 
-        setIsAuthenticated(!!session);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profileError) throw profileError;
+
+        const role = profile?.role;
+        if (isActive) setIsAuthorized(role === 'Staff' || role === 'Admin');
       } catch (err: any) {
-        console.error('Auth session check failed:', err);
+        console.error('Auth access check failed:', err);
+        if (isActive) setIsAuthorized(false);
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     }
 
-    checkSession();
+    checkAccess();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
+      if (!session?.user) {
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Re-run the full role check on any auth state change.
+      checkAccess();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isActive = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading) {
@@ -57,7 +84,11 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthorized) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 export default function AppRouter() {

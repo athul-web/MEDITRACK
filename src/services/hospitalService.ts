@@ -21,7 +21,7 @@ const KERALA_DISTRICTS_FALLBACK = [
 
 export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Promise<Hospital[]> {
   let query = supabase
-    .from('kerala_hospitals')
+    .from('public_hospitals')
     .select('*');
 
   if (filters) {
@@ -33,7 +33,7 @@ export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Pro
     }
     if (filters.emergencyType) {
       // This would typically involve joining with resources or filtering based on resource availability
-      // For now, we focus on the kerala_hospitals table.
+      // For now, we focus on the public_hospitals table.
     }
   }
 
@@ -49,10 +49,20 @@ export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Pro
 }
 
 export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    return [];
+  }
+
+  // The Supabase .ilike query parameter is transported as a URL query value,
+  // so it does not permit PostgREST filter-clause injection. Escape LIKE
+  // wildcards and the escape character itself so user input is matched literally.
+  const escapedName = trimmedName.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+
   const { data, error } = await supabase
-    .from('kerala_hospitals')
+    .from('public_hospitals')
     .select('*')
-    .ilike('name', `%${name}%`);
+    .ilike('name', `%${escapedName}%`);
 
   if (error) {
     console.error('Error searching hospitals by name:', error);
@@ -65,7 +75,7 @@ export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
 export async function getDistricts(): Promise<string[]> {
   try {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from('public_hospitals')
       .select('city, district');
 
     if (error) {

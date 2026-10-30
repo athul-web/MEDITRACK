@@ -3,7 +3,7 @@
  * One-off helper: finds hospitals with no stored coordinates, looks each one up
  * on OpenStreetMap Nominatim, and writes a reviewable SQL file.
  *
- *   node scripts/geocode-hospitals.mjs [--table kerala_hospitals] [--out supabase/seeds/hospital_coordinates.generated.sql]
+ *   node scripts/geocode-hospitals.mjs [--table public_hospitals] [--out supabase/seeds/hospital_coordinates.generated.sql]
  *
  * Reads VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY from .env (the anon key only
  * needs read access). Nothing is written to the database: review the generated
@@ -21,7 +21,7 @@ const arg = (name, fallback) => {
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 
-const TABLE = arg('table', 'kerala_hospitals');
+const TABLE = arg('table', 'public_hospitals');
 const OUT = arg('out', 'supabase/seeds/hospital_coordinates.generated.sql');
 
 if (!/^[a-z_][a-z0-9_]*$/i.test(TABLE)) {

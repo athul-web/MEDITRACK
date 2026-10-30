@@ -60,7 +60,7 @@ describe('SupabaseHospitalRepository', () => {
 
   it('should fetch hospitals from the correct table', async () => {
     await repo.getHospitals();
-    expect(supabase.from).toHaveBeenCalledWith('kerala_hospitals');
+    expect(supabase.from).toHaveBeenCalledWith('public_hospitals');
   });
 
   it('should apply district filter using city, district, and address columns', async () => {

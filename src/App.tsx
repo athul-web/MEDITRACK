@@ -287,9 +287,10 @@ export default function App() {
         equipmentName: equipment.name,
       };
 
+      const hospitalId = await getCurrentUserHospitalId();
       const { error: reportError } = await supabase
         .from('problem_reports')
-        .insert(toProblemReportRow(newTicket));
+        .insert({ ...toProblemReportRow(newTicket), hospital_id: hospitalId });
       if (reportError) throw reportError;
 
       const newStatus: EquipmentStatus = (reportData.severity === 'Critical' || reportData.severity === 'High') ? 'Down' : 'Needs Attention';
@@ -663,7 +664,7 @@ export default function App() {
         <button onClick={() => window.location.reload()} className="btn-primary px-6 py-2">Refresh Page</button>
       </div>
     </div>}>
-      <div className="min-h-screen bg-slate-50/75 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
+      <div className="min-h-screen bg-gray-100 text-slate-900 flex font-sans selection:bg-blue-100 selection:text-blue-900">
         {toastMessage && (
           <div className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-xs font-medium shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-150">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -672,53 +673,64 @@ export default function App() {
           </div>
         )}
 
-        <Header
-          notifications={notifications}
-          onMarkAllNotificationsRead={async () => {
-            const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
-            if (!error) {
-              setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-              showToast('Notifications updated.');
-            }
-          }}
-          onNotificationClick={handleSelectEquipmentById}
-          onOpenReportModal={() => handleOpenReportModal(null)}
-          onOpenSettingsModal={() => {
-            setIsSettingsModalOpen(true);
-          }}
-          onLogout={handleLogout}
-          facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
-          fleetUptime={fleetUptime}
-        />
-
-        <div className="bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
-              <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
-                <button onClick={() => setActiveNav('equipment')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'equipment' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <Layers className="w-4 h-4" /> <span>Equipment Fleet ({equipmentList.length})</span>
-                </button>
-                <button onClick={() => setActiveNav('workorders')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'workorders' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <Wrench className="w-4 h-4" /> <span>Work Orders ({problemReports.filter(t => t.status !== 'Resolved').length})</span>
-                </button>
-                <button onClick={() => setActiveNav('history')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'history' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <FileText className="w-4 h-4" /> <span>Maintenance History</span>
-                </button>
-                <button onClick={() => setActiveNav('technicians')} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${activeNav === 'technicians' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <Users className="w-4 h-4" /> <span>Team</span>
-                </button>
-              </nav>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500">User Mode:</span>
-                <span className="px-2.5 py-1 rounded-full font-semibold bg-sky-100 text-sky-900 border border-sky-300">
-                  Hospital Staff
-                </span>
-              </div>
+        <aside className="hidden lg:flex w-64 min-h-screen bg-[#10243f] text-slate-100 flex-col border-r border-slate-800">
+          <div className="px-5 py-5 border-b border-white/10 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-cyan-500 text-white flex items-center justify-center font-bold">M</div>
+            <div>
+              <div className="font-semibold tracking-wide">MediTrack</div>
+              <div className="text-xs text-slate-400">Hospital Operations</div>
             </div>
           </div>
-        </div>
+          <nav className="flex-1 p-3 space-y-1">
+            {[
+              { key: 'equipment', label: 'Overview', icon: Layers },
+              { key: 'equipment', label: 'Equipment', icon: Activity },
+              { key: 'workorders', label: 'Alerts & Events', icon: Activity },
+              { key: 'history', label: 'Maintenance', icon: FileText },
+              { key: 'technicians', label: 'Team', icon: Users },
+            ].map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={`${item.key}-${index}`}
+                  onClick={() => setActiveNav(item.key as any)}
+                  className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${activeNav === item.key ? 'bg-[#1a345b] text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {item.key === 'workorders' && problemReports.filter(t => t.status !== 'Resolved').length > 0 ? (
+                    <span className="ml-auto rounded bg-red-500 text-white text-xs px-2 py-0.5">{problemReports.filter(t => t.status !== 'Resolved').length}</span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </nav>
+          <div className="p-4 border-t border-white/10">
+            <button onClick={handleLogout} className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">Sign out</button>
+          </div>
+        </aside>
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header
+            notifications={notifications}
+            onMarkAllNotificationsRead={async () => {
+              const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
+              if (!error) {
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                showToast('Notifications updated.');
+              }
+            }}
+            onNotificationClick={handleSelectEquipmentById}
+            onOpenReportModal={() => handleOpenReportModal(null)}
+            onOpenSettingsModal={() => {
+              setIsSettingsModalOpen(true);
+            }}
+            onLogout={handleLogout}
+            facilitySettings={facilitySettings ?? EMPTY_FACILITY_SETTINGS}
+            fleetUptime={fleetUptime}
+          />
+
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-6">
           {activeNav === 'equipment' && (
             <div className="space-y-6">
               <StatsOverview equipment={equipmentList} onFilterStatus={setStatusFilter} selectedStatusFilter={statusFilter} onSelectEquipment={eq => { setSelectedEquipment(eq); setIsDetailOpen(true); }} />
@@ -814,6 +826,7 @@ export default function App() {
         <AddEditEquipmentModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} equipmentToEdit={editEquipmentTarget} onSaveEquipment={handleSaveEquipment} />
 
         <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} settings={facilitySettings ?? EMPTY_FACILITY_SETTINGS} onSaveSettings={handleSaveSettings} />
+      </div>
       </div>
     </ErrorBoundary>
   );

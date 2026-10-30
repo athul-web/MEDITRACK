@@ -9,7 +9,7 @@ import { isAbortError } from '../../utils/http';
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from('public_hospitals')
       .select('*')
       .order('name');
 
@@ -19,7 +19,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async getHospitalById(id: string): Promise<Hospital | null> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from('public_hospitals')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -29,22 +29,30 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   }
 
   async updateResources(id: string, resources: Record<string, string>): Promise<void> {
+    const { error } = await supabase
+      .from('public_hospitals')
+      .update({ resources })
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(`hospital_resources_${id}`, JSON.stringify(resources));
       } catch {
-        // Ignore localStorage error
+        // Local cache is secondary; the backend update already succeeded.
       }
     }
+  }
 
-    try {
-      await supabase
-        .from('kerala_hospitals')
-        .update({ resources })
-        .eq('id', id);
-    } catch (err) {
-      console.warn('Backend resources column may not exist, cached locally:', err);
-    }
+  /**
+   * Strip characters that have special meaning in PostgREST filter strings or
+   * SQL LIKE patterns so user input cannot alter the intended filter shape.
+   */
+  private sanitizeFilterTerm(value: string): string {
+    return value.replace(/[^A-Za-z0-9 .,'-]/g, '').trim();
   }
 
   async searchHospitals(
@@ -52,7 +60,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    let query = supabase.from('kerala_hospitals').select('*');
+    let query = supabase.from('public_hospitals').select('*');
 
     const isCurrentLocation = (label?: string) => {
       if (!label) return false;
@@ -82,13 +90,15 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     }
 
     if (filters.district) {
-      const districtText = filters.district.trim();
-      query = query.or(
-        `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
-      );
+      const districtText = this.sanitizeFilterTerm(filters.district);
+      if (districtText) {
+        query = query.or(
+          `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+        );
+      }
     }
 
-    const customLocationText = geocoded ? '' : typedLocation;
+    const customLocationText = geocoded ? '' : this.sanitizeFilterTerm(typedLocation);
 
     if (customLocationText) {
       query = query.or(
@@ -97,10 +107,12 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     }
 
     if (filters.query && filters.query.trim()) {
-      const trimmedQuery = filters.query.trim();
-      query = query.or(
-        `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,district.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
-      );
+      const trimmedQuery = this.sanitizeFilterTerm(filters.query);
+      if (trimmedQuery) {
+        query = query.or(
+          `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,district.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
+        );
+      }
     }
 
     const { data, error } = await query;

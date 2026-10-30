@@ -148,9 +148,9 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-[var(--color-brand-blue)] flex-shrink-0" />
-            <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary]">Nearby Hospitals</h2>
+            <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)]">Nearby Hospitals</h2>
           </div>
-          <p className="text-[var(--text-body)] text-[var(--color-text-secondary]">
+          <p className="text-[var(--text-body)] text-[var(--color-text-secondary)]">
             Showing hospitals near your location with available resources
           </p>
         </div>
@@ -168,7 +168,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-unavailable)]/10">
           <AlertCircle className="w-6 h-6 text-[var(--color-unavailable)]" />
         </div>
-        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary]">
+        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
           We couldn't load hospital availability
         </h3>
         <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
@@ -191,7 +191,7 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
         <div className="inline-flex items-center justify-center w-10 h-10 text-[var(--color-text-muted)] mx-auto">
           <MapPin className="w-10 h-10" />
         </div>
-        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary]">
+        <h3 className="text-[var(--text-component)] font-semibold text-[var(--color-text-primary)]">
           No matching hospitals found
         </h3>
         <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
@@ -220,9 +220,9 @@ export function HospitalList({ filters, onFiltersChange }: HospitalListProps) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-[var(--color-brand-blue)] flex-shrink-0" />
-          <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary]">Nearby Hospitals</h2>
+          <h2 className="text-[var(--text-section)] font-bold text-[var(--color-text-primary)]">Nearby Hospitals</h2>
         </div>
-        <p className="text-[var(--text-body)] text-[var(--color-text-secondary]">
+        <p className="text-[var(--text-body)] text-[var(--color-text-secondary)]">
           Showing {startIndex}–{endIndex} of {hospitals.length} hospital{hospitals.length !== 1 ? 's' : ''}
         </p>
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHospital } from '../../../hooks/useHospital';
+import { supabase } from '../../../lib/supabase';
 import { ResourceStatus } from '../../../types/public';
 import { getDirectionsUrl } from '../../../utils/directions';
 import { ReportResourceUpdateModal } from '../../../components/modals/ReportResourceUpdateModal';
@@ -47,6 +48,40 @@ export function HospitalDetailsPage() {
   const navigate = useNavigate();
   const { hospital, isLoading, error, refresh } = useHospital(id || '');
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [canReportResources, setCanReportResources] = useState(false);
+
+  // Resource editing is an authorized operation, not a public contribution.
+  // The database remains the enforcement boundary, but this keeps the control
+  // from being presented to unauthenticated/public users.
+  useEffect(() => {
+    let isActive = true;
+
+    async function checkResourcePermission() {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError || !authData.user || !isActive) return;
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .maybeSingle();
+
+        if (profileError || !profile || !isActive) return;
+
+        if (profile.role === 'Staff' || profile.role === 'Admin') {
+          setCanReportResources(true);
+        }
+      } catch {
+        // Fail closed: leave the control hidden if authorization cannot be determined.
+      }
+    }
+
+    checkResourcePermission();
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -219,13 +254,15 @@ export function HospitalDetailsPage() {
                     <h3 className="text-lg font-bold text-slate-900">Resource Availability</h3>
                     <span className="text-xs text-slate-500">Live operational status</span>
                   </div>
-                  <button
-                    onClick={() => setIsUpdateModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Report Update</span>
-                  </button>
+                  {canReportResources ? (
+                    <button
+                      onClick={() => setIsUpdateModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Report Update</span>
+                    </button>
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(hospital.resources || {}).map(([key, status]) => (

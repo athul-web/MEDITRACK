@@ -133,14 +133,7 @@ export function HospitalsPage() {
       list = list.filter((h) => h.district === filters.district);
     }
 
-    // Filter by distance
-    if (filters.district) {
-    activeChips.push({
-      id: 'district-' + filters.district,
-      label: 'District: ' + filters.district,
-      onRemove: () => handleFilterChange({ ...filters, district: null }),
-    });
-  }
+    // District chips are appended after activeChips is declared below.
 
   if (filters.maxDistanceKm !== null) {
       list = list.filter((h) => (h.distanceKm ?? Infinity) <= (filters.maxDistanceKm as number));
@@ -174,6 +167,14 @@ export function HospitalsPage() {
 
   // Active filter removable chips
   const activeChips: { id: string; label: string; onRemove: () => void }[] = [];
+
+  if (filters.district) {
+    activeChips.push({
+      id: 'district-' + filters.district,
+      label: 'District: ' + filters.district,
+      onRemove: () => handleFilterChange({ ...filters, district: null }),
+    });
+  }
 
   filters.resourceTypes.forEach((type) => {
     activeChips.push({
@@ -226,7 +227,7 @@ export function HospitalsPage() {
   }
 
   return (
-    <div className="hospitals-page min-h-screen flex flex-col font-sans" style={{ background: '#F3F8FC' }}>
+    <div className="hospitals-page min-h-screen flex flex-col font-sans overflow-x-hidden" style={{ background: '#F3F8FC' }}>
       {/* 1. Global Navigation Bar */}
       <SiteNavbar />
 

@@ -101,7 +101,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans" style={{ background: '#F3F8FC' }}>
+    <div className="min-h-screen flex flex-col font-sans overflow-x-hidden" style={{ background: '#F3F8FC' }}>
       {/* 1. Global Navigation Bar */}
       <SiteNavbar />
 
@@ -117,12 +117,12 @@ export function HomePage() {
           {/* Main Content Layout: Left 68% Hospitals / Right 32% Side Panels */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Hospital List & Filters */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 min-w-0">
               <HospitalsSection hospitals={displayedHospitals} />
             </div>
 
             {/* Right Column: Emergency Hotline & Staff Access */}
-            <aside className="lg:col-span-4 flex flex-col gap-6 sticky top-24">
+            <aside className="lg:col-span-4 min-w-0 flex flex-col gap-6 sticky top-24">
               <EmergencyPanel />
               <StaffPanel />
             </aside>

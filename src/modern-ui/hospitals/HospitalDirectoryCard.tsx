@@ -167,12 +167,18 @@ export function HospitalDirectoryCard({ hospital, onViewDetails }: HospitalDirec
             <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-[#60778C] mb-2">
               <div className="flex items-center gap-1 font-semibold text-[#073B55]">
                 <MapPin size={13} className="text-[#087D91]" />
-                <span>{hospital.distanceKm === null ? 'Distance not calculated' : hospital.distanceKm + ' km away'}</span>
-                {hospital.driveMinutes !== null && (
+                {typeof hospital.distanceKm === 'number' ? (
                   <>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-[#60778C] font-normal">{hospital.driveMinutes} min drive</span>
+                    <span>{hospital.distanceKm} km away</span>
+                    {typeof hospital.driveMinutes === 'number' && (
+                      <>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-[#60778C] font-normal">{hospital.driveMinutes} min drive</span>
+                      </>
+                    )}
                   </>
+                ) : (
+                  <span>Distance unavailable</span>
                 )}
               </div>
 

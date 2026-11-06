@@ -1,0 +1,300 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Activity, MapPin, ShieldCheck, Phone, Zap, Loader2, AlertCircle } from 'lucide-react';
+import { SearchConsole } from '../../../components/hero/SearchConsole';
+import { emergencyPresets } from '../../../constants/emergencyPresets';
+import { HospitalSearchFilters } from '../../../types/public';
+import { HospitalCard as HospitalCardUI } from '../../../components/hospitals/HospitalCard';
+import { useHospitals } from '../../../hooks/useHospitals';
+import { getDirectionsUrl } from '../../../utils/directions';
+
+/**
+ * Home Page implementation
+ */
+export function HomePage() {
+  const navigate = useNavigate();
+  const { hospitals, isLoading, search } = useHospitals();
+  const [searchFilters, setSearchFilters] = useState<HospitalSearchFilters>({
+    requiredResources: [],
+  });
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  // Load nearby hospitals on mount using geolocation
+  const loadNearbyHospitals = useCallback(async () => {
+    if ('geolocation' in navigator) {
+      setIsLocating(true);
+      setLocationError(null);
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000,
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+        await search(
+          {
+            requiredResources: [],
+            location: { latitude, longitude, label: 'Current Location' },
+          },
+          'nearest'
+        );
+      } catch (error) {
+        console.warn('Geolocation failed, loading without location:', error);
+        setLocationError('Could not get your location. Showing all hospitals.');
+        await search({ requiredResources: [] }, 'nearest');
+      } finally {
+        setIsLocating(false);
+      }
+    } else {
+      setLocationError('Geolocation not supported. Showing all hospitals.');
+      await search({ requiredResources: [] }, 'nearest');
+    }
+  }, [search]);
+
+  useEffect(() => {
+    loadNearbyHospitals();
+  }, [loadNearbyHospitals]);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchFilters.emergencyType) {
+      params.append('emergencyType', searchFilters.emergencyType);
+    }
+    if (searchFilters.requiredResources.length > 0) {
+      params.append('resources', searchFilters.requiredResources.join(','));
+    }
+    if (searchFilters.location?.label) {
+      params.append('location', searchFilters.location.label);
+    }
+    if (searchFilters.location?.latitude !== undefined && searchFilters.location?.longitude !== undefined) {
+      params.append('lat', String(searchFilters.location.latitude));
+      params.append('lng', String(searchFilters.location.longitude));
+    }
+    if (searchFilters.category) {
+      params.append('category', searchFilters.category);
+    }
+    if (searchFilters.query) {
+      params.append('query', searchFilters.query);
+    }
+
+    navigate(`/hospitals?${params.toString()}`);
+  };
+
+  const handleSearchWithLocation = async () => {
+    // Trigger geolocation and search via SearchConsole, then navigate
+    setTimeout(() => {
+      handleSearch();
+    }, 100);
+  };
+
+  const handleUseMyLocation = () => {
+    loadNearbyHospitals();
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* 1. Hero Section */}
+      <div className="relative bg-gradient-to-r from-cyan-900 via-sky-800 to-slate-900 text-white overflow-hidden pb-16">
+        {/* Background Image Overlay */}
+        <div
+          className="absolute inset-0 opacity-15 bg-cover bg-center mix-blend-overlay pointer-events-none"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1600')" }}
+        />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="max-w-2xl">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+                Find Nearby Hospitals. <br />
+                <span className="text-cyan-300">Get Real-Time Resource Availability.</span>
+              </h1>
+              <p className="mt-4 text-sm sm:text-base text-slate-300 max-w-xl leading-relaxed">
+                MediTrack helps you quickly locate hospitals with verified emergency resources like ICU, ventilators, CT scans and more — when every second counts.
+              </p>
+            </div>
+          </div>
+
+          {/* Search Box Card */}
+          <div className="mt-10 bg-white rounded-2xl p-3 sm:p-4 shadow-2xl text-slate-800 border border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+              <div className="md:col-span-12">
+                <SearchConsole
+                  filters={searchFilters}
+                  onChange={setSearchFilters}
+                  onSearch={handleSearch}
+                  onSearchWithLocation={handleSearchWithLocation}
+                  variant="horizontal"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Feature Highlights Grid */}
+      <section className="bg-slate-100/70 border-b border-slate-200/80 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <FeatureItem icon={Zap} title="Real-Time Availability" description="See live resource status with freshness timestamps." />
+            <FeatureItem icon={MapPin} title="Nearby Hospitals" description="Find the closest verified hospitals in your area." />
+            <FeatureItem icon={ShieldCheck} title="Verified & Reliable" description="Only trusted hospitals with real-time data." />
+            <FeatureItem icon={Phone} title="Direct Contact" description="Get call details and directions instantly." />
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Hospital Cards Column */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-cyan-600" />
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Nearby Hospitals</h2>
+                  <p className="text-xs text-slate-500">
+                    {isLocating
+                      ? 'Finding your location...'
+                      : locationError
+                        ? 'Showing all hospitals (location unavailable)'
+                        : 'Showing hospitals near your location with available resources'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">Sort by:</span>
+                <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700">
+                  <span>Nearest</span>
+                  <span className="text-slate-400">⚙️</span>
+                </div>
+                {(isLocating || locationError) && (
+                  <button
+                    onClick={handleUseMyLocation}
+                    disabled={isLocating}
+                    className="btn-text text-xs whitespace-nowrap"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Locating...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="w-3.5 h-3.5" />
+                        Use My Location
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {locationError && !isLocating && (
+              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{locationError}</span>
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2].map(i => (
+                  <div key={i} className="card-surface h-40 animate-pulse bg-slate-100 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {hospitals.slice(0, 2).map(hospital => (
+                  <HospitalCardUI
+                    key={hospital.id}
+                    hospital={hospital}
+                    onViewDetails={() => navigate(`/hospitals/${hospital.id}`)}
+                    onCall={() => {
+                      const phone = hospital.contact?.emergencyPhone || hospital.contact?.phone || hospital.phone1 || hospital.phone2;
+                      if (phone) {
+                        window.location.href = `tel:${phone.replace(/[^\d+]/g, '')}`;
+                      }
+                    }}
+                    onGetDirections={() => {
+                      const url = getDirectionsUrl(hospital);
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-gradient-to-br from-sky-100 to-cyan-50 border border-sky-200 rounded-2xl p-6">
+              <div className="flex items-start justify-between">
+                <div className="bg-cyan-600 text-white p-3 rounded-xl">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  24/7 Hotline
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mt-4">Emergency?</h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                Need immediate help? Call 108 or visit the nearest emergency department directly.
+              </p>
+              <Link
+                to="/contact"
+                className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <span>Emergency Contacts</span>
+                <span className="text-xs">{"→"}</span>
+              </Link>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center justify-between gap-4">
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm">For Hospitals</h4>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed max-w-[180px]">
+                  Access your dashboard, manage resources and connect IoT devices.
+                </p>
+                <a href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-700 hover:text-cyan-800 mt-3">
+                  <span>Staff Login</span>
+                  <span className="text-xs">{"→"}</span>
+                </a>
+              </div>
+              <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=200" alt="Staff" className="w-20 h-20 rounded-xl object-cover shrink-0" />
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5">
+              <span className="text-4xl text-cyan-600 font-serif font-bold leading-none">“</span>
+              <p className="text-xs text-slate-600 italic -mt-2 leading-relaxed">
+                Better information. <br />
+                Better decisions. <br />
+                <span className="font-bold text-slate-800">More lives saved.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function FeatureItem({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="bg-cyan-500/10 text-cyan-700 p-3 rounded-xl shrink-0">
+        <Icon className="w-6 h-6" />
+      </div>
+      <div>
+        <h3 className="font-bold text-slate-900 text-sm">{title}</h3>
+        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{description}</p>
+      </div>
+    </div>
+  );
+}

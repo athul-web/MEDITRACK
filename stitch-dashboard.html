@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MEDITRACK — Hospital Equipment Management Platform</title>
+<!-- Google Fonts: Space Grotesk & Geist / Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration with Modern Healthcare Teal & Slate -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed": "#001e2f",
+            "surface-container": "#eef2f6",
+            "surface-container-high": "#e2e8f0",
+            "secondary-fixed": "#97f0ff",
+            "on-secondary-fixed": "#001f24",
+            "surface-container-highest": "#cbd5e1",
+            "surface-tint": "#0d9488",
+            "primary-fixed-dim": "#5eead4",
+            "error-container": "#fee2e2",
+            "on-primary-fixed": "#00201d",
+            "on-secondary-container": "#0f766e",
+            "surface-variant": "#e2e8f0",
+            "primary": "#0f766e",
+            "surface": "#f8fafc",
+            "on-surface": "#0f172a",
+            "on-secondary": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#115e59",
+            "on-primary-container": "#ffffff",
+            "surface-bright": "#f8fafc",
+            "outline-variant": "#e2e8f0",
+            "secondary-fixed-dim": "#2dd4bf",
+            "tertiary-fixed-dim": "#89ceff",
+            "on-surface-variant": "#475569",
+            "secondary": "#0d9488",
+            "on-primary-fixed-variant": "#134e4a",
+            "inverse-primary": "#5eead4",
+            "on-secondary-fixed-variant": "#115e59",
+            "on-tertiary-container": "#ffffff",
+            "surface-dim": "#e2e8f0",
+            "tertiary-fixed": "#c9e6ff",
+            "inverse-on-surface": "#f8fafc",
+            "on-error": "#ffffff",
+            "error": "#b91c1c",
+            "primary-container": "#0f766e",
+            "surface-container-low": "#f1f5f9",
+            "outline": "#64748b",
+            "on-error-container": "#7f1d1d",
+            "background": "#f8fafc",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#ccfbf1",
+            "on-primary": "#ffffff",
+            "primary-fixed": "#99f6e4",
+            "on-tertiary-fixed-variant": "#004c6e",
+            "on-background": "#0f172a",
+            "tertiary": "#007a87",
+            "inverse-surface": "#1e293b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0px",
+            "lg": "0px",
+            "xl": "0px",
+            "full": "0px"
+          },
+          "spacing": {
+            "space-md": "0.75rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "margin-desktop": "1.5rem",
+            "gutter-desktop": "1rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Space Grotesk", "sans-serif"],
+            "telemetry-num": ["Space Grotesk", "sans-serif"],
+            "body-md": ["Geist", "sans-serif"],
+            "headline-xl": ["Space Grotesk", "sans-serif"],
+            "headline-xl-mobile": ["Space Grotesk", "sans-serif"],
+            "label-md": ["Geist", "sans-serif"],
+            "headline-md": ["Space Grotesk", "sans-serif"],
+            "body-sm": ["Geist", "sans-serif"],
+            "label-sm": ["Geist", "sans-serif"],
+            "body-lg": ["Geist", "sans-serif"],
+            "label-lg": ["Geist", "sans-serif"],
+            "headline-sm": ["Space Grotesk", "sans-serif"]
+          },
+          "fontSize": {
+            "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "telemetry-num": ["20px", { "lineHeight": "24px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-xl-mobile": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "label-lg": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Clinical zero-radius and high-contrast baseline reset */
+    * {
+      border-radius: 0px !important;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Monospace telemetry data styling */
+    .font-mono-num {
+      font-feature-settings: "tnum" on, "lnum" on;
+    }
+    /* Subtle hard box-shadow for modal elevated state as per style guidelines */
+    .clinical-modal-shadow {
+      box-shadow: 4px 4px 0px 0px #0f766e;
+    }
+    /* Scrollbar minimal clinical styling */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-teal-100 selection:text-teal-900">
+<!-- TOP APP BAR (Shared Components Blueprint: docked full-width top-0, h-12 flex, border-b border-outline-variant) -->
+<header class="h-12 flex justify-between items-center px-4 w-full bg-surface-container-lowest border-b border-outline-variant fixed top-0 left-0 z-40">
+<!-- Left: Brand / Node Anchor -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[14px]">local_hospital</span>
+</div>
+<span class="text-headline-md font-headline-md font-bold tracking-tight text-primary uppercase">MEDITRACK</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider hidden sm:inline-block">Clinical Ops · Node Alpha-7</span>
+</div>
+<!-- Center/Search: Search bar on left/mid -->
+<div class="flex-1 max-w-xl mx-6 hidden md:block">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2.5 text-outline text-[16px]">search</span>
+<input class="w-full h-8 pl-8 pr-14 bg-surface border border-outline-variant text-on-surface font-body-sm text-body-sm focus:outline-none focus:border-primary placeholder:text-outline" placeholder="Search equipment ID, serial #, department, or IoT MAC..." type="text"/>
+<div class="absolute right-2 px-1.5 py-0.5 border border-outline-variant bg-surface-container-lowest text-[9px] font-mono-num text-on-surface-variant font-semibold leading-none">
+          ⌘K
+        </div>
+</div>
+</div>
+<!-- Right: Operational actions & trailing profile items -->
+<div class="flex items-center gap-2">
+<!-- Operational Shift Badge -->
+<div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface text-label-sm font-label-sm">
+<span class="w-1.5 h-1.5 bg-secondary"></span>
+<span>Shift: Day Cycle (07:00 - 19:00)</span>
+</div>
+<!-- Action: Log Incident / New Asset Split-button -->
+<div class="flex items-center border border-primary">
+<button class="h-8 px-3 bg-primary text-on-primary font-label-md text-label-md flex items-center gap-1.5 hover:bg-tertiary-container transition-colors">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Log Incident</span>
+</button>
+<button class="h-8 px-1.5 bg-primary text-on-primary border-l border-teal-800 hover:bg-tertiary-container transition-colors" title="Quick Options">
+<span class="material-symbols-outlined text-[15px]">arrow_drop_down</span>
+</button>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Trailing Action Icons (Shared Components) -->
+<button class="relative w-8 h-8 flex items-center justify-center border border-outline-variant bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors" id="alertBellBtn">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute -top-1 -right-1 px-1 min-w-[14px] h-[14px] bg-error text-on-error text-[9px] font-bold flex items-center justify-center">4</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors" title="System Help / Telemetry Specs">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant">
+<div class="w-7 h-7 bg-teal-50 border border-teal-200 flex items-center justify-center text-primary font-bold text-[11px]">
+          SC
+        </div>
+</div>
+</div>
+</header>
+<!-- LAYOUT CONTAINER -->
+<div class="flex pt-12 min-h-screen">
+<!-- SIDE NAVBAR (Shared Components: fixed inset-y-0 left-0 w-64, docked below header) -->
+<aside class="w-64 border-r border-outline-variant bg-surface-container-lowest fixed top-12 bottom-0 left-0 z-30 flex flex-col justify-between overflow-y-auto">
+<div class="flex flex-col">
+<!-- Quick Facility Selector / Header Block -->
+<div class="p-3 border-b border-outline-variant bg-surface-container-low">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Active Campus Node</span>
+<span class="w-2 h-2 bg-secondary"></span>
+</div>
+<div class="flex items-center justify-between cursor-pointer group">
+<div class="truncate">
+<div class="text-label-md font-label-md font-bold text-on-surface group-hover:text-primary transition-colors truncate">St. Jude Memorial Hospital</div>
+<div class="text-[10px] text-on-surface-variant truncate">Central Campus · Acute Care Node</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px] group-hover:text-primary">unfold_more</span>
+</div>
+</div>
+<!-- Navigation Links (Modern Healthcare Teal Active State) -->
+<nav class="py-2 flex flex-col space-y-0.5">
+<!-- 1. Dashboard (Active) -->
+<a class="flex items-center justify-between px-3 py-2 bg-teal-50/80 text-primary border-l-4 border-primary font-semibold transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</div>
+<span class="w-1.5 h-1.5 bg-primary"></span>
+</a>
+<!-- 2. Equipment -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-teal-50/40 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">medical_services</span>
+<span class="text-label-md font-label-md">Equipment</span>
+</div>
+<span class="px-1.5 py-0.5 text-[9px] font-bold bg-surface-container-high text-on-surface border border-outline-variant">1,428</span>
+</a>
+<!-- 3. Issues -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-error">warning</span>
+<span class="text-label-md font-label-md">Issues</span>
+</div>
+<span class="px-1.5 py-0.5 text-[9px] font-bold bg-error-container text-on-error-container border border-red-300">7 Crit</span>
+</a>
+<!-- 4. Maintenance -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-teal-50/40 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">build</span>
+<span class="text-label-md font-label-md">Maintenance</span>
+</div>
+<span class="px-1.5 py-0.5 text-[9px] font-bold bg-surface-container-high text-on-surface border border-outline-variant">14 Due</span>
+</a>
+<!-- 5. History -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-teal-50/40 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="text-label-md font-label-md">History</span>
+</div>
+</a>
+<!-- 6. IoT Monitoring -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-teal-50/40 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">sensors</span>
+<span class="text-label-md font-label-md">IoT Monitoring</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 bg-[#10b981] inline-block animate-pulse"></span>
+<span class="text-[9px] font-mono-num text-[#065f46] font-semibold">LIVE</span>
+</div>
+</a>
+<!-- 7. Settings -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-teal-50/40 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</div>
+</a>
+</nav>
+<!-- Node Telemetry Health Pill -->
+<div class="mx-3 my-3 p-2.5 border border-outline-variant bg-surface-container-low">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase mb-1">
+<span>Core Telemetry Relay</span>
+<span class="text-primary font-mono-num font-bold">24ms</span>
+</div>
+<div class="w-full bg-outline-variant h-1 overflow-hidden">
+<div class="bg-primary h-full w-[99.98%]"></div>
+</div>
+<div class="mt-1.5 flex justify-between text-[10px] text-on-surface-variant font-mono-num">
+<span>Uptime: 99.98%</span>
+<span class="text-[#065f46] font-semibold">SYNCHRONIZED</span>
+</div>
+</div>
+</div>
+<!-- Sidebar Footer (Shared Components Footer & Profile) -->
+<div class="border-t border-outline-variant bg-surface-container-lowest">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-teal-50/50 hover:text-primary transition-colors border-b border-outline-variant" href="#">
+<span class="material-symbols-outlined text-[18px]">monitor_heart</span>
+<span class="text-label-md font-label-md">System Diagnostics</span>
+</a>
+<!-- Operator Card -->
+<div class="p-3 bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 bg-primary text-on-primary flex items-center justify-center font-bold text-label-md border border-primary">
+              SC
+            </div>
+<div class="flex flex-col truncate">
+<span class="text-label-md font-label-md font-bold text-on-surface truncate">Dr. Sarah Chen</span>
+<span class="text-[10px] text-on-surface-variant truncate">Clinical Eng. Director</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant">
+<span class="px-1.5 py-0.5 bg-teal-50 text-[9px] font-bold text-primary uppercase border border-teal-200">Biomedical Ops</span>
+<button class="text-[11px] text-error hover:underline flex items-center gap-0.5 font-label-sm">
+<span class="material-symbols-outlined text-[13px]">logout</span> Log Out
+            </button>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT CANVAS -->
+<main class="ml-64 flex-1 p-6 bg-surface min-h-[calc(100vh-48px)] overflow-x-hidden">
+<!-- PAGE HEADER -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-5 border-b border-outline-variant gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-label-sm font-label-sm uppercase tracking-widest text-outline">Clinical Command Hub</span>
+<span class="text-outline">/</span>
+<span class="text-label-sm font-label-sm font-bold uppercase text-primary">Overview</span>
+</div>
+<h1 class="text-headline-lg font-headline-lg font-bold text-primary tracking-tight">Operational Dashboard</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Real-time clinical telemetry, triage alerts, and equipment lifecycle readiness across 18 hospital departments.</p>
+</div>
+<!-- Header Actions -->
+<div class="flex items-center gap-2 self-start md:self-auto">
+<button class="h-8 px-3 border border-outline-variant bg-surface-container-lowest hover:bg-teal-50/50 hover:border-primary text-on-surface text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px] text-primary">file_download</span>
+<span>Export Telemetry</span>
+</button>
+<button class="h-8 px-3 border border-outline-variant bg-surface-container-lowest hover:bg-teal-50/50 hover:border-primary text-on-surface text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px] text-primary">refresh</span>
+<span>Sync (Auto 30s)</span>
+</button>
+</div>
+</div>
+<!-- 1. OPERATIONAL METRICS STRIP (6 compact high-density tiles) -->
+<section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+<!-- Tile 1: Total Equipment -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between hover:border-primary transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Total Equipment</span>
+<span class="material-symbols-outlined text-[16px] text-outline">inventory_2</span>
+</div>
+<div class="text-headline-xl font-headline-xl text-primary font-mono-num tracking-tight leading-none mb-1">
+            1,428
+          </div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Coverage</span>
+<span class="font-semibold text-primary">18 Departments</span>
+</div>
+</div>
+<!-- Tile 2: Operational Fleet -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between border-l-2 border-l-[#059669]">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Operational</span>
+<span class="w-2 h-2 bg-[#10b981] inline-block"></span>
+</div>
+<div class="text-headline-xl font-headline-xl text-on-surface font-mono-num tracking-tight leading-none mb-1">
+            1,362
+          </div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Fleet Readiness</span>
+<span class="font-bold text-[#065f46]">95.4%</span>
+</div>
+</div>
+<!-- Tile 3: Under Maintenance -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between border-l-2 border-l-[#d97706]">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Maintenance</span>
+<span class="w-2 h-2 bg-[#f59e0b] inline-block"></span>
+</div>
+<div class="text-headline-xl font-headline-xl text-on-surface font-mono-num tracking-tight leading-none mb-1">
+            38
+          </div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Scheduled Today</span>
+<span class="font-bold text-[#92400e]">12 Active</span>
+</div>
+</div>
+<!-- Tile 4: Attention Required -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between border-l-2 border-l-error">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Attention Req.</span>
+<span class="w-2 h-2 bg-error inline-block animate-ping"></span>
+</div>
+<div class="text-headline-xl font-headline-xl text-error font-mono-num tracking-tight leading-none mb-1">
+            16
+          </div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Critical Triage</span>
+<span class="font-bold text-error">4 Hard Faults</span>
+</div>
+</div>
+<!-- Tile 5: Open Issues -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between hover:border-primary transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Open Tickets</span>
+<span class="material-symbols-outlined text-[16px] text-outline">confirmation_number</span>
+</div>
+<div class="text-headline-xl font-headline-xl text-primary font-mono-num tracking-tight leading-none mb-1">
+            12
+          </div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Status</span>
+<span class="text-on-surface font-medium">5 Assigned / 7 Triage</span>
+</div>
+</div>
+<!-- Tile 6: IoT Devices Online -->
+<div class="bg-surface-container-lowest p-3 border border-outline-variant flex flex-col justify-between border-l-2 border-l-secondary">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>IoT Telemetry</span>
+<span class="w-2 h-2 bg-secondary inline-block"></span>
+</div>
+<div class="text-headline-xl font-headline-xl text-primary font-mono-num tracking-tight leading-none mb-1">
+            1,189<span class="text-body-sm font-body-sm text-outline font-normal">/1,204</span>
+</div>
+<div class="text-[10px] text-on-surface-variant border-t border-outline-variant pt-1.5 flex justify-between items-center">
+<span>Link Integrity</span>
+<span class="font-bold text-secondary">98.8% Active</span>
+</div>
+</div>
+</section>
+<!-- 2. FLEET OPERATIONAL DISTRIBUTION BAR -->
+<section class="bg-surface-container-lowest border border-outline-variant p-4 mb-5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 mb-3 border-b border-outline-variant gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">horizontal_split</span>
+<h2 class="text-headline-sm font-headline-sm font-bold text-primary">Fleet Readiness &amp; Allocation Distribution</h2>
+<span class="text-[10px] font-mono-num px-1.5 py-0.5 bg-teal-50 text-primary border border-teal-200 font-semibold">N=1,428 UNITS</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">
+            Last Audit: <span class="font-mono-num text-primary font-semibold">Today, 06:00 EST</span>
+</div>
+</div>
+<!-- Segmented Proportional Bar -->
+<div class="h-5 w-full bg-surface-container flex overflow-hidden border border-outline-variant mb-3">
+<!-- Operational: 95.4% -->
+<div class="bg-[#059669] hover:opacity-90 transition-opacity relative group cursor-pointer" style="width: 95.38%" title="Operational: 1,362 units (95.4%)"></div>
+<!-- Maintenance: 2.7% -->
+<div class="bg-[#d97706] hover:opacity-90 transition-opacity relative group cursor-pointer" style="width: 2.66%" title="Under Maintenance: 38 units (2.7%)"></div>
+<!-- Faulty: 1.1% -->
+<div class="bg-error hover:opacity-90 transition-opacity relative group cursor-pointer" style="width: 1.12%" title="Critical Fault: 16 units (1.1%)"></div>
+<!-- Standby: 0.5% -->
+<div class="bg-[#475569] hover:opacity-90 transition-opacity relative group cursor-pointer" style="width: 0.56%" title="Standby / Buffer: 8 units (0.5%)"></div>
+<!-- Retired: 0.3% -->
+<div class="bg-[#94a3b8] hover:opacity-90 transition-opacity relative group cursor-pointer" style="width: 0.28%" title="Decommission Pending: 4 units (0.3%)"></div>
+</div>
+<!-- Interactive Legend / Filter Chips -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 text-label-sm font-label-sm">
+<button class="flex items-center justify-between p-2 bg-surface border border-outline-variant hover:border-primary transition-colors text-left">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 bg-[#059669] inline-block"></span>
+<span class="text-on-surface font-semibold">Operational</span>
+</div>
+<div class="font-mono-num text-on-surface-variant">1,362 (95.4%)</div>
+</button>
+<button class="flex items-center justify-between p-2 bg-surface border border-outline-variant hover:border-primary transition-colors text-left">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 bg-[#d97706] inline-block"></span>
+<span class="text-on-surface font-semibold">Maintenance</span>
+</div>
+<div class="font-mono-num text-on-surface-variant">38 (2.7%)</div>
+</button>
+<button class="flex items-center justify-between p-2 bg-surface border border-outline-variant hover:border-primary transition-colors text-left">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 bg-error inline-block"></span>
+<span class="text-on-surface font-semibold">Faulty / Critical</span>
+</div>
+<div class="font-mono-num text-error font-bold">16 (1.1%)</div>
+</button>
+<button class="flex items-center justify-between p-2 bg-surface border border-outline-variant hover:border-primary transition-colors text-left">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 bg-[#475569] inline-block"></span>
+<span class="text-on-surface font-semibold">Standby / Reserve</span>
+</div>
+<div class="font-mono-num text-on-surface-variant">8 (0.5%)</div>
+</button>
+<button class="flex items-center justify-between p-2 bg-surface border border-outline-variant hover:border-primary transition-colors text-left">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 bg-[#94a3b8] inline-block"></span>
+<span class="text-on-surface font-semibold">Decommissioned</span>
+</div>
+<div class="font-mono-num text-on-surface-variant">4 (0.3%)</div>
+</button>
+</div>
+</section>
+<!-- 3. ATTENTION REQUIRED / URGENT TRIAGE QUEUE -->
+<section class="bg-surface-container-lowest border border-outline-variant p-4 mb-5">
+<div class="flex items-center justify-between pb-3 mb-3 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-error inline-block"></span>
+<h2 class="text-headline-sm font-headline-sm font-bold text-primary">Attention Required / Clinical Triage Queue</h2>
+<span class="px-2 py-0.5 text-label-sm font-label-sm bg-error text-on-error font-bold">4 IMMEDIATE ACTIONS</span>
+</div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm">
+<span class="text-on-surface-variant">Escalation Protocol:</span>
+<span class="font-bold text-primary">Level 2 Active</span>
+</div>
+</div>
+<!-- Clinical Triage Table -->
+<div class="overflow-x-auto border border-outline-variant">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-primary h-8 text-label-md font-label-md text-on-surface uppercase">
+<th class="px-3 py-1 font-semibold w-28">Severity</th>
+<th class="px-3 py-1 font-semibold w-40">Asset Code</th>
+<th class="px-3 py-1 font-semibold">Department &amp; Location</th>
+<th class="px-3 py-1 font-semibold">Incident / Failure Mode</th>
+<th class="px-3 py-1 font-semibold w-36">Telemetry / Time</th>
+<th class="px-3 py-1 font-semibold w-28">Status</th>
+<th class="px-3 py-1 font-semibold text-right w-44">Resolution Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm">
+<!-- Row 1: Critical Fault -->
+<tr class="hover:bg-slate-50 transition-colors bg-[#fff8f8]">
+<td class="px-3 py-2">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-label-sm font-label-sm bg-error-container text-on-error-container border border-red-300 font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-error"></span> Critical
+                  </span>
+</td>
+<td class="px-3 py-2">
+<div class="font-mono-num font-bold text-primary">MRI-002</div>
+<div class="text-[10px] text-on-surface-variant">GE 3T SIGNA Pioneer</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Radiology Suite 3</div>
+<div class="text-[10px] text-outline">Bldg B · Sub-Level 1</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-semibold text-error">RF Coil Subsystem Failure</div>
+<div class="text-[10px] text-on-surface-variant">Reported by Dr. M. Vance · Resonance degradation</div>
+</td>
+<td class="px-3 py-2 font-mono-num text-on-surface-variant">
+<div>18m ago</div>
+<div class="text-[10px] text-error font-bold">Interlock Tripped</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-primary border border-outline-variant">Being Handled</span>
+</td>
+<td class="px-3 py-2 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">View</button>
+<button class="h-6 px-2 text-label-sm font-label-sm bg-primary text-on-primary hover:bg-tertiary-container font-semibold">Dispatch BioMed</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Maintenance Overdue -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-label-sm font-label-sm bg-[#fffbeb] text-[#92400e] border border-[#fde68a] font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-[#f59e0b]"></span> Overdue
+                  </span>
+</td>
+<td class="px-3 py-2">
+<div class="font-mono-num font-bold text-primary">VENT-006</div>
+<div class="text-[10px] text-on-surface-variant">Getinge Servo-u</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">ICU Pod B</div>
+<div class="text-[10px] text-outline">Bldg A · 4th Floor</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">500hr O2 Sensor Calibration Overdue</div>
+<div class="text-[10px] text-[#92400e] font-semibold">+48h past mandatory cycle</div>
+</td>
+<td class="px-3 py-2 font-mono-num text-on-surface-variant">
+<div>Cycle +48h</div>
+<div class="text-[10px] text-outline">Runtime 548h</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Unscheduled</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-primary bg-surface hover:bg-teal-50 text-primary font-semibold">Schedule Service</button>
+</td>
+</tr>
+<!-- Row 3: IoT Disconnected -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-label-sm font-label-sm bg-teal-50 text-secondary border border-teal-200 font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-secondary"></span> Comm Lost
+                  </span>
+</td>
+<td class="px-3 py-2">
+<div class="font-mono-num font-bold text-primary">ECG-014</div>
+<div class="text-[10px] text-on-surface-variant">Philips PageWriter TC70</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Emergency Triage Bay 2</div>
+<div class="text-[10px] text-outline">Bldg C · Ground Level</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Telemetry Heartbeat Lost</div>
+<div class="text-[10px] text-outline">IoT MAC: 00:1A:2B:3C:4D:9E · Last RSSI -88dBm</div>
+</td>
+<td class="px-3 py-2 font-mono-num text-on-surface-variant">
+<div>42m Offline</div>
+<div class="text-[10px] text-outline">AP-East-04</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Investigating</span>
+</td>
+<td class="px-3 py-2 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Ping</button>
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Check AP Hub</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Upcoming Inspection -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-label-sm font-label-sm bg-surface-container text-on-surface border border-outline-variant font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-outline"></span> Scheduled
+                  </span>
+</td>
+<td class="px-3 py-2">
+<div class="font-mono-num font-bold text-primary">ANESTH-008</div>
+<div class="text-[10px] text-on-surface-variant">Dräger Perseus A500</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Operating Room 4</div>
+<div class="text-[10px] text-outline">Surgical Wing · 3rd Floor</div>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Bi-annual Gas Manifold Check</div>
+<div class="text-[10px] text-outline">Regulatory Mandate JCAHO-Med-24</div>
+</td>
+<td class="px-3 py-2 font-mono-num text-on-surface-variant">
+<div>Tomorrow 06:00</div>
+<div class="text-[10px] text-outline">Slot Reserved</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Confirmed</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Confirm Slot</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 4. DUAL COLUMN LOWER SECTION -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- LEFT COLUMN: Active Clinical Issues & Maintenance Pipeline (8 cols) -->
+<div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-4 flex flex-col justify-between">
+<div>
+<!-- Section Header & Tab switch -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-outline-variant gap-2">
+<div class="flex items-center gap-1 border border-outline-variant p-0.5 bg-surface-container-low">
+<button class="px-3 py-1 bg-surface-container-lowest text-primary border border-outline-variant text-label-md font-label-md font-bold shadow-none">
+                  Open Issues (12)
+                </button>
+<button class="px-3 py-1 text-on-surface-variant hover:text-primary text-label-md font-label-md font-normal">
+                  Scheduled Maintenance (18)
+                </button>
+<button class="px-3 py-1 text-on-surface-variant hover:text-primary text-label-md font-label-md font-normal">
+                  Calibration Registry (44)
+                </button>
+</div>
+<!-- Filter & Search in Table -->
+<div class="flex items-center gap-2">
+<div class="relative">
+<input class="h-7 px-2 pl-6 bg-surface border border-outline-variant text-body-sm text-on-surface w-40 placeholder:text-outline focus:outline-none focus:border-primary" placeholder="Filter issues..." type="text"/>
+<span class="material-symbols-outlined absolute left-1.5 top-1.5 text-[14px] text-outline">filter_alt</span>
+</div>
+<button class="h-7 px-2 border border-outline-variant bg-surface text-label-sm font-label-sm text-on-surface flex items-center gap-1 hover:bg-surface-container">
+<span>Priority</span>
+<span class="material-symbols-outlined text-[13px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Pipeline Table -->
+<div class="overflow-x-auto border border-outline-variant">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant h-7 text-label-md font-label-md text-on-surface uppercase">
+<th class="px-3 py-1 font-semibold">Asset / Tag</th>
+<th class="px-3 py-1 font-semibold">Fault Description</th>
+<th class="px-3 py-1 font-semibold">Priority</th>
+<th class="px-3 py-1 font-semibold">Assigned Tech</th>
+<th class="px-3 py-1 font-semibold">Status</th>
+<th class="px-3 py-1 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2 font-mono-num font-bold text-primary">DEF-011</td>
+<td class="px-3 py-2">
+<div class="font-medium">Zoll R Series Defibrillator</div>
+<div class="text-[10px] text-on-surface-variant">Battery health cell 3 degradation (14% cap)</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-error-container text-on-error-container border border-red-300 uppercase">High</span>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">J. Thorne (BioMed-2)</div>
+<div class="text-[10px] text-outline">Dispatched 10:15</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-[#fffbeb] text-[#92400e] border border-[#fde68a]">Part Ordered</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2 font-mono-num font-bold text-primary">INF-109</td>
+<td class="px-3 py-2">
+<div class="font-medium">Alaris 8015 Infusion Pump</div>
+<div class="text-[10px] text-on-surface-variant">Door latch optical interlock intermittent fail</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-surface-container text-on-surface border border-outline-variant uppercase">Medium</span>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">K. Patel (BioMed-1)</div>
+<div class="text-[10px] text-outline">In Workshop Bay 4</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Bench Test</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2 font-mono-num font-bold text-primary">US-005</td>
+<td class="px-3 py-2">
+<div class="font-medium">GE Vivid E95 Ultrasound</div>
+<div class="text-[10px] text-on-surface-variant">4V transducer acoustic lens micro-delamination</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-surface-container text-on-surface border border-outline-variant uppercase">Medium</span>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">M. Alvarez (Lead Tech)</div>
+<div class="text-[10px] text-outline">Scheduled 14:00</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Awaiting Probe</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2 font-mono-num font-bold text-primary">MON-082</td>
+<td class="px-3 py-2">
+<div class="font-medium">Mindray BeneVision N17</div>
+<div class="text-[10px] text-on-surface-variant">IBP port 2 calibration drift (+3.2 mmHg)</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-surface-container text-on-surface border border-outline-variant uppercase">Low</span>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">Unassigned</div>
+<div class="text-[10px] text-error font-semibold">Queue Position 3</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface border border-outline-variant">Triage</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm bg-primary text-on-primary hover:bg-tertiary-container font-semibold">Assign</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-3 py-2 font-mono-num font-bold text-primary">XRAY-003</td>
+<td class="px-3 py-2">
+<div class="font-medium">Siemens Mobilett Elara Max</div>
+<div class="text-[10px] text-on-surface-variant">Motorized drive caster friction interlock</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-surface-container text-on-surface border border-outline-variant uppercase">Low</span>
+</td>
+<td class="px-3 py-2">
+<div class="font-medium text-on-surface">T. Becker (BioMed-3)</div>
+<div class="text-[10px] text-outline">Underway</div>
+</td>
+<td class="px-3 py-2">
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">In Progress</span>
+</td>
+<td class="px-3 py-2 text-right">
+<button class="h-6 px-2 text-label-sm font-label-sm border border-outline-variant bg-surface hover:bg-surface-container text-on-surface">Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Bottom Micro-summary -->
+<div class="mt-3 pt-2.5 border-t border-outline-variant flex items-center justify-between text-[11px] text-on-surface-variant">
+<div class="flex items-center gap-3">
+<span>Showing 5 of 12 open tickets</span>
+<span>•</span>
+<span class="text-primary font-semibold">Mean Time to Resolve (MTTR): 2.4 hrs</span>
+</div>
+<a class="text-primary hover:text-teal-800 hover:underline font-label-sm font-bold flex items-center gap-1" href="#">
+<span>Open Engineering Work Orders</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- RIGHT COLUMN: Live Operational Activity Stream & IoT Sensor Telemetry (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-5">
+<!-- Activity Stream Card -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4">
+<div class="flex items-center justify-between pb-2 mb-3 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">dynamic_feed</span>
+<h3 class="text-headline-sm font-headline-sm font-bold text-primary">Live Activity Stream</h3>
+</div>
+<span class="text-[9px] font-mono-num px-1.5 py-0.5 bg-teal-50 text-primary border border-teal-200 font-bold">REALTIME</span>
+</div>
+<!-- Chronological Feed -->
+<div class="space-y-3 font-body-sm text-body-sm">
+<!-- Feed Item 1 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-surface-container">
+<div class="mt-0.5 w-2 h-2 bg-[#059669] flex-shrink-0"></div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-mono-num font-bold text-primary">10:42 AM</span>
+<span class="text-[9px] text-[#065f46] font-bold bg-[#ecfdf5] px-1 border border-[#a7f3d0]">CLEARED</span>
+</div>
+<p class="text-on-surface mt-0.5 leading-snug">
+<span class="font-mono-num font-semibold text-primary">VENT-004</span> preventive maintenance completed by <span class="font-medium">Tech M. Alvarez</span> (Signed off).
+                  </p>
+</div>
+</div>
+<!-- Feed Item 2 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-surface-container">
+<div class="mt-0.5 w-2 h-2 bg-error flex-shrink-0"></div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-mono-num font-bold text-primary">10:28 AM</span>
+<span class="text-[9px] text-error font-bold bg-error-container px-1 border border-red-300">ESCALATED</span>
+</div>
+<p class="text-on-surface mt-0.5 leading-snug">
+<span class="font-mono-num font-semibold text-primary">MRI-002</span> fault alert dispatched to GE Biomedical Field Service Team.
+                  </p>
+</div>
+</div>
+<!-- Feed Item 3 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-surface-container">
+<div class="mt-0.5 w-2 h-2 bg-secondary flex-shrink-0"></div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-mono-num font-bold text-primary">09:55 AM</span>
+<span class="text-[9px] text-primary font-bold bg-teal-50 px-1 border border-teal-200">CALIBRATED</span>
+</div>
+<p class="text-on-surface mt-0.5 leading-snug">
+<span class="font-mono-num font-semibold text-primary">XRAY-001</span> digital detector sensor array calibrated successfully.
+                  </p>
+</div>
+</div>
+<!-- Feed Item 4 -->
+<div class="flex items-start gap-2.5">
+<div class="mt-0.5 w-2 h-2 bg-[#f59e0b] flex-shrink-0"></div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-mono-num font-bold text-primary">09:14 AM</span>
+<span class="text-[9px] text-[#92400e] font-bold bg-[#fffbeb] px-1 border border-[#fde68a]">BATTERY LOW</span>
+</div>
+<p class="text-on-surface mt-0.5 leading-snug">
+<span class="font-mono-num font-semibold">IOT-089</span> sensor battery at 14% on Crash Cart Defibrillator <span class="font-mono-num font-semibold text-primary">DEF-011</span>.
+                  </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Compact IoT Telemetry Health Widget -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4">
+<div class="flex items-center justify-between pb-2 mb-3 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">cell_tower</span>
+<h3 class="text-headline-sm font-headline-sm font-bold text-primary">Subsystem Environmental Telemetry</h3>
+</div>
+<span class="w-2 h-2 bg-[#10b981] inline-block"></span>
+</div>
+<div class="grid grid-cols-3 gap-2 text-center mb-3">
+<div class="p-2 bg-surface border border-outline-variant">
+<div class="text-[10px] text-outline uppercase font-semibold">Server / Core Hub</div>
+<div class="text-headline-md font-headline-md font-bold text-primary font-mono-num mt-1">19.4°C</div>
+<div class="text-[9px] text-[#065f46] font-semibold mt-0.5">NOMINAL (±0.2)</div>
+</div>
+<div class="p-2 bg-surface border border-outline-variant">
+<div class="text-[10px] text-outline uppercase font-semibold">Rad Suite Humidity</div>
+<div class="text-headline-md font-headline-md font-bold text-primary font-mono-num mt-1">44%</div>
+<div class="text-[9px] text-[#065f46] font-semibold mt-0.5">TARGET 40-50%</div>
+</div>
+<div class="p-2 bg-surface border border-outline-variant">
+<div class="text-[10px] text-outline uppercase font-semibold">Packet Loss</div>
+<div class="text-headline-md font-headline-md font-bold text-primary font-mono-num mt-1">0.02%</div>
+<div class="text-[9px] text-secondary font-semibold mt-0.5">99.98% PKT RX</div>
+</div>
+</div>
+<div class="p-2 bg-surface-container-low border border-outline-variant flex items-center justify-between text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px] text-primary">router</span>
+<span>Active Mesh Repeaters: 32 / 32</span>
+</div>
+<span class="font-mono-num text-primary font-bold">ALL RESPONDING</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- POPUP / DRAWER PREVIEW: Alert Preview Popover (Interactive Demonstration) -->
+<div class="hidden fixed top-12 right-4 w-96 bg-surface-container-lowest border-2 border-primary clinical-modal-shadow z-50" id="alertDrawer">
+<div class="p-3 bg-teal-50/80 border-b border-primary flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[18px]">notification_important</span>
+<span class="text-label-md font-label-md font-bold text-primary uppercase tracking-wide">Critical Alerts Notification Feed</span>
+</div>
+<button class="w-5 h-5 flex items-center justify-center hover:bg-teal-100 text-on-surface" id="closeAlertDrawer">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<div class="divide-y divide-outline-variant max-h-80 overflow-y-auto font-body-sm text-body-sm">
+<div class="p-3 hover:bg-surface transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm mb-1">
+<span class="text-error font-bold font-mono-num">ALERT #4092 · RADIOLOGY</span>
+<span class="text-outline font-mono-num">18m ago</span>
+</div>
+<p class="font-semibold text-primary">MRI-002 RF Coil Hardware Trip</p>
+<p class="text-[11px] text-on-surface-variant mt-0.5">Automated interlock triggered. Magnet cryocooling steady. GE tech team summoned.</p>
+</div>
+<div class="p-3 hover:bg-surface transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm mb-1">
+<span class="text-[#92400e] font-bold font-mono-num">WARN #3881 · ICU</span>
+<span class="text-outline font-mono-num">48h ago</span>
+</div>
+<p class="font-semibold text-primary">VENT-006 Calibration Exceeded Threshold</p>
+<p class="text-[11px] text-on-surface-variant mt-0.5">O2 sensor runtime reached 548 hours without regulatory recalibration.</p>
+</div>
+<div class="p-3 hover:bg-surface transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm mb-1">
+<span class="text-secondary font-bold font-mono-num">COMM #2104 · ED BAY 2</span>
+<span class="text-outline font-mono-num">42m ago</span>
+</div>
+<p class="font-semibold text-primary">ECG-014 Telemetry Drop</p>
+<p class="text-[11px] text-on-surface-variant mt-0.5">WiFi mesh disconnect detected at Gateway Hub Alpha-4.</p>
+</div>
+</div>
+<div class="p-2 border-t border-outline-variant bg-surface-container-low flex justify-between items-center">
+<button class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary">Mark all as acknowledged</button>
+<button class="h-6 px-2 bg-primary text-on-primary text-label-sm font-label-sm font-semibold hover:bg-tertiary-container transition-colors">Triage All</button>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    // Alert Bell Popover Toggle
+    const alertBellBtn = document.getElementById('alertBellBtn');
+    const alertDrawer = document.getElementById('alertDrawer');
+    const closeAlertDrawer = document.getElementById('closeAlertDrawer');
+
+    if (alertBellBtn && alertDrawer && closeAlertDrawer) {
+      alertBellBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        alertDrawer.classList.toggle('hidden');
+      });
+
+      closeAlertDrawer.addEventListener('click', () => {
+        alertDrawer.classList.add('hidden');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!alertDrawer.contains(e.target) && e.target !== alertBellBtn) {
+          alertDrawer.classList.add('hidden');
+        }
+      });
+    }
+
+    // Keyboard shortcut handler for ⌘K search focus
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    });
+  </script>
+</body></html>

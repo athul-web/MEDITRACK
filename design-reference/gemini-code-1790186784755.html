@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediTrack - Find Hospitals</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons Script -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800">
+
+  <!-- Header Hero Section -->
+  <div class="relative bg-gradient-to-r from-cyan-900 via-sky-800 to-slate-900 text-white overflow-hidden pb-12">
+    <!-- Background Image Overlay -->
+    <div 
+      class="absolute inset-0 opacity-15 bg-cover bg-center mix-blend-overlay pointer-events-none"
+      style="background-image: url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1600');"
+    ></div>
+
+    <!-- Navbar -->
+    <header class="relative z-10 border-b border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-cyan-500 p-1.5 rounded-lg text-slate-950">
+            <i data-lucide="activity" class="w-6 h-6 stroke-[3]"></i>
+          </div>
+          <a href="index.html" class="text-xl font-bold tracking-tight text-white">MediTrack</a>
+          <span class="hidden sm:inline-block text-xs text-cyan-200 border-l border-white/20 pl-3 py-0.5">
+            Emergency Resources When It Matters
+          </span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-200">
+          <a href="index.html" class="hover:text-cyan-300 transition-colors">Home</a>
+          <a href="hospitals.html" class="text-white font-semibold underline decoration-cyan-400 underline-offset-8">Hospitals</a>
+          <a href="#about" class="hover:text-cyan-300 transition-colors">About</a>
+          <a href="#contact" class="hover:text-cyan-300 transition-colors">Contact</a>
+        </nav>
+
+        <button class="bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-full border border-white/20 backdrop-blur-md flex items-center gap-2 transition-all">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span>Hospital Staff Login</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Banner Title -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-semibold text-cyan-300 uppercase tracking-widest">Directory & Live Status</span>
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mt-1">
+            Hospital Resource Network
+          </h1>
+          <p class="mt-2 text-xs sm:text-sm text-slate-300 max-w-xl">
+            Browse verified medical facilities, check real-time ICU/Ventilator availability, and get direct directions.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2.5 rounded-xl self-start sm:self-center">
+          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+          <span class="text-xs font-medium text-slate-100">Live Network Feed Active</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- Left Sidebar: Filters -->
+      <aside class="lg:col-span-3 space-y-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="filter" class="w-4 h-4 text-cyan-600"></i> Filter Hospitals
+            </h3>
+            <button class="text-[11px] font-semibold text-cyan-700 hover:underline">Reset</button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="mb-4">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Hospital Name or Area</label>
+            <div class="relative">
+              <input type="text" placeholder="Search Kochi, Aluva, etc..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            </div>
+          </div>
+
+          <!-- Required Resources Toggles -->
+          <div class="mb-5">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Must Have Resources</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>ICU Beds Available</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>Ventilators Available</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>CT Scan On-site</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>24/7 Trauma Care</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>Pediatric Emergency</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Max Distance Slider -->
+          <div class="mb-5">
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Max Distance</label>
+              <span class="text-xs font-semibold text-cyan-700">15 km</span>
+            </div>
+            <input type="range" min="1" max="50" value="15" class="w-full accent-cyan-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer" />
+          </div>
+
+          <!-- Facility Type -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Facility Type</label>
+            <select class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+              <option>All Hospitals</option>
+              <option>Government / Multi-Specialty</option>
+              <option>Private Super Specialty</option>
+              <option>Trauma Centers Only</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column: Hospital Directory Cards -->
+      <section class="lg:col-span-9 space-y-6">
+        
+        <!-- Controls Bar -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <span class="text-xs font-semibold text-slate-500">Showing 4 Verified Hospitals near Kochi</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Sort by:</span>
+            <select class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none">
+              <option>Distance (Closest first)</option>
+              <option>Most Available Resources</option>
+              <option>Recently Updated</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Hospital Card 1 -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 hover:shadow-lg transition-all">
+          <div class="flex flex-col md:flex-row gap-5">
+            <div class="md:w-44 h-36 md:h-auto rounded-xl overflow-hidden shrink-0 bg-slate-100">
+              <img src="https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&q=80&w=400" alt="Hospital" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                      City General Hospital
+                      <i data-lucide="shield-check" class="w-4 h-4 text-cyan-600"></i>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">MG Road, Ernakulam, Kochi, Kerala</p>
+                  </div>
+                  <span class="bg-cyan-50 text-cyan-800 text-[11px] font-bold px-2.5 py-1 rounded-full border border-cyan-200">
+                    2.8 km away
+                  </span>
+                </div>
+
+                <div class="mt-2 flex items-center gap-3 text-xs text-slate-500">
+                  <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium">
+                    <i data-lucide="check" class="w-3 h-3"></i> 24/7 Trauma Unit
+                  </span>
+                  <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                    <i data-lucide="clock" class="w-3 h-3"></i> Updated 2 mins ago
+                  </span>
+                </div>
+              </div>
+
+              <!-- Available Resources Grid -->
+              <div class="mt-4 pt-3 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Live Resource Status</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">ICU Beds</span>
+                    <span class="font-bold text-emerald-600 text-sm">6 Available</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Ventilators</span>
+                    <span class="font-bold text-emerald-600 text-sm">3 Available</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">CT Scan</span>
+                    <span class="font-bold text-emerald-600 text-sm">Operational</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Emergency Room</span>
+                    <span class="font-bold text-emerald-600 text-sm">Ready</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:w-44 flex md:flex-col justify-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+              <button class="flex-1 md:flex-none bg-cyan-700 hover:bg-cyan-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="phone" class="w-3.5 h-3.5"></i> Call Hotline
+              </button>
+              <button class="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-1">
+                <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-600"></i> Get Directions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hospital Card 2 -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 hover:shadow-lg transition-all">
+          <div class="flex flex-col md:flex-row gap-5">
+            <div class="md:w-44 h-36 md:h-auto rounded-xl overflow-hidden shrink-0 bg-slate-100">
+              <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400" alt="Hospital" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                      Metro Medical Center
+                      <i data-lucide="shield-check" class="w-4 h-4 text-cyan-600"></i>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">NH Bypass, Edappally, Kochi, Kerala</p>
+                  </div>
+                  <span class="bg-cyan-50 text-cyan-800 text-[11px] font-bold px-2.5 py-1 rounded-full border border-cyan-200">
+                    4.1 km away
+                  </span>
+                </div>
+
+                <div class="mt-2 flex items-center gap-3 text-xs text-slate-500">
+                  <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium">
+                    <i data-lucide="alert-circle" class="w-3 h-3"></i> High Demand
+                  </span>
+                  <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                    <i data-lucide="clock" class="w-3 h-3"></i> Updated 10 mins ago
+                  </span>
+                </div>
+              </div>
+
+              <!-- Available Resources Grid -->
+              <div class="mt-4 pt-3 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Live Resource Status</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">ICU Beds</span>
+                    <span class="font-bold text-emerald-600 text-sm">2 Available</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Ventilators</span>
+                    <span class="font-bold text-rose-500 text-sm">Full (0 Available)</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">CT Scan</span>
+                    <span class="font-bold text-emerald-600 text-sm">Operational</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Emergency Room</span>
+                    <span class="font-bold text-emerald-600 text-sm">Ready</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:w-44 flex md:flex-col justify-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+              <button class="flex-1 md:flex-none bg-cyan-700 hover:bg-cyan-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="phone" class="w-3.5 h-3.5"></i> Call Hotline
+              </button>
+              <button class="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-1">
+                <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-600"></i> Get Directions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hospital Card 3 -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 hover:shadow-lg transition-all">
+          <div class="flex flex-col md:flex-row gap-5">
+            <div class="md:w-44 h-36 md:h-auto rounded-xl overflow-hidden shrink-0 bg-slate-100">
+              <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&q=80&w=400" alt="Hospital" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                      Lakeside Specialty Hospital
+                      <i data-lucide="shield-check" class="w-4 h-4 text-cyan-600"></i>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Kunduannoor, Maradu, Kochi, Kerala</p>
+                  </div>
+                  <span class="bg-cyan-50 text-cyan-800 text-[11px] font-bold px-2.5 py-1 rounded-full border border-cyan-200">
+                    6.5 km away
+                  </span>
+                </div>
+
+                <div class="mt-2 flex items-center gap-3 text-xs text-slate-500">
+                  <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium">
+                    <i data-lucide="check" class="w-3 h-3"></i> Pediatric Cardiac Unit
+                  </span>
+                  <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                    <i data-lucide="clock" class="w-3 h-3"></i> Updated 5 mins ago
+                  </span>
+                </div>
+              </div>
+
+              <!-- Available Resources Grid -->
+              <div class="mt-4 pt-3 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Live Resource Status</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">ICU Beds</span>
+                    <span class="font-bold text-emerald-600 text-sm">8 Available</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Ventilators</span>
+                    <span class="font-bold text-emerald-600 text-sm">5 Available</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">CT Scan</span>
+                    <span class="font-bold text-emerald-600 text-sm">Operational</span>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <span class="text-slate-500 block text-[10px]">Emergency Room</span>
+                    <span class="font-bold text-emerald-600 text-sm">Ready</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:w-44 flex md:flex-col justify-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+              <button class="flex-1 md:flex-none bg-cyan-700 hover:bg-cyan-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="phone" class="w-3.5 h-3.5"></i> Call Hotline
+              </button>
+              <button class="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-1">
+                <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-600"></i> Get Directions
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="bg-cyan-500 p-1 rounded-md text-slate-950">
+          <i data-lucide="activity" class="w-4 h-4 stroke-[3]"></i>
+        </div>
+        <span class="font-bold text-white text-sm">MediTrack</span>
+        <span class="text-slate-600">|</span>
+        <span>Emergency Resources Platform</span>
+      </div>
+      <p>© 2025 MediTrack. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

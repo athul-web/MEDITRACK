@@ -1,0 +1,6 @@
+{
+  "name": "Equipment Uptime",
+  "description": "Healthcare facility medical equipment uptime and maintenance management system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

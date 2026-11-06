@@ -38,10 +38,11 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
       list = list.filter((h) => h.tags.includes(activeTab));
     }
 
+    const dist = (value: number | undefined) => (typeof value === 'number' ? value : Number.POSITIVE_INFINITY);
     if (sortBy === 'Nearest') {
-      list.sort((a, b) => a.distanceKm - b.distanceKm);
+      list.sort((a, b) => dist(a.distanceKm) - dist(b.distanceKm));
     } else if (sortBy === 'Farthest') {
-      list.sort((a, b) => b.distanceKm - a.distanceKm);
+      list.sort((a, b) => dist(b.distanceKm) - dist(a.distanceKm));
     } else if (sortBy === 'Recently Updated') {
       list.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
     }

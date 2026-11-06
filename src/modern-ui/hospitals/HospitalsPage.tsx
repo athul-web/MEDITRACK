@@ -38,7 +38,30 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export function HospitalsPage() {
-  const { hospitals: realHospitalData, isLoading, error } = useHospitals();
+  const { hospitals: realHospitalData, isLoading, error, search } = useHospitals();
+
+  React.useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        search(
+          {
+            requiredResources: [],
+            location: {
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              label: 'Current Location',
+            },
+          },
+          'nearest'
+        );
+      },
+      () => {
+        // Keep the already-loaded hospital list if geolocation is unavailable.
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [search]);
 
   const mappedHospitals = React.useMemo(() => realHospitalData.map((h) => ({
     id: h.id,
@@ -124,10 +147,11 @@ export function HospitalsPage() {
     }
 
     // Sorting
+    const dist = (value: number | null) => (typeof value === 'number' ? value : Number.POSITIVE_INFINITY);
     if (sortBy === 'Nearest') {
-      list.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+      list.sort((a, b) => dist(a.distanceKm) - dist(b.distanceKm));
     } else if (sortBy === 'Farthest') {
-      list.sort((a, b) => b.distanceKm - a.distanceKm);
+      list.sort((a, b) => dist(b.distanceKm) - dist(a.distanceKm));
     } else if (sortBy === 'Highest Availability') {
       list.sort((a, b) => {
         const totalA = a.resources.reduce((sum, r) => sum + r.available, 0);

@@ -62,6 +62,11 @@ export function HospitalCard({ hospital }: HospitalCardProps) {
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <h3 className="text-base sm:text-lg font-bold text-[#122B43] tracking-wide">
                 {hospital.name}
+                {hospital.id.startsWith('demo-') && (
+                  <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                    Demo
+                  </span>
+                )}
               </h3>
               {hospital.verified && (
                 <CheckCircle2 size={18} className="text-[#087D91] shrink-0 fill-[#E4F6FA]" />
@@ -71,9 +76,19 @@ export function HospitalCard({ hospital }: HospitalCardProps) {
             {/* Distance & Travel time */}
             <div className="flex items-center gap-2 text-xs font-medium text-[#60778C] mb-2">
               <MapPin size={13} className="text-[#087D91] shrink-0" />
-              <span>{hospital.distanceKm} km</span>
-              <span>•</span>
-              <span>{hospital.driveMinutes} min drive</span>
+              {typeof hospital.distanceKm === 'number' ? (
+                <>
+                  <span>{hospital.distanceKm} km</span>
+                  {typeof hospital.driveMinutes === 'number' && (
+                    <>
+                      <span>•</span>
+                      <span>{hospital.driveMinutes} min drive</span>
+                    </>
+                  )}
+                </>
+              ) : (
+                <span>Distance unavailable</span>
+              )}
             </div>
 
             {/* Address */}

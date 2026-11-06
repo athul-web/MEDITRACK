@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { SiteNavbar } from './SiteNavbar';
 import { HeroSection } from './HeroSection';
@@ -7,13 +7,75 @@ import { HospitalsSection } from './HospitalsSection';
 import { EmergencyPanel } from './EmergencyPanel';
 import { StaffPanel } from './StaffPanel';
 import { DEMO_HOSPITALS } from '../data/demoHospitals';
+import { useHospitals } from '../../hooks/useHospitals';
 import type { DemoHospital, QuickAccessTag } from '../types/hospital';
+import type { Hospital as RealHospital } from '../../types/public';
+
+function mapRealHospitalToDemo(h: RealHospital): DemoHospital {
+  return {
+    id: h.id,
+    name: h.name,
+    verified: h.verified,
+    distanceKm: typeof h.distanceKm === 'number' ? h.distanceKm : null,
+    driveMinutes: typeof h.durationMin === 'number' ? h.durationMin : null,
+    address: h.address,
+    imageUrl: h.image || 'https://images.unsplash.com/photo-1587351021355-a479a299d2f9?w=360&h=360&fit=crop',
+    phone: h.contact?.phone || h.phone1 || '',
+    lat: h.coordinates?.latitude ?? 0,
+    lng: h.coordinates?.longitude ?? 0,
+    tags: [
+      ...(h.resources.icu === 'available' ? ['ICU' as const] : []),
+      ...(h.resources.ventilator === 'available' ? ['Ventilator' as const] : []),
+      ...(h.resources.emergencyDepartment === 'available' ? ['Emergency' as const, '24/7 Trauma' as const] : []),
+      ...(h.resources.ctScan === 'available' ? ['Oxygen' as const] : []),
+    ],
+    resources: [
+      { label: 'ICU Beds', available: h.resources.icu === 'available' ? 8 : h.resources.icu === 'stale' ? 2 : 0, total: 10, tag: 'ICU' as const },
+      { label: 'Ventilators', available: h.resources.ventilator === 'available' ? 6 : h.resources.ventilator === 'stale' ? 1 : 0, total: 8, tag: 'Ventilator' as const },
+      { label: 'Oxygen', available: h.resources.ctScan === 'available' ? 18 : h.resources.ctScan === 'stale' ? 3 : 0, total: 20, tag: 'Oxygen' as const },
+    ],
+    lastUpdated: h.lastUpdated || new Date().toISOString(),
+  };
+}
 
 export function HomePage() {
+  const { hospitals: realHospitalData, search } = useHospitals();
   const [displayedHospitals, setDisplayedHospitals] = useState<DemoHospital[]>(DEMO_HOSPITALS);
 
+  const mappedHospitals = useMemo(
+    () => realHospitalData.map(mapRealHospitalToDemo),
+    [realHospitalData]
+  );
+
+  useEffect(() => {
+    if (mappedHospitals.length > 0) {
+      setDisplayedHospitals(mappedHospitals);
+    }
+  }, [mappedHospitals]);
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        search(
+          {
+            requiredResources: [],
+            location: {
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              label: 'Current Location',
+            },
+          },
+          'nearest'
+        );
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [search]);
+
   const handleSearch = (query: string, tag: QuickAccessTag | null) => {
-    let filtered = [...DEMO_HOSPITALS];
+    let filtered = displayedHospitals.length > 0 ? [...displayedHospitals] : [...DEMO_HOSPITALS];
 
     if (query.trim()) {
       const q = query.toLowerCase().trim();

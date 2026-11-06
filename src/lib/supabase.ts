@@ -79,27 +79,16 @@ export function mapDbToFrontend<T>(data: any): T {
   mapped.phone2 = phoneSecondary;
   mapped.contact = mapped.contact ?? fallbackContact;
 
-  // Resolve resources: check local storage overrides, then DB, then realistic defaults based on category
-  let savedResources: any = null;
-  if (typeof window !== 'undefined' && mapped.id) {
-    try {
-      const stored = localStorage.getItem(`hospital_resources_${mapped.id}`);
-      if (stored) savedResources = JSON.parse(stored);
-    } catch {
-      // Ignore localStorage parse errors
-    }
-  }
+  // The database is authoritative for resource availability. localStorage can only
+  // provide per-viewer UI cache and must never override the backend value.
 
-  if (savedResources) {
-    mapped.resources = savedResources;
-  } else if (!mapped.resources || Object.values(mapped.resources).every(v => v === 'unknown')) {
-    const isSingle = mapped.category === 'single_specialty';
+  if (!mapped.resources) {
     mapped.resources = {
-      emergencyDepartment: 'available',
-      icu: 'available',
-      ventilator: isSingle ? 'unavailable' : 'available',
-      ctScan: isSingle ? 'unavailable' : 'available',
-      blood: isSingle ? 'unavailable' : 'available',
+      emergencyDepartment: 'unknown',
+      icu: 'unknown',
+      ventilator: 'unknown',
+      ctScan: 'unknown',
+      blood: 'unknown',
     };
   }
 

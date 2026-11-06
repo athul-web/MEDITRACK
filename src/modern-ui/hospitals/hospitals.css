@@ -1,0 +1,62 @@
+/* Scoped Styles for MediTrack Hospitals Directory Page Only */
+
+.hospitals-page {
+  --primary-navy: #073B55;
+  --deep-navy: #001525;
+  --accent-cyan: #00D5E8;
+  --light-cyan: #E4F6FA;
+  --border-color: #D9E6EE;
+}
+
+.hospitals-page .hospital-card-lift {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 200ms ease-out;
+}
+
+.hospitals-page .hospital-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -4px rgba(7, 59, 85, 0.08), 0 4px 8px -2px rgba(7, 59, 85, 0.04);
+  border-color: rgba(0, 213, 232, 0.6);
+}
+
+.hospitals-page button:focus-visible,
+.hospitals-page a:focus-visible,
+.hospitals-page input:focus-visible,
+.hospitals-page select:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+/* Micro-interaction on call button */
+.hospitals-page .btn-call {
+  background-color: #073B55;
+  transition: background-color 180ms ease, transform 150ms ease, box-shadow 180ms ease;
+}
+
+.hospitals-page .btn-call:hover {
+  background-color: #052F4B;
+  box-shadow: 0 4px 12px rgba(7, 59, 85, 0.25);
+}
+
+.hospitals-page .btn-call:active {
+  transform: scale(0.98);
+}
+
+/* Directions outline button */
+.hospitals-page .btn-directions {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.hospitals-page .btn-directions:hover {
+  background-color: #F3F8FC;
+  border-color: #073B55;
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .hospitals-page .hospital-card-lift:hover,
+  .hospitals-page .btn-call:active {
+    transform: none !important;
+  }
+}

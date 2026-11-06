@@ -20,6 +20,31 @@ export function Login() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    let isActive = true;
+
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!isActive || !session?.user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (isActive && (profile?.role === 'Staff' || profile?.role === 'Admin')) {
+        navigate('/dashboard', { replace: true });
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -212,8 +237,29 @@ export function Login() {
                 <input type="checkbox" defaultChecked />
                 Remember me
               </label>
-              <a href="#" className="forgot-link">Forgot password?</a>
-            </div>
+              <button
+                type="button"
+                className="forgot-link"
+                onClick={() => {
+                  if (!email.trim()) {
+                    setErrorMessage('Enter your email address, then click Forgot password? to receive a reset link.');
+                    return;
+                  }
+                  setIsLoading(true);
+                  supabase.auth
+                    .resetPasswordForEmail(email.trim(), {
+                      redirectTo: `${window.location.origin}/login`,
+                    })
+                    .then(({ error }) => {
+                      if (error) setErrorMessage(error.message);
+                      else setErrorMessage('Password reset link sent. Check your email inbox.');
+                    })
+                    .catch(() => setErrorMessage('Unable to send password reset email.'))
+                    .finally(() => setIsLoading(false));
+                }}
+              >
+                Forgot password?
+              </button>            </div>
 
             <button type="submit" className="submit-btn" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign in'}

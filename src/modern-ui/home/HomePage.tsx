@@ -8,6 +8,7 @@ import { EmergencyPanel } from './EmergencyPanel';
 import { StaffPanel } from './StaffPanel';
 import { DEMO_HOSPITALS } from '../data/demoHospitals';
 import { useHospitals } from '../../hooks/useHospitals';
+import { hospitalRepository } from '../../data/repositories/hospitalRepository';
 import type { DemoHospital, QuickAccessTag } from '../types/hospital';
 import type { Hospital as RealHospital } from '../../types/public';
 
@@ -55,25 +56,45 @@ export function HomePage() {
 
   // Geolocation is handled centrally by useHospitals.
 
-  const handleSearch = (query: string, tag: QuickAccessTag | null) => {
-    const baseHospitals = mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS;
-    let filtered = [...baseHospitals];
+  const handleSearch = async (query: string, tag: QuickAccessTag | null) => {
+    const trimmed = query.trim();
 
-    if (query.trim()) {
-      const q = query.toLowerCase().trim();
-      filtered = filtered.filter(
-        (h) =>
-          h.name.toLowerCase().includes(q) ||
-          h.address.toLowerCase().includes(q) ||
-          h.tags.some((t) => t.toLowerCase().includes(q))
+    // When the user types (or leaves blank), re-query the backend so distances
+    // can be measured from a typed place as well as the current GPS position.
+    try {
+      const results = await hospitalRepository.searchHospitals(
+        {
+          requiredResources: [],
+          query: trimmed || undefined,
+          location: trimmed ? { label: trimmed } : undefined,
+        },
+        'nearest'
       );
-    }
 
-    if (tag) {
-      filtered = filtered.filter((h) => h.tags.includes(tag));
-    }
+      const mapped = results.map(mapRealHospitalToDemo);
+      let filtered = mapped.length > 0 ? mapped : (mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS);
 
-    setDisplayedHospitals(filtered);
+      if (tag) {
+        filtered = filtered.filter((h) => h.tags.includes(tag));
+      }
+
+      setDisplayedHospitals(filtered);
+    } catch {
+      // Fallback to the locally-filtered loaded list if the backend call fails.
+      const baseHospitals = mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS;
+      let filtered = [...baseHospitals];
+      if (trimmed) {
+        const q = trimmed.toLowerCase();
+        filtered = filtered.filter(
+          (h) =>
+            h.name.toLowerCase().includes(q) ||
+            h.address.toLowerCase().includes(q) ||
+            h.tags.some((t) => t.toLowerCase().includes(q))
+        );
+      }
+      if (tag) filtered = filtered.filter((h) => h.tags.includes(tag));
+      setDisplayedHospitals(filtered);
+    }
 
     // Smoothly scroll to the results section below
     const target = document.getElementById('hospitals');

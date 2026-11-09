@@ -53,26 +53,7 @@ export function HomePage() {
     }
   }, [mappedHospitals]);
 
-  useEffect(() => {
-    if (!('geolocation' in navigator)) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        search(
-          {
-            requiredResources: [],
-            location: {
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-              label: 'Current Location',
-            },
-          },
-          'nearest'
-        );
-      },
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  }, [search]);
+  // Geolocation is handled centrally by useHospitals.
 
   const handleSearch = (query: string, tag: QuickAccessTag | null) => {
     let filtered = displayedHospitals.length > 0 ? [...displayedHospitals] : [...DEMO_HOSPITALS];

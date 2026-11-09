@@ -40,28 +40,8 @@ const DEFAULT_FILTERS: FilterState = {
 export function HospitalsPage() {
   const { hospitals: realHospitalData, isLoading, error, search } = useHospitals();
 
-  React.useEffect(() => {
-    if (!('geolocation' in navigator)) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        search(
-          {
-            requiredResources: [],
-            location: {
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-              label: 'Current Location',
-            },
-          },
-          'nearest'
-        );
-      },
-      () => {
-        // Keep the already-loaded hospital list if geolocation is unavailable.
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  }, [search]);
+  // Geolocation is handled centrally by useHospitals so the first paint already
+  // contains distance-sorted hospitals (and we don't race two searches).
 
   const mappedHospitals = React.useMemo(() => realHospitalData.map((h) => ({
     id: h.id,

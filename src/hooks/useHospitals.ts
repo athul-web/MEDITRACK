@@ -53,11 +53,45 @@ export function useHospitals(): UseHospitalsResult {
     setError(null);
   }, []);
 
-  // Load initial hospitals on mount
+  // Load initial hospitals on mount, using the browser's location when available
+  // so the "nearest" list is populated on first paint instead of requiring a
+  // second manual refresh.
   useEffect(() => {
     const controller = new AbortController();
-    search({ requiredResources: [] }, 'nearest', controller.signal);
+    let cancelled = false;
+
+    (async () => {
+      let filters: HospitalSearchFilters = { requiredResources: [] };
+
+      if ('geolocation' in navigator) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 60000,
+            });
+          });
+          filters = {
+            requiredResources: [],
+            location: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              label: 'Current Location',
+            },
+          };
+        } catch {
+          // Geolocation unavailable/denied - keep the plain (no-distance) search.
+        }
+      }
+
+      if (!cancelled) {
+        search(filters, 'nearest', controller.signal);
+      }
+    })();
+
     return () => {
+      cancelled = true;
       controller.abort();
       activeSearch.current?.abort();
     };

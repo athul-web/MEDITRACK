@@ -66,7 +66,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
       id: 'welcome',
       role: 'assistant',
       text:
-        'Hi! Tell me the emergency or symptom (for example "chest pain", "burns", "breathing trouble") and I will suggest the nearest suitable hospital.',
+        "Hi, I'm Jaan. Ask me about symptoms, emergencies, or where to go, and I'll suggest the nearest suitable hospital.",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);

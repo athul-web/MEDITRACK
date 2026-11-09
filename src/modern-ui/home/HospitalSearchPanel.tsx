@@ -59,7 +59,7 @@ const QUICK_TAGS: { label: QuickAccessTag; icon: React.ReactNode }[] = [
 
 export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
   const [query, setQuery] = useState('');
-  const [activeTag, setActiveTag] = useState<QuickAccessTag>('ICU');
+  const [activeTag, setActiveTag] = useState<QuickAccessTag | null>(null);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [locationOpen, setLocationOpen] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -89,6 +89,7 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
   };
 
   const handleTagClick = (tag: QuickAccessTag) => {
+    setActiveTag((prev) => (prev === tag ? null : tag));
     setActiveTag(tag);
     onSearch(query, tag);
   };

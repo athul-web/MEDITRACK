@@ -6,6 +6,7 @@ interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
+  hospital?: Hospital;
 }
 
 interface ChatBotProps {
@@ -106,7 +107,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
     window.setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: 'assistant', text: reply },
+        { id: `a-${Date.now()}`, role: 'assistant', text: reply, hospital: hospital ?? undefined },
       ]);
     }, 300);
   };
@@ -118,7 +119,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
           <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: '#052F4B' }}>
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[#19D5E5]" />
-              <span className="font-bold text-sm">MediTrack Assistant</span>
+              <span className="font-bold text-sm">Jaan</span>
             </div>
             <button onClick={() => setOpen(false)} className="cursor-pointer">
               <X size={16} />
@@ -136,6 +137,16 @@ export function ChatBot({ hospitals }: ChatBotProps) {
                 }`}
               >
                 {msg.text}
+                {msg.hospital && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${msg.hospital.coordinates?.latitude ?? ''},${msg.hospital.coordinates?.longitude ?? ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 rounded-lg bg-[#073B55] px-3 py-1.5 text-xs font-semibold text-white"
+                  >
+                    Get Directions
+                  </a>
+                )}
               </div>
             ))}
           </div>

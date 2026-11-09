@@ -81,7 +81,17 @@ export function useHospitals(): UseHospitalsResult {
             },
           };
         } catch {
-          // Geolocation unavailable/denied - keep the plain (no-distance) search.
+          // Geolocation unavailable/denied - fall back to a Kerala-wide reference
+          // point so the list still has distances to sort by instead of ending
+          // up with every hospital at an equal/unknown distance.
+          filters = {
+            requiredResources: [],
+            location: {
+              latitude: 10.8505,
+              longitude: 76.2711,
+              label: 'Kerala',
+            },
+          };
         }
       }
 

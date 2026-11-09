@@ -67,7 +67,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
       id: 'welcome',
       role: 'assistant',
       text:
-        "Hi, I'm Jaan. Ask me about symptoms, emergencies, or where to go, and I'll suggest the nearest suitable hospital.",
+        "Hi, I'm Sreekutty. Ask me about symptoms, emergencies, or where to go, and I'll suggest the nearest suitable hospital.",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -142,7 +142,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
           <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: '#052F4B' }}>
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[#19D5E5]" />
-              <span className="font-bold text-sm">Jaan</span>
+              <span className="font-bold text-sm">Sreekutty</span>
             </div>
             <button onClick={() => setOpen(false)} className="cursor-pointer">
               <X size={16} />
@@ -201,7 +201,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
 
       {showTeaser && !open && (
         <div className="mb-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#073B55] shadow-lg">
-          Chat with Jaan
+          Chat with Sreekutty
         </div>
       )}
 

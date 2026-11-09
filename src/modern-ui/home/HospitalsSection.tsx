@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { HospitalDetailsModal } from '../hospitals/HospitalDetailsModal';
+import type { DemoHospital as DemoHospitalType } from '../types/hospital';
 import {
   MapPin,
   ChevronDown,
@@ -29,6 +31,7 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
   const [activeTab, setActiveTab] = useState<ResourceFilter>('All');
   const [sortBy, setSortBy] = useState<SortOption>('Nearest');
   const [sortOpen, setSortOpen] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState<DemoHospitalType | null>(null);
 
   // Apply filtering by tab & sorting
   const processedHospitals = useMemo(() => {
@@ -129,7 +132,7 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
       <div className="flex flex-col gap-4">
         {processedHospitals.length > 0 ? (
           processedHospitals.map((hospital) => (
-            <HospitalCard key={hospital.id} hospital={hospital} />
+            <HospitalCard key={hospital.id} hospital={hospital} onViewDetails={setSelectedHospital} />
           ))
         ) : (
           <div className="bg-white rounded-[22px] border border-[#D9E6EE] p-12 text-center">
@@ -149,6 +152,8 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
           </div>
         )}
       </div>
+
+      <HospitalDetailsModal hospital={selectedHospital} onClose={() => setSelectedHospital(null)} />
     </section>
   );
 }

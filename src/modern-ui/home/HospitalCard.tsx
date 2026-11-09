@@ -13,9 +13,10 @@ import { format, parseISO } from 'date-fns';
 
 interface HospitalCardProps {
   hospital: DemoHospital;
+  onViewDetails?: (hospital: DemoHospital) => void;
 }
 
-export function HospitalCard({ hospital }: HospitalCardProps) {
+export function HospitalCard({ hospital, onViewDetails }: HospitalCardProps) {
   const [calling, setCalling] = useState(false);
 
   const handleCall = () => {
@@ -169,12 +170,13 @@ export function HospitalCard({ hospital }: HospitalCardProps) {
             Get Directions
           </button>
 
-          <a
-            href="#hospitals"
-            className="flex items-center justify-center gap-1 text-xs font-semibold text-[#073B55] hover:text-[#087D91] transition-colors py-1"
+          <button
+            type="button"
+            onClick={() => onViewDetails?.(hospital)}
+            className="flex items-center justify-center gap-1 text-xs font-semibold text-[#073B55] hover:text-[#087D91] transition-colors py-1 cursor-pointer"
           >
             View Details <ChevronRight size={14} />
-          </a>
+          </button>
         </div>
       </div>
     </div>

@@ -61,6 +61,7 @@ function findBestHospital(hospitals: Hospital[], query: string): Hospital | null
 export function ChatBot({ hospitals }: ChatBotProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [showTeaser, setShowTeaser] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -76,6 +77,28 @@ export function ChatBot({ hospitals }: ChatBotProps) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, open]);
+
+  useEffect(() => {
+    if (open) {
+      setShowTeaser(false);
+      return;
+    }
+    let showTimer: number | undefined;
+    let hideTimer: number | undefined;
+    const schedule = () => {
+      const delay = 15000 + Math.random() * 25000;
+      showTimer = window.setTimeout(() => {
+        setShowTeaser(true);
+        hideTimer = window.setTimeout(() => setShowTeaser(false), 4000);
+        schedule();
+      }, delay);
+    };
+    schedule();
+    return () => {
+      if (showTimer) window.clearTimeout(showTimer);
+      if (hideTimer) window.clearTimeout(hideTimer);
+    };
+  }, [open]);
 
   const sendMessage = (text: string) => {
     const trimmed = text.trim();
@@ -173,6 +196,12 @@ export function ChatBot({ hospitals }: ChatBotProps) {
           <div className="px-3 pb-3 text-[10px] text-slate-400">
             Not medical advice. For life-threatening emergencies call emergency services immediately.
           </div>
+        </div>
+      )}
+
+      {showTeaser && !open && (
+        <div className="mb-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#073B55] shadow-lg">
+          Chat with Jaan
         </div>
       )}
 

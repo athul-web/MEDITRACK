@@ -56,7 +56,8 @@ export function HomePage() {
   // Geolocation is handled centrally by useHospitals.
 
   const handleSearch = (query: string, tag: QuickAccessTag | null) => {
-    let filtered = displayedHospitals.length > 0 ? [...displayedHospitals] : [...DEMO_HOSPITALS];
+    const baseHospitals = mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS;
+    let filtered = [...baseHospitals];
 
     if (query.trim()) {
       const q = query.toLowerCase().trim();

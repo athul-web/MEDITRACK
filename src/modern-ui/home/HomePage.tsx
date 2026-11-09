@@ -8,6 +8,7 @@ import { EmergencyPanel } from './EmergencyPanel';
 import { StaffPanel } from './StaffPanel';
 import { DEMO_HOSPITALS } from '../data/demoHospitals';
 import { useHospitals } from '../../hooks/useHospitals';
+import { ChatBot } from './ChatBot';
 import { hospitalRepository } from '../../data/repositories/hospitalRepository';
 import type { DemoHospital, QuickAccessTag } from '../types/hospital';
 import type { Hospital as RealHospital } from '../../types/public';
@@ -132,6 +133,8 @@ export function HomePage() {
           </div>
         </div>
       </main>
+
+      <ChatBot hospitals={realHospitalData} />
 
       {/* 4. Footer */}
       <footer

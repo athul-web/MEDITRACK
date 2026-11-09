@@ -71,6 +71,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -98,6 +99,14 @@ export function ChatBot({ hospitals }: ChatBotProps) {
       if (showTimer) window.clearTimeout(showTimer);
       if (hideTimer) window.clearTimeout(hideTimer);
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      const t = window.setTimeout(() => inputRef.current?.focus(), 120);
+      return () => window.clearTimeout(t);
+    }
+    return undefined;
   }, [open]);
 
   const sendMessage = (text: string) => {
@@ -136,20 +145,20 @@ export function ChatBot({ hospitals }: ChatBotProps) {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 sm:bottom-5 sm:right-5">
       {open && (
-        <div className="mb-3 w-80 sm:w-96 rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
+        <div className="mb-3 w-[min(92vw,22rem)] sm:w-96 max-h-[75vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: '#052F4B' }}>
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[#19D5E5]" />
               <span className="font-bold text-sm">Sreekutty</span>
             </div>
-            <button onClick={() => setOpen(false)} className="cursor-pointer">
+            <button onClick={() => setOpen(false)} className="cursor-pointer p-1 -m-1">
               <X size={16} />
             </button>
           </div>
 
-          <div ref={scrollRef} className="h-72 overflow-y-auto p-4 space-y-3 text-sm">
+          <div ref={scrollRef} className="min-h-0 h-56 sm:h-72 overflow-y-auto p-3 sm:p-4 space-y-3 text-sm overscroll-contain">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -176,6 +185,7 @@ export function ChatBot({ hospitals }: ChatBotProps) {
 
           <div className="border-t border-slate-200 p-3 flex items-center gap-2">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -183,11 +193,11 @@ export function ChatBot({ hospitals }: ChatBotProps) {
                 if (e.key === 'Enter') sendMessage(input);
               }}
               placeholder="Describe emergency or symptom..."
-              className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#087D91]"
+              className="flex-1 min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#087D91]"
             />
             <button
               onClick={() => sendMessage(input)}
-              className="rounded-lg bg-[#073B55] text-white p-2 cursor-pointer"
+              className="rounded-lg bg-[#073B55] text-white p-3 sm:p-2 cursor-pointer touch-manipulation"
               aria-label="Send"
             >
               <Send size={16} />

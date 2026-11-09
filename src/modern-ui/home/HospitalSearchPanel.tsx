@@ -65,11 +65,23 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
   const [locating, setLocating] = useState(false);
 
   const handleFindMe = () => {
-    setLocating(true);
-    setTimeout(() => {
-      setLocation('Current Location');
+    if (!('geolocation' in navigator)) {
       setLocating(false);
-    }, 1500);
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation('Current Location');
+        setLocating(false);
+        // Trigger a search with the refreshed location context.
+        onSearch(query, activeTag);
+      },
+      () => {
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
   };
 
   const handleSearch = () => {

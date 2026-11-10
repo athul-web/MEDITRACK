@@ -77,21 +77,6 @@ export function HospitalsPage() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const fifthTileRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!fifthTileRef.current) {
-        setShowBackToTop(false);
-        return;
-      }
-      const rect = fifthTileRef.current.getBoundingClientRect();
-      setShowBackToTop(rect.top < 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentHospitals]);
-
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -162,6 +147,21 @@ export function HospitalsPage() {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalCount);
   const currentHospitals = filteredAndSortedHospitals.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!fifthTileRef.current) {
+        setShowBackToTop(false);
+        return;
+      }
+      const rect = fifthTileRef.current.getBoundingClientRect();
+      setShowBackToTop(rect.top < 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentHospitals]);
 
   // Active filter removable chips
   const activeChips: { id: string; label: string; onRemove: () => void }[] = [];

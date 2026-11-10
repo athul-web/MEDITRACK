@@ -92,8 +92,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               like ICU, ventilator, diffience and more — when every second counts.
             </p>
 
-            {/* Search Container: Positioned directly below description with 44px vertical spacing */}
-            <div className="w-full mt-11">
+            {/* Search Container: Positioned directly below description */}
+            <div className="w-full mt-7 sm:mt-11">
               <HospitalSearchPanel onSearch={onSearch} />
             </div>
           </div>

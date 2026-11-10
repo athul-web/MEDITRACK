@@ -11,6 +11,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     const { data, error } = await supabase
       .from('public_hospitals')
       .select('*')
+      .eq('verified', true)
       .order('name');
 
     if (error) throw error;
@@ -22,6 +23,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       .from('public_hospitals')
       .select('*')
       .eq('id', id)
+      .eq('verified', true)
       .maybeSingle();
 
     if (error) throw error;
@@ -52,7 +54,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    let query = supabase.from('public_hospitals').select('*');
+    let query = supabase.from('public_hospitals').select('*').eq('verified', true);
 
     const isCurrentLocation = (label?: string) => {
       if (!label) return false;

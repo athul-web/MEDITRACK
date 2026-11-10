@@ -32,7 +32,21 @@ export function useDoctorsForHospital(): UseDoctorsForHospitalResult {
       setDoctors(results);
     } catch (err) {
       if (signal.aborted || (err instanceof Error && err.name === 'AbortError')) return;
-      setError('Failed to load doctors. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      // Log full error for debugging
+      console.error('[useDoctorsForHospital] Failed to load doctors:', {
+        publicHospitalId,
+        error: err,
+        message: errorMessage,
+      });
+      // Differentiate between RPC not found, permission denied, and other errors
+      if (errorMessage.includes('function') && errorMessage.includes('does not exist')) {
+        setError('Doctor directory function not available. Please contact administrator.');
+      } else if (errorMessage.includes('permission denied') || errorMessage.includes('Permission denied')) {
+        setError('Access denied. Please check your permissions.');
+      } else {
+        setError('Failed to load doctors. Please try again.');
+      }
       setDoctors([]);
     } finally {
       if (!signal.aborted) {

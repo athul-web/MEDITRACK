@@ -58,9 +58,10 @@ describe('SupabaseHospitalRepository', () => {
     (supabase.from as any).mockImplementation(() => mockClient);
   });
 
-  it('should fetch hospitals from the correct table', async () => {
+  it('should fetch hospitals from the correct table with verified filter', async () => {
     await repo.getHospitals();
     expect(supabase.from).toHaveBeenCalledWith('public_hospitals');
+    expect(mockClient.eq).toHaveBeenCalledWith('verified', true);
   });
 
   it('should apply district filter using city, district, and address columns', async () => {
@@ -70,6 +71,7 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
+    expect(mockClient.eq).toHaveBeenCalledWith('verified', true);
     expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,district.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
   });
 
@@ -80,6 +82,7 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
+    expect(mockClient.eq).toHaveBeenCalledWith('verified', true);
     expect(mockClient.eq).toHaveBeenCalledWith('category', 'multi_specialty');
   });
 
@@ -91,6 +94,7 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
+    expect(mockClient.eq).toHaveBeenCalledWith('verified', true);
     expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,district.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
     expect(mockClient.eq).toHaveBeenCalledWith('category', 'single_specialty');
   });
@@ -106,6 +110,7 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
+    expect(mockClient.eq).toHaveBeenCalledWith('verified', true);
     expect(mockClient.or).not.toHaveBeenCalled();
   });
 });

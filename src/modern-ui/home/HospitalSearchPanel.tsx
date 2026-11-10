@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   MapPin,
@@ -63,6 +63,18 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [locationOpen, setLocationOpen] = useState(false);
   const [locating, setLocating] = useState(false);
+  const locationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!locationOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+        setLocationOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [locationOpen]);
 
   const handleFindMe = () => {
     if (!('geolocation' in navigator)) {
@@ -89,9 +101,9 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
   };
 
   const handleTagClick = (tag: QuickAccessTag) => {
-    setActiveTag((prev) => (prev === tag ? null : tag));
-    setActiveTag(tag);
-    onSearch(query, tag);
+    const nextTag = activeTag === tag ? null : tag;
+    setActiveTag(nextTag);
+    onSearch(query, nextTag);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -100,7 +112,7 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
 
   return (
     <div
-      className="w-full max-w-3xl rounded-[28px] p-5 flex flex-col gap-4"
+      className="w-full max-w-3xl rounded-3xl sm:rounded-[28px] p-4 sm:p-5 flex flex-col gap-3.5 sm:gap-4"
       style={{
         background: 'rgba(190,234,242,0.18)',
         border: '1px solid rgba(255,255,255,0.35)',
@@ -108,101 +120,117 @@ export function HospitalSearchPanel({ onSearch }: HospitalSearchPanelProps) {
         WebkitBackdropFilter: 'blur(16px)',
       }}
     >
-      {/* Top row */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-        {/* Search input */}
-        <div className="flex items-center gap-2 flex-1 rounded-full px-4 py-2.5 search-input-wrapper">
-          <Search size={16} style={{ color: '#60778C' }} className="shrink-0" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search hospital name, address, or resource…"
-            className="flex-1 outline-none text-sm bg-transparent placeholder:text-gray-400"
-            style={{ color: '#122B43' }}
-          />
-        </div>
-
-        {/* Location selector */}
-        <div className="relative">
+      {/* Top container */}
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch sm:items-center">
+        {/* Search input + mobile Search button */}
+        <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2 flex-1 rounded-full px-4 py-2.5 search-input-wrapper min-w-0">
+            <Search size={16} style={{ color: '#60778C' }} className="shrink-0" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search hospital name, address, or resource…"
+              className="flex-1 outline-none text-sm bg-transparent placeholder:text-gray-400 min-w-0"
+              style={{ color: '#122B43' }}
+            />
+          </div>
+          {/* Mobile search button: compact pill next to input */}
           <button
-            onClick={() => setLocationOpen(!locationOpen)}
-            className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap cursor-pointer location-selector-btn"
+            onClick={handleSearch}
+            className="sm:hidden flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold text-white shrink-0 cursor-pointer search-action-btn search-submit-btn"
+            aria-label="Search"
           >
-            <MapPin size={14} className="loc-icon shrink-0" />
-            <span className="max-w-[140px] truncate">{location}</span>
-            <ChevronDown size={14} style={{ color: '#60778C' }} className="shrink-0" />
+            <Search size={14} className="btn-icon shrink-0" />
+            <span>Search</span>
           </button>
-          {locationOpen && (
-            <div
-              className="absolute top-full mt-1 left-0 z-50 bg-white rounded-2xl shadow-xl overflow-hidden min-w-[200px]"
-              style={{ border: '1px solid #D9E6EE' }}
-            >
-              {LOCATIONS.map((loc) => (
-                <button
-                  key={loc}
-                  onClick={() => {
-                    setLocation(loc);
-                    setLocationOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer"
-                  style={{
-                    color: location === loc ? '#063B56' : '#122B43',
-                    background: location === loc ? '#E4F6FA' : 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (location !== loc) (e.currentTarget as HTMLButtonElement).style.background = '#F3F8FC';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location !== loc) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  }}
-                >
-                  {loc}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Find Me button */}
-        <button
-          onClick={handleFindMe}
-          disabled={locating}
-          className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-white shrink-0 cursor-pointer search-action-btn find-me-btn"
-          style={{ opacity: locating ? 0.7 : 1 }}
-          title="Detect my location"
-        >
-          {locating ? (
-            <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" strokeOpacity="0.3" />
-              <path d="M12 2a10 10 0 0 1 10 10" />
-            </svg>
-          ) : (
-            <Navigation size={14} className="btn-icon" />
-          )}
-          {locating ? 'Locating…' : 'Find Me'}
-        </button>
+        {/* Action buttons row: compact pills that don't stretch */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+          {/* Location selector */}
+          <div className="relative" ref={locationRef}>
+            <button
+              onClick={() => setLocationOpen(!locationOpen)}
+              className="flex items-center gap-1.5 sm:gap-2 rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap cursor-pointer location-selector-btn"
+              aria-label="Select location"
+              aria-expanded={locationOpen}
+            >
+              <MapPin size={14} className="loc-icon shrink-0" />
+              <span className="max-w-[120px] sm:max-w-[140px] truncate">{location}</span>
+              <ChevronDown size={14} style={{ color: '#60778C' }} className="shrink-0" />
+            </button>
+            {locationOpen && (
+              <div
+                className="absolute top-full mt-1 left-0 z-50 bg-white rounded-2xl shadow-xl overflow-hidden min-w-[200px]"
+                style={{ border: '1px solid #D9E6EE' }}
+              >
+                {LOCATIONS.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => {
+                      setLocation(loc);
+                      setLocationOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer"
+                    style={{
+                      color: location === loc ? '#063B56' : '#122B43',
+                      background: location === loc ? '#E4F6FA' : 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (location !== loc) (e.currentTarget as HTMLButtonElement).style.background = '#F3F8FC';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (location !== loc) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                    }}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Search button */}
-        <button
-          onClick={handleSearch}
-          className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shrink-0 cursor-pointer search-action-btn search-submit-btn"
-        >
-          <Search size={14} className="btn-icon" />
-          Search
-        </button>
+          {/* Find Me button: compact pill button */}
+          <button
+            onClick={handleFindMe}
+            disabled={locating}
+            className="flex items-center gap-1.5 sm:gap-2 rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white shrink-0 cursor-pointer search-action-btn find-me-btn"
+            style={{ opacity: locating ? 0.7 : 1 }}
+            title="Detect my location"
+          >
+            {locating ? (
+              <svg className="animate-spin shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10" strokeOpacity="0.3" />
+                <path d="M12 2a10 10 0 0 1 10 10" />
+              </svg>
+            ) : (
+              <Navigation size={14} className="btn-icon shrink-0" />
+            )}
+            <span>{locating ? 'Locating…' : 'Find Me'}</span>
+          </button>
+
+          {/* Desktop Search button */}
+          <button
+            onClick={handleSearch}
+            className="hidden sm:flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shrink-0 cursor-pointer search-action-btn search-submit-btn"
+          >
+            <Search size={14} className="btn-icon shrink-0" />
+            <span>Search</span>
+          </button>
+        </div>
       </div>
 
       {/* Quick access row */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
         <div className="flex items-center gap-1.5 shrink-0">
           <SlidersHorizontal size={13} style={{ color: 'rgba(255,255,255,0.75)' }} />
           <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Quick Access
           </span>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
           {QUICK_TAGS.map(({ label, icon }) => {
             const isSelected = activeTag === label;
             return (

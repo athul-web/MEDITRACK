@@ -36,22 +36,6 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const fifthTileRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!fifthTileRef.current) {
-        setShowBackToTop(false);
-        return;
-      }
-      const rect = fifthTileRef.current.getBoundingClientRect();
-      // Pops up when the user scrolls past the 5th tile (tile 5 top is above viewport mid/top)
-      setShowBackToTop(rect.top < 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [processedHospitals]);
-
   // Apply filtering by tab & sorting
   const processedHospitals = useMemo(() => {
     let list = [...hospitals];
@@ -71,6 +55,22 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
 
     return list;
   }, [hospitals, activeTab, sortBy]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!fifthTileRef.current) {
+        setShowBackToTop(false);
+        return;
+      }
+      const rect = fifthTileRef.current.getBoundingClientRect();
+      // Pops up when the user scrolls past the 5th tile (tile 5 top is above viewport mid/top)
+      setShowBackToTop(rect.top < 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [processedHospitals]);
 
   return (
     <section id="hospitals" className="scroll-mt-24">

@@ -1,16 +1,209 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   MapPin,
   Phone,
   Navigation,
   ShieldCheck,
+  User,
+  GraduationCap,
+  Briefcase,
+  Calendar,
+  Clock,
+  MapPin as MapPinIcon,
+  ExternalLink,
+  Loader2,
+  AlertCircle,
+  Stethoscope,
 } from 'lucide-react';
 import type { DemoHospital } from '../types/hospital';
+import { useDoctorsForHospital } from '../../hooks/useDoctors';
+import type { PublicHospitalDoctor } from '../../types/doctor';
 
 interface HospitalDetailsModalProps {
   hospital: DemoHospital | null;
   onClose: () => void;
+}
+
+function DoctorCard({ doctor }: { doctor: PublicHospitalDoctor }) {
+  const consultationFee = doctor.hospitalConsultationFeeInr ?? doctor.consultationFeeInr;
+  const primarySpecialty = doctor.specialties[0];
+  const availableDays = doctor.availableDays?.length
+    ? doctor.availableDays.join(', ')
+    : 'Not specified';
+  const availableHours = doctor.availableHours || 'Not specified';
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+      <div className="flex gap-4">
+        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {doctor.profileImageUrl ? (
+            <img
+              src={doctor.profileImageUrl}
+              alt={doctor.fullName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User className="w-10 h-10 text-slate-400" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-start gap-2">
+            <h4 className="font-semibold text-slate-900 truncate">{doctor.fullName}</h4>
+            {doctor.isPrimaryAffiliation && (
+              <span className="px-2 py-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded-full flex-shrink-0">
+                Primary
+              </span>
+            )}
+          </div>
+          {doctor.qualification && (
+            <p className="flex items-center gap-1 text-xs text-slate-500">
+              <GraduationCap className="w-3 h-3" />
+              <span>{doctor.qualification}</span>
+            </p>
+          )}
+          <p className="flex items-center gap-1 text-xs text-slate-500">
+            <Stethoscope className="w-3 h-3" />
+            <span>{primarySpecialty || 'General Medicine'}</span>
+          </p>
+          <p className="flex items-center gap-1 text-xs text-slate-500">
+            <Briefcase className="w-3 h-3" />
+            <span>{doctor.department}</span>
+          </p>
+          {doctor.designation && (
+            <p className="flex items-center gap-1 text-xs text-slate-500">
+              <span className="w-3 h-3" />{doctor.designation}
+            </p>
+          )}
+          {doctor.experienceYears && (
+            <p className="flex items-center gap-1 text-xs text-slate-500">
+              <span className="w-3 h-3" />{doctor.experienceYears} years experience
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Consultation Fee</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {consultationFee ? `₹${consultationFee}` : 'Not specified'}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Accepting Patients</p>
+          <p className="text-sm font-medium text-slate-900">
+            {doctor.isAcceptingPatients ? 'Yes' : 'No'}
+          </p>
+        </div>
+        <div className="space-y-1 sm:col-span-2">
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Available</p>
+          <p className="text-sm font-medium text-slate-900 truncate">
+            {availableDays} • {availableHours}
+          </p>
+        </div>
+      </div>
+
+      {doctor.appointmentBookingUrl && (
+        <a
+          href={doctor.appointmentBookingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 text-xs font-semibold text-[#073B55] bg-[#E4F6FA] border border-[#BCEBF5] rounded-lg hover:bg-[#D1F0F5] transition-colors"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          Book Appointment
+        </a>
+      )}
+    </div>
+  );
+}
+
+function DoctorsSection({ hospitalId }: { hospitalId: string }) {
+  const { doctors, isLoading, error, fetch } = useDoctorsForHospital();
+  const [hasFetched, setHasFetched] = useState(false);
+
+  useEffect(() => {
+    if (!hasFetched && hospitalId) {
+      fetch(hospitalId);
+      setHasFetched(true);
+    }
+  }, [hospitalId, fetch, hasFetched]);
+
+  // Reset when hospital changes
+  useEffect(() => {
+    setHasFetched(false);
+  }, [hospitalId]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+          Doctors at this Hospital
+        </h3>
+        <div className="space-y-3" aria-busy="true" aria-label="Loading doctors">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex gap-4">
+                <div className="w-20 h-20 rounded-xl bg-slate-200 flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-5 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-1/4" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-3 pt-3 mt-3 border-t border-slate-200">
+                <div className="h-8 bg-slate-200 rounded" />
+                <div className="h-8 bg-slate-200 rounded" />
+                <div className="col-span-2 h-8 bg-slate-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+          Doctors at this Hospital
+        </h3>
+        <div className="text-center py-6 text-slate-500 text-sm">
+          <AlertCircle className="w-6 h-6 mx-auto text-slate-300 mb-2" />
+          <p>Failed to load doctors</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (doctors.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+          Doctors at this Hospital
+        </h3>
+        <div className="text-center py-8 text-slate-500 text-sm bg-slate-50 rounded-xl border border-slate-200">
+          <User className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+          <p>No doctors currently affiliated with this hospital</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+        Doctors at this Hospital
+      </h3>
+      <div className="space-y-3">
+        {doctors.map((doctor) => (
+          <DoctorCard key={doctor.doctorId} doctor={doctor} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModalProps) {
@@ -134,6 +327,9 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
               ))}
             </div>
           </div>
+
+          {/* Doctors Section */}
+          <DoctorsSection hospitalId={hospital.id} />
 
           {/* Quick Contact & Info */}
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2.5 text-xs text-[#122B43]">

@@ -24,8 +24,10 @@ import { ProblemReports as OperatorProblemReports } from './operator-dashboard/p
 import { LiveMonitoring as OperatorLiveMonitoring } from './operator-dashboard/pages/LiveMonitoringPage';
 import { ResourceStatus as OperatorResourceStatus } from './operator-dashboard/pages/ResourceStatusPage';
 import { Settings as OperatorSettings } from './operator-dashboard/pages/SettingsPage';
+import { DoctorDirectoryManagement } from './operator-dashboard/pages/DoctorDirectoryManagementPage';
+import { HospitalDoctorManagement } from './operator-dashboard/pages/HospitalDoctorManagementPage';
 
-function AuthGuard({ children }: { children: React.ReactNode }) {
+function AuthGuard({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -55,7 +57,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         if (profileError) throw profileError;
 
         const role = profile?.role;
-        if (isActive) setIsAuthorized(role === 'Staff' || role === 'Admin');
+        const permittedRoles = allowedRoles ?? ['Staff', 'Admin', 'doctor_admin', 'super_admin'];
+        if (isActive) setIsAuthorized(permittedRoles.includes(role));
       } catch (err: any) {
         console.error('Auth access check failed:', err);
         if (isActive) setIsAuthorized(false);
@@ -83,7 +86,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       isActive = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [allowedRoles]);
 
   if (isLoading) {
     return (
@@ -177,6 +180,22 @@ export default function AppRouter() {
           <Route path="monitoring" element={<OperatorLiveMonitoring />} />
           <Route path="resources" element={<OperatorResourceStatus />} />
           <Route path="settings" element={<OperatorSettings />} />
+          <Route
+            path="doctors"
+            element={
+              <AuthGuard allowedRoles={['doctor_admin', 'super_admin']}>
+                <DoctorDirectoryManagement />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="hospital-doctors"
+            element={
+              <AuthGuard allowedRoles={['Staff', 'Admin']}>
+                <HospitalDoctorManagement />
+              </AuthGuard>
+            }
+          />
           <Route
             path="*"
             element={

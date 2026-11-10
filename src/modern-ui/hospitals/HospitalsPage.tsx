@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MapPin,
@@ -19,6 +19,7 @@ import { SiteNavbar } from '../home/SiteNavbar';
 import { HospitalDirectoryCard } from './HospitalDirectoryCard';
 import { HospitalFilterSidebar } from './HospitalFilterSidebar';
 import { HospitalDetailsModal } from './HospitalDetailsModal';
+import { BackToTopButton } from '../common/BackToTopButton';
 import { useHospitals } from '../../hooks/useHospitals';
 import type { DemoHospital, SortOption, FilterState } from '../types/hospital';
 import './hospitals.css';
@@ -73,6 +74,23 @@ export function HospitalsPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(4);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const fifthTileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!fifthTileRef.current) {
+        setShowBackToTop(false);
+        return;
+      }
+      const rect = fifthTileRef.current.getBoundingClientRect();
+      setShowBackToTop(rect.top < 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentHospitals]);
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -390,12 +408,16 @@ export function HospitalsPage() {
               {/* Hospital Cards Stack */}
               <div className="space-y-4">
                 {currentHospitals.length > 0 ? (
-                  currentHospitals.map((hospital) => (
-                    <HospitalDirectoryCard
+                  currentHospitals.map((hospital, index) => (
+                    <div
                       key={hospital.id}
-                      hospital={hospital}
-                      onViewDetails={(h) => setSelectedHospital(h)}
-                    />
+                      ref={index === 4 ? fifthTileRef : undefined}
+                    >
+                      <HospitalDirectoryCard
+                        hospital={hospital}
+                        onViewDetails={(h) => setSelectedHospital(h)}
+                      />
+                    </div>
                   ))
                 ) : (
                   <div className="bg-white rounded-2xl border border-[#D9E6EE] p-12 text-center shadow-xs">
@@ -544,6 +566,8 @@ export function HospitalsPage() {
           </div>
         </div>
       </footer>
+
+      <BackToTopButton visible={showBackToTop} />
     </div>
   );
 }

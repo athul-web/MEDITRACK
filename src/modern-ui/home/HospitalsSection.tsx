@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { HospitalDetailsModal } from '../hospitals/HospitalDetailsModal';
+import { BackToTopButton } from '../common/BackToTopButton';
 import type { DemoHospital as DemoHospitalType } from '../types/hospital';
 import {
   MapPin,
@@ -32,6 +33,24 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
   const [sortBy, setSortBy] = useState<SortOption>('Nearest');
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<DemoHospitalType | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const fifthTileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!fifthTileRef.current) {
+        setShowBackToTop(false);
+        return;
+      }
+      const rect = fifthTileRef.current.getBoundingClientRect();
+      // Pops up when the user scrolls past the 5th tile (tile 5 top is above viewport mid/top)
+      setShowBackToTop(rect.top < 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [processedHospitals]);
 
   // Apply filtering by tab & sorting
   const processedHospitals = useMemo(() => {
@@ -131,8 +150,13 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
       {/* Hospital Card List */}
       <div className="flex flex-col gap-4">
         {processedHospitals.length > 0 ? (
-          processedHospitals.map((hospital) => (
-            <HospitalCard key={hospital.id} hospital={hospital} onViewDetails={setSelectedHospital} />
+          processedHospitals.map((hospital, index) => (
+            <div
+              key={hospital.id}
+              ref={index === 4 ? fifthTileRef : undefined}
+            >
+              <HospitalCard hospital={hospital} onViewDetails={setSelectedHospital} />
+            </div>
           ))
         ) : (
           <div className="bg-white rounded-[22px] border border-[#D9E6EE] p-12 text-center">
@@ -154,6 +178,7 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
       </div>
 
       <HospitalDetailsModal hospital={selectedHospital} onClose={() => setSelectedHospital(null)} />
+      <BackToTopButton visible={showBackToTop} />
     </section>
   );
 }

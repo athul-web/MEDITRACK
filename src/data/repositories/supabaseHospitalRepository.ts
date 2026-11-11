@@ -7,22 +7,18 @@ import { geocodeKeralaPlace, type GeocodedPlace } from '../../utils/nominatim';
 import { isAbortError } from '../../utils/http';
 
 /**
- * The public hospital directory lives in `public_hospitals`.
+ * The real Kerala hospital directory lives in `kerala_hospitals`.
  *
- * This is distinct from the `hospitals` tenant-registry table (which tracks
- * registered MediTrack hospital organisations) and from the now-removed
- * `kerala_hospitals` table that was previously referenced but does not exist
- * in the database.
+ * This is the primary dataset for public hospital discovery. It is distinct
+ * from `public_hospitals` (a small 15-record demo set) and from `hospitals`
+ * (the MediTrack tenant-registry table).
  *
- * `public_hospitals` columns relevant here:
- *   id, name, address, city, state, verified, image, last_updated,
- *   latitude, longitude, resources (JSONB), contact (JSONB)
- *
- * Note: `district`, `email`, and `category` columns do NOT exist in
- * `public_hospitals`. Filters that relied on those columns have been
- * adapted to use the available `city` and `address` columns instead.
+ * `kerala_hospitals` was created directly in Supabase and contains the full
+ * regional dataset (~395 hospitals). An RLS SELECT policy for the `anon`
+ * role must exist on this table for the frontend to read it.
+ * See: supabase/migrations/20261108_kerala_hospitals_public_read.sql
  */
-const PUBLIC_HOSPITALS_TABLE = 'public_hospitals' as const;
+const PUBLIC_HOSPITALS_TABLE = 'kerala_hospitals' as const;
 
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
@@ -72,7 +68,6 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    // public_hospitals does not have a `category` column – skip that filter.
     let query = supabase.from(PUBLIC_HOSPITALS_TABLE).select('*');
 
     const isCurrentLocation = (label?: string) => {
@@ -98,19 +93,16 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       }
     }
 
-    // `public_hospitals` does NOT have a `category` column – skip that filter.
-    // If a future schema adds it, re-enable this block.
-    // if (filters.category) {
-    //   query = query.eq('category', filters.category);
-    // }
+    // kerala_hospitals has: name, address, city, district, email, category, latitude, longitude, etc.
+    if (filters.category) {
+      query = query.eq('category', filters.category);
+    }
 
     if (filters.district) {
-      // `public_hospitals` has `city` but not a dedicated `district` column.
-      // Filter against `city` and `address` which are the available text fields.
       const districtText = this.sanitizeFilterTerm(filters.district);
       if (districtText) {
         query = query.or(
-          `city.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+          `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
         );
       }
     }
@@ -118,10 +110,8 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     const customLocationText = geocoded ? '' : this.sanitizeFilterTerm(typedLocation);
 
     if (customLocationText) {
-      // `public_hospitals` has: name, city, address, state.
-      // It does NOT have district or email columns.
       query = query.or(
-        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,state.ilike.%${customLocationText}%`,
+        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,district.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,email.ilike.%${customLocationText}%`,
       );
     }
 
@@ -129,7 +119,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       const trimmedQuery = this.sanitizeFilterTerm(filters.query);
       if (trimmedQuery) {
         query = query.or(
-          `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,state.ilike.%${trimmedQuery}%`,
+          `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,district.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
         );
       }
     }
@@ -146,7 +136,8 @@ export class SupabaseHospitalRepository implements HospitalRepository {
           hospital.name,
           hospital.city,
           hospital.address,
-          hospital.state,
+          hospital.district,
+          hospital.email,
         ]
           .filter(Boolean)
           .join(' ')

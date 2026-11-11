@@ -15,6 +15,7 @@ import type { DemoHospital, ResourceFilter, SortOption } from '../types/hospital
 
 interface HospitalsSectionProps {
   hospitals: DemoHospital[];
+  isLoading?: boolean;
 }
 
 const FILTER_TABS: { id: ResourceFilter; label: string; icon: React.ReactNode }[] = [
@@ -27,7 +28,7 @@ const FILTER_TABS: { id: ResourceFilter; label: string; icon: React.ReactNode }[
 
 const SORT_OPTIONS: SortOption[] = ['Nearest', 'Farthest', 'Recently Updated'];
 
-export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
+export function HospitalsSection({ hospitals, isLoading = false }: HospitalsSectionProps) {
   const [activeTab, setActiveTab] = useState<ResourceFilter>('All');
   const [sortBy, setSortBy] = useState<SortOption>('Nearest');
   const [sortOpen, setSortOpen] = useState(false);
@@ -130,7 +131,25 @@ export function HospitalsSection({ hospitals }: HospitalsSectionProps) {
 
       {/* Hospital Card List */}
       <div className="flex flex-col gap-4">
-        {processedHospitals.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="bg-white rounded-[22px] border border-[#D9E6EE] p-6 animate-pulse flex flex-col gap-4"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2 w-2/3">
+                    <div className="h-5 bg-slate-200 rounded w-3/4"></div>
+                    <div className="h-3.5 bg-slate-100 rounded w-1/2"></div>
+                  </div>
+                  <div className="h-6 bg-slate-200 rounded w-16"></div>
+                </div>
+                <div className="h-10 bg-slate-100 rounded-xl w-full"></div>
+              </div>
+            ))}
+          </div>
+        ) : processedHospitals.length > 0 ? (
           processedHospitals.map((hospital) => (
             <HospitalCard key={hospital.id} hospital={hospital} onViewDetails={setSelectedHospital} />
           ))

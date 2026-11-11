@@ -21,7 +21,7 @@ const KERALA_DISTRICTS_FALLBACK = [
 
 export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Promise<Hospital[]> {
   let query = supabase
-    .from('public_hospitals')
+    .from('kerala_hospitals')
     .select('*');
 
   if (filters) {
@@ -33,7 +33,7 @@ export async function fetchKeralaHospitals(filters?: HospitalSearchFilters): Pro
     }
     if (filters.emergencyType) {
       // This would typically involve joining with resources or filtering based on resource availability
-      // For now, we focus on the public_hospitals table.
+      // For now, we focus on the kerala_hospitals table.
     }
   }
 
@@ -60,7 +60,7 @@ export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
   const escapedName = trimmedName.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
 
   const { data, error } = await supabase
-    .from('public_hospitals')
+    .from('kerala_hospitals')
     .select('*')
     .ilike('name', `%${escapedName}%`);
 
@@ -75,7 +75,7 @@ export async function searchHospitalsByName(name: string): Promise<Hospital[]> {
 export async function getDistricts(): Promise<string[]> {
   try {
     const { data, error } = await supabase
-      .from('public_hospitals')
+      .from('kerala_hospitals')
       .select('city, district');
 
     if (error) {

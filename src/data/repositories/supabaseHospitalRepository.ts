@@ -6,10 +6,24 @@ import { resolveKeralaCoordinates } from '../../utils/keralaCoordinates';
 import { geocodeKeralaPlace, type GeocodedPlace } from '../../utils/nominatim';
 import { isAbortError } from '../../utils/http';
 
+/**
+ * The real Kerala hospital directory lives in `kerala_hospitals`.
+ *
+ * This is the primary dataset for public hospital discovery. It is distinct
+ * from `public_hospitals` (a small 15-record demo set) and from `hospitals`
+ * (the MediTrack tenant-registry table).
+ *
+ * `kerala_hospitals` was created directly in Supabase and contains the full
+ * regional dataset (~395 hospitals). An RLS SELECT policy for the `anon`
+ * role must exist on this table for the frontend to read it.
+ * See: supabase/migrations/20261108_kerala_hospitals_public_read.sql
+ */
+const PUBLIC_HOSPITALS_TABLE = 'kerala_hospitals' as const;
+
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .select('*')
       .order('name');
 
@@ -19,7 +33,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async getHospitalById(id: string): Promise<Hospital | null> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -29,8 +43,10 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   }
 
   async updateResources(id: string, resources: Record<string, string>): Promise<void> {
+    // Resource updates on the public directory are gated by RLS; only
+    // service-role callers (Edge Functions) are permitted to mutate rows.
     const { error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .update({ resources })
       .eq('id', id);
 
@@ -52,7 +68,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    let query = supabase.from('kerala_hospitals').select('*');
+    let query = supabase.from(PUBLIC_HOSPITALS_TABLE).select('*');
 
     const isCurrentLocation = (label?: string) => {
       if (!label) return false;
@@ -77,6 +93,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       }
     }
 
+    // kerala_hospitals has: name, address, city, district, email, category, latitude, longitude, etc.
     if (filters.category) {
       query = query.eq('category', filters.category);
     }

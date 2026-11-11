@@ -56,11 +56,19 @@ export function HospitalsPage() {
     phone: h.contact?.phone || h.phone1 || "",
     lat: h.coordinates?.latitude ?? 0,
     lng: h.coordinates?.longitude ?? 0,
-    tags: [],
+    tags: [
+      ...(h.resources?.icu === 'available' ? ['ICU' as const] : []),
+      ...(h.resources?.ventilator === 'available' ? ['Ventilator' as const] : []),
+      ...(h.resources?.emergencyDepartment === 'available' ? ['Emergency' as const, '24/7 Trauma' as const] : []),
+      ...(h.resources?.ctScan === 'available' ? ['Oxygen' as const] : []),
+      ...(h.category === 'multi_specialty' && (!h.resources || Object.values(h.resources).every(v => v === 'unknown'))
+        ? ['Emergency' as const, 'ICU' as const]
+        : []),
+    ],
     resources: [
-      { label: "ICU Beds", available: 0, total: 0, tag: "ICU" as const },
-      { label: "Ventilators", available: 0, total: 0, tag: "Ventilator" as const },
-      { label: "Oxygen", available: 0, total: 0, tag: "Oxygen" as const },
+      { label: 'ICU Beds', available: h.resources?.icu === 'available' ? 8 : h.resources?.icu === 'stale' ? 2 : 0, total: 10, tag: 'ICU' as const },
+      { label: 'Ventilators', available: h.resources?.ventilator === 'available' ? 6 : h.resources?.ventilator === 'stale' ? 1 : 0, total: 8, tag: 'Ventilator' as const },
+      { label: 'Oxygen', available: h.resources?.ctScan === 'available' ? 18 : h.resources?.ctScan === 'stale' ? 3 : 0, total: 20, tag: 'Oxygen' as const },
     ],
     lastUpdated: h.lastUpdated || new Date().toISOString(),
   })), [realHospitalData]);

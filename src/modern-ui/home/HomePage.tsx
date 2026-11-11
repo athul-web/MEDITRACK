@@ -6,7 +6,6 @@ import { FeatureStrip } from './FeatureStrip';
 import { HospitalsSection } from './HospitalsSection';
 import { EmergencyPanel } from './EmergencyPanel';
 import { StaffPanel } from './StaffPanel';
-import { DEMO_HOSPITALS } from '../data/demoHospitals';
 import { useHospitals } from '../../hooks/useHospitals';
 import { ChatBot } from './ChatBot';
 import { hospitalRepository } from '../../data/repositories/hospitalRepository';
@@ -21,28 +20,33 @@ function mapRealHospitalToDemo(h: RealHospital): DemoHospital {
     distanceKm: typeof h.distanceKm === 'number' ? h.distanceKm : null,
     driveMinutes: typeof h.durationMin === 'number' ? h.durationMin : null,
     address: h.address,
+    district: h.district,
     imageUrl: h.image || 'https://images.unsplash.com/photo-1587351021355-a479a299d2f9?w=360&h=360&fit=crop',
     phone: h.contact?.phone || h.phone1 || '',
     lat: h.coordinates?.latitude ?? 0,
     lng: h.coordinates?.longitude ?? 0,
     tags: [
-      ...(h.resources.icu === 'available' ? ['ICU' as const] : []),
-      ...(h.resources.ventilator === 'available' ? ['Ventilator' as const] : []),
-      ...(h.resources.emergencyDepartment === 'available' ? ['Emergency' as const, '24/7 Trauma' as const] : []),
-      ...(h.resources.ctScan === 'available' ? ['Oxygen' as const] : []),
+      ...(h.resources?.icu === 'available' ? ['ICU' as const] : []),
+      ...(h.resources?.ventilator === 'available' ? ['Ventilator' as const] : []),
+      ...(h.resources?.emergencyDepartment === 'available' ? ['Emergency' as const, '24/7 Trauma' as const] : []),
+      ...(h.resources?.ctScan === 'available' ? ['Oxygen' as const] : []),
+      ...(h.category === 'multi_specialty' && (!h.resources || Object.values(h.resources).every(v => v === 'unknown'))
+        ? ['Emergency' as const, 'ICU' as const]
+        : []),
     ],
     resources: [
-      { label: 'ICU Beds', available: h.resources.icu === 'available' ? 8 : h.resources.icu === 'stale' ? 2 : 0, total: 10, tag: 'ICU' as const },
-      { label: 'Ventilators', available: h.resources.ventilator === 'available' ? 6 : h.resources.ventilator === 'stale' ? 1 : 0, total: 8, tag: 'Ventilator' as const },
-      { label: 'Oxygen', available: h.resources.ctScan === 'available' ? 18 : h.resources.ctScan === 'stale' ? 3 : 0, total: 20, tag: 'Oxygen' as const },
+      { label: 'ICU Beds', available: h.resources?.icu === 'available' ? 8 : h.resources?.icu === 'stale' ? 2 : 0, total: 10, tag: 'ICU' as const },
+      { label: 'Ventilators', available: h.resources?.ventilator === 'available' ? 6 : h.resources?.ventilator === 'stale' ? 1 : 0, total: 8, tag: 'Ventilator' as const },
+      { label: 'Oxygen', available: h.resources?.ctScan === 'available' ? 18 : h.resources?.ctScan === 'stale' ? 3 : 0, total: 20, tag: 'Oxygen' as const },
     ],
     lastUpdated: h.lastUpdated || new Date().toISOString(),
   };
 }
 
 export function HomePage() {
-  const { hospitals: realHospitalData, search } = useHospitals();
-  const [displayedHospitals, setDisplayedHospitals] = useState<DemoHospital[]>(DEMO_HOSPITALS);
+  const { hospitals: realHospitalData, isLoading, search } = useHospitals();
+  const [displayedHospitals, setDisplayedHospitals] = useState<DemoHospital[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const mappedHospitals = useMemo(
     () => realHospitalData.map(mapRealHospitalToDemo),
@@ -50,9 +54,7 @@ export function HomePage() {
   );
 
   useEffect(() => {
-    if (mappedHospitals.length > 0) {
-      setDisplayedHospitals(mappedHospitals);
-    }
+    setDisplayedHospitals(mappedHospitals);
   }, [mappedHospitals]);
 
   // Geolocation is handled centrally by useHospitals.
@@ -60,6 +62,7 @@ export function HomePage() {
   const handleSearch = async (query: string, tag: QuickAccessTag | null) => {
     const trimmed = query.trim();
 
+    setIsSearching(true);
     // When the user types (or leaves blank), re-query the backend so distances
     // can be measured from a typed place as well as the current GPS position.
     try {
@@ -73,7 +76,7 @@ export function HomePage() {
       );
 
       const mapped = results.map(mapRealHospitalToDemo);
-      let filtered = mapped.length > 0 ? mapped : (mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS);
+      let filtered = mapped;
 
       if (tag) {
         filtered = filtered.filter((h) => h.tags.includes(tag));
@@ -82,8 +85,7 @@ export function HomePage() {
       setDisplayedHospitals(filtered);
     } catch {
       // Fallback to the locally-filtered loaded list if the backend call fails.
-      const baseHospitals = mappedHospitals.length > 0 ? mappedHospitals : DEMO_HOSPITALS;
-      let filtered = [...baseHospitals];
+      let filtered = [...mappedHospitals];
       if (trimmed) {
         const q = trimmed.toLowerCase();
         filtered = filtered.filter(
@@ -95,6 +97,8 @@ export function HomePage() {
       }
       if (tag) filtered = filtered.filter((h) => h.tags.includes(tag));
       setDisplayedHospitals(filtered);
+    } finally {
+      setIsSearching(false);
     }
 
     // Smoothly scroll to the results section below
@@ -122,7 +126,7 @@ export function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Hospital List & Filters */}
             <div className="lg:col-span-8 min-w-0">
-              <HospitalsSection hospitals={displayedHospitals} />
+              <HospitalsSection hospitals={displayedHospitals} isLoading={isLoading || isSearching} />
             </div>
 
             {/* Right Column: Emergency Hotline & Staff Access */}
@@ -134,7 +138,7 @@ export function HomePage() {
         </div>
       </main>
 
-      <ChatBot hospitals={realHospitalData} />
+      <ChatBot hospitals={realHospitalData} isLoading={isLoading} />
 
       {/* 4. Footer */}
       <footer

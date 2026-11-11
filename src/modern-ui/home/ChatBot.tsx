@@ -11,6 +11,8 @@ interface ChatMessage {
 
 interface ChatBotProps {
   hospitals: Hospital[];
+  /** True while the initial hospital list is still being fetched */
+  isLoading?: boolean;
 }
 
 // Maps a free-text symptom/emergency description to the hospital resources
@@ -28,7 +30,6 @@ function inferResources(query: string): (keyof Hospital['resources'])[] {
   }
   if (/(breath|asthma|lung|covid|oxygen|respiratory)/.test(q)) {
     resources.add('ventilator');
-    resources.add("ventilator");
   }
   if (/(accident|trauma|crash|injury|bleed)/.test(q)) {
     resources.add('emergencyDepartment');
@@ -58,7 +59,7 @@ function findBestHospital(hospitals: Hospital[], query: string): Hospital | null
   return sorted[0] ?? null;
 }
 
-export function ChatBot({ hospitals }: ChatBotProps) {
+export function ChatBot({ hospitals, isLoading = false }: ChatBotProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [showTeaser, setShowTeaser] = useState(false);
@@ -124,8 +125,11 @@ export function ChatBot({ hospitals }: ChatBotProps) {
     const hospital = findBestHospital(hospitals, trimmed);
     let reply: string;
 
-    if (!hospital) {
-      reply = 'I could not find a hospital right now. Please call emergency services immediately.';
+    if (isLoading && hospitals.length === 0) {
+      reply =
+        'Hospital data is still loading — please try again in a moment. For life-threatening emergencies call 112 immediately.';
+    } else if (!hospital) {
+      reply = 'I could not find a matching hospital right now. Please call emergency services (112) immediately.';
     } else {
       const distance =
         typeof hospital.distanceKm === 'number'
@@ -152,6 +156,12 @@ export function ChatBot({ hospitals }: ChatBotProps) {
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[#19D5E5]" />
               <span className="font-bold text-sm">Sreekutty</span>
+              {isLoading && (
+                <span className="text-[10px] text-[#19D5E5] animate-pulse ml-1">loading hospitals…</span>
+              )}
+              {!isLoading && hospitals.length > 0 && (
+                <span className="text-[10px] text-slate-400 ml-1">{hospitals.length} hospitals</span>
+              )}
             </div>
             <button onClick={() => setOpen(false)} className="cursor-pointer p-1 -m-1">
               <X size={16} />

@@ -58,8 +58,11 @@ describe('SupabaseHospitalRepository', () => {
     (supabase.from as any).mockImplementation(() => mockClient);
   });
 
-  it('should fetch hospitals from the correct table', async () => {
+  it('should fetch hospitals from the correct table (kerala_hospitals)', async () => {
     await repo.getHospitals();
+    // The repository targets `kerala_hospitals` – the real 395-hospital Kerala
+    // dataset created directly in Supabase. `public_hospitals` holds only 15
+    // demo records; `hospitals` is the tenant-registry table.
     expect(supabase.from).toHaveBeenCalledWith('kerala_hospitals');
   });
 

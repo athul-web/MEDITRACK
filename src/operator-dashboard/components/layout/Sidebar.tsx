@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import {
@@ -13,6 +13,9 @@ import {
   ChevronRight,
   Plus,
   LogOut,
+  User,
+  Stethoscope,
+  Hospital,
 } from 'lucide-react';
 
 const navItems = [
@@ -25,6 +28,11 @@ const navItems = [
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
 ] as const;
 
+const adminNavItems = [
+  { to: '/dashboard/doctors', label: 'Doctor Directory', icon: User, roles: ['doctor_admin', 'super_admin'] },
+  { to: '/dashboard/hospital-doctors', label: 'Hospital Doctors', icon: Hospital, roles: ['Staff', 'Admin'] },
+] as const;
+
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -33,7 +41,30 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const activeAlerts = 0; // bound to real alerts later
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch user role
+  useEffect(() => {
+    let isActive = true;
+    async function fetchRole() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        if (isActive && profile) setUserRole(profile.role);
+      } catch (err) {
+        console.error('Failed to fetch user role:', err);
+      }
+    }
+    fetchRole();
+    return () => { isActive = false; };
+  }, []);
 
   return (
     <aside
@@ -64,9 +95,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors
                    ${isActive
-                      ? 'bg-navy-700 text-white'
-                      : 'text-navy-300 hover:bg-navy-800 hover:text-white'
-                   }`
+                       ? 'bg-navy-700 text-white'
+                       : 'text-navy-300 hover:bg-navy-800 hover:text-white'
+                    }`
                 }
                 title={collapsed ? label : undefined}
               >
@@ -83,6 +114,28 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </NavLink>
             </li>
           ))}
+
+          {/* Admin-only navigation items */}
+          {userRole && adminNavItems
+            .filter(item => (item.roles as readonly string[]).includes(userRole))
+            .map(({ to, label, icon: Icon }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors
+                     ${isActive
+                         ? 'bg-navy-700 text-white'
+                         : 'text-navy-300 hover:bg-navy-800 hover:text-white'
+                      }`
+                  }
+                  title={collapsed ? label : undefined}
+                >
+                  <Icon className="w-[18px] h-[18px] shrink-0" />
+                  {!collapsed && <span className="whitespace-nowrap">{label}</span>}
+                </NavLink>
+              </li>
+            ))}
         </ul>
       </nav>
 

@@ -138,7 +138,7 @@ export function HomePage() {
         </div>
       </main>
 
-      <ChatBot hospitals={realHospitalData} />
+      <ChatBot hospitals={realHospitalData} isLoading={isLoading} />
 
       {/* 4. Footer */}
       <footer

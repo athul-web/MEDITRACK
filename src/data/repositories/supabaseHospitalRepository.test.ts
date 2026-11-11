@@ -58,32 +58,39 @@ describe('SupabaseHospitalRepository', () => {
     (supabase.from as any).mockImplementation(() => mockClient);
   });
 
-  it('should fetch hospitals from the correct table', async () => {
+  it('should fetch hospitals from the correct table (public_hospitals)', async () => {
     await repo.getHospitals();
-    expect(supabase.from).toHaveBeenCalledWith('kerala_hospitals');
+    // The repository targets `public_hospitals`, the actual directory dataset.
+    // `kerala_hospitals` does not exist in the database; `hospitals` is the
+    // tenant-registry table, also unrelated to public directory queries.
+    expect(supabase.from).toHaveBeenCalledWith('public_hospitals');
   });
 
-  it('should apply district filter using city, district, and address columns', async () => {
+  it('should apply district filter using city and address columns', async () => {
+    // `public_hospitals` does not have a dedicated `district` column.
+    // The filter uses `city` and `address` which are the available text fields.
     const mockFilters: HospitalSearchFilters = {
       requiredResources: [],
       district: 'Ernakulam',
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,district.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Ernakulam%,address.ilike.%Ernakulam%');
   });
 
-  it('should apply category filter when provided', async () => {
+  it('should NOT apply category filter (public_hospitals has no category column)', async () => {
+    // `public_hospitals` does not have a `category` column. The repository
+    // skips that filter to avoid a PostgREST error on a non-existent column.
     const mockFilters: HospitalSearchFilters = {
       requiredResources: [],
       category: 'multi_specialty',
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.eq).toHaveBeenCalledWith('category', 'multi_specialty');
+    expect(mockClient.eq).not.toHaveBeenCalledWith('category', 'multi_specialty');
   });
 
-  it('should apply both district and category filters', async () => {
+  it('should apply district filter only (no category column in public_hospitals)', async () => {
     const mockFilters: HospitalSearchFilters = {
       requiredResources: [],
       district: 'Trivandrum',
@@ -91,8 +98,9 @@ describe('SupabaseHospitalRepository', () => {
     };
 
     await repo.searchHospitals(mockFilters);
-    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,district.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
-    expect(mockClient.eq).toHaveBeenCalledWith('category', 'single_specialty');
+    expect(mockClient.or).toHaveBeenCalledWith('city.ilike.%Trivandrum%,address.ilike.%Trivandrum%');
+    // Category filter is intentionally not applied
+    expect(mockClient.eq).not.toHaveBeenCalledWith('category', 'single_specialty');
   });
 
   it('should not perform string query matching for GPS "Current Location"', async () => {

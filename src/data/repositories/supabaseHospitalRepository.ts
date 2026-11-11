@@ -6,10 +6,28 @@ import { resolveKeralaCoordinates } from '../../utils/keralaCoordinates';
 import { geocodeKeralaPlace, type GeocodedPlace } from '../../utils/nominatim';
 import { isAbortError } from '../../utils/http';
 
+/**
+ * The public hospital directory lives in `public_hospitals`.
+ *
+ * This is distinct from the `hospitals` tenant-registry table (which tracks
+ * registered MediTrack hospital organisations) and from the now-removed
+ * `kerala_hospitals` table that was previously referenced but does not exist
+ * in the database.
+ *
+ * `public_hospitals` columns relevant here:
+ *   id, name, address, city, state, verified, image, last_updated,
+ *   latitude, longitude, resources (JSONB), contact (JSONB)
+ *
+ * Note: `district`, `email`, and `category` columns do NOT exist in
+ * `public_hospitals`. Filters that relied on those columns have been
+ * adapted to use the available `city` and `address` columns instead.
+ */
+const PUBLIC_HOSPITALS_TABLE = 'public_hospitals' as const;
+
 export class SupabaseHospitalRepository implements HospitalRepository {
   async getHospitals(): Promise<Hospital[]> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .select('*')
       .order('name');
 
@@ -19,7 +37,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
 
   async getHospitalById(id: string): Promise<Hospital | null> {
     const { data, error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -29,8 +47,10 @@ export class SupabaseHospitalRepository implements HospitalRepository {
   }
 
   async updateResources(id: string, resources: Record<string, string>): Promise<void> {
+    // Resource updates on the public directory are gated by RLS; only
+    // service-role callers (Edge Functions) are permitted to mutate rows.
     const { error } = await supabase
-      .from('kerala_hospitals')
+      .from(PUBLIC_HOSPITALS_TABLE)
       .update({ resources })
       .eq('id', id);
 
@@ -52,7 +72,8 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     sort: HospitalSort = 'nearest',
     options?: { signal?: AbortSignal },
   ): Promise<Hospital[]> {
-    let query = supabase.from('kerala_hospitals').select('*');
+    // public_hospitals does not have a `category` column – skip that filter.
+    let query = supabase.from(PUBLIC_HOSPITALS_TABLE).select('*');
 
     const isCurrentLocation = (label?: string) => {
       if (!label) return false;
@@ -77,15 +98,19 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       }
     }
 
-    if (filters.category) {
-      query = query.eq('category', filters.category);
-    }
+    // `public_hospitals` does NOT have a `category` column – skip that filter.
+    // If a future schema adds it, re-enable this block.
+    // if (filters.category) {
+    //   query = query.eq('category', filters.category);
+    // }
 
     if (filters.district) {
+      // `public_hospitals` has `city` but not a dedicated `district` column.
+      // Filter against `city` and `address` which are the available text fields.
       const districtText = this.sanitizeFilterTerm(filters.district);
       if (districtText) {
         query = query.or(
-          `city.ilike.%${districtText}%,district.ilike.%${districtText}%,address.ilike.%${districtText}%`,
+          `city.ilike.%${districtText}%,address.ilike.%${districtText}%`,
         );
       }
     }
@@ -93,8 +118,10 @@ export class SupabaseHospitalRepository implements HospitalRepository {
     const customLocationText = geocoded ? '' : this.sanitizeFilterTerm(typedLocation);
 
     if (customLocationText) {
+      // `public_hospitals` has: name, city, address, state.
+      // It does NOT have district or email columns.
       query = query.or(
-        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,district.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,email.ilike.%${customLocationText}%`,
+        `name.ilike.%${customLocationText}%,city.ilike.%${customLocationText}%,address.ilike.%${customLocationText}%,state.ilike.%${customLocationText}%`,
       );
     }
 
@@ -102,7 +129,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
       const trimmedQuery = this.sanitizeFilterTerm(filters.query);
       if (trimmedQuery) {
         query = query.or(
-          `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,district.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,email.ilike.%${trimmedQuery}%`,
+          `name.ilike.%${trimmedQuery}%,city.ilike.%${trimmedQuery}%,address.ilike.%${trimmedQuery}%,state.ilike.%${trimmedQuery}%`,
         );
       }
     }
@@ -119,8 +146,7 @@ export class SupabaseHospitalRepository implements HospitalRepository {
           hospital.name,
           hospital.city,
           hospital.address,
-          hospital.district,
-          hospital.email,
+          hospital.state,
         ]
           .filter(Boolean)
           .join(' ')

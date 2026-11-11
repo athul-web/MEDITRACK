@@ -14,6 +14,7 @@ import {
 import type { DemoHospital } from '../types/hospital';
 import type { DemoDoctor } from '../data/doctorsData';
 import { DEMO_DOCTORS, DEPARTMENTS } from '../data/doctorsData';
+import { DEMO_FACILITIES, DEMO_EQUIPMENT, EQUIPMENT_CATEGORIES } from '../data/facilitiesData';
 
 interface HospitalDetailsModalProps {
   hospital: DemoHospital | null;
@@ -189,6 +190,7 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
   const [selectedDept, setSelectedDept] = useState('All Departments');
   const [selectedDoctor, setSelectedDoctor] = useState<DemoDoctor | null>(null);
   const [showAllDoctors, setShowAllDoctors] = useState(false);
+  const [equipCategory, setEquipCategory] = useState('All Categories');
 
   // Reset all state when hospital changes
   useEffect(() => {
@@ -197,6 +199,7 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
     setSelectedDept('All Departments');
     setSelectedDoctor(null);
     setShowAllDoctors(false);
+    setEquipCategory('All Categories');
   }, [hospital?.id]);
 
   // Keyboard / scroll lock
@@ -532,7 +535,125 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
               )}
 
               {/* ── FACILITIES TAB ── */}
-              {activeTab === 'facilities' && <ComingSoonPanel tabLabel="Facilities" />}
+              {activeTab === 'facilities' && (() => {
+                const filteredEquip = equipCategory === 'All Categories'
+                  ? DEMO_EQUIPMENT
+                  : DEMO_EQUIPMENT.filter(e => e.category === equipCategory);
+
+                return (
+                  <div className="p-5 space-y-6">
+                    {/* ── Facilities section ── */}
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+                        Hospital Facilities
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {DEMO_FACILITIES.map((fac) => {
+                          const statusCfg = {
+                            operational: { dot: 'bg-emerald-500', label: 'Operational', wrap: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+                            maintenance:  { dot: 'bg-amber-500',  label: 'Maintenance',  wrap: 'text-amber-700 bg-amber-50 border-amber-200' },
+                            closed:       { dot: 'bg-rose-500',   label: 'Closed',       wrap: 'text-rose-700 bg-rose-50 border-rose-200' },
+                          }[fac.status];
+                          return (
+                            <div
+                              key={fac.id}
+                              className="flex gap-3 p-3.5 rounded-xl border border-[#D9E6EE] bg-white hover:border-[#BCEBF5] hover:bg-[#E4F6FA]/30 transition-colors"
+                            >
+                              <span className="text-2xl leading-none mt-0.5 shrink-0">{fac.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-1">
+                                  <p className="text-sm font-semibold text-[#122B43] leading-snug">{fac.name}</p>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${statusCfg.wrap}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+                                    {statusCfg.label}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#60778C] leading-relaxed">{fac.description}</p>
+                                {(fac.capacity || fac.floor) && (
+                                  <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[#60778C]">
+                                    {fac.floor && <span>📍 {fac.floor}</span>}
+                                    {fac.capacity && <span>🛏 {fac.capacity}</span>}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* ── Equipment section ── */}
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C]">
+                          Medical Equipment
+                        </h3>
+                        {/* Category filter */}
+                        <div className="relative">
+                          <select
+                            value={equipCategory}
+                            onChange={(e) => setEquipCategory(e.target.value)}
+                            className="appearance-none pl-3 pr-7 py-1.5 rounded-xl border border-[#D9E6EE] text-xs text-[#122B43] focus:outline-none focus:border-[#087D91] focus:ring-1 focus:ring-[#087D91]/30 bg-white cursor-pointer w-full sm:w-auto"
+                          >
+                            {EQUIPMENT_CATEGORIES.map((cat) => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#60778C]">
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                              <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {filteredEquip.map((eq) => {
+                          const eqCfg = {
+                            available:   { dot: 'bg-emerald-500', label: 'Available',   wrap: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+                            in_use:      { dot: 'bg-blue-500',    label: 'In Use',      wrap: 'text-blue-700 bg-blue-50 border-blue-200' },
+                            maintenance: { dot: 'bg-amber-500',   label: 'Maintenance', wrap: 'text-amber-700 bg-amber-50 border-amber-200' },
+                          }[eq.status];
+                          return (
+                            <div
+                              key={eq.id}
+                              className="flex gap-3 p-3.5 rounded-xl border border-[#D9E6EE] bg-white hover:border-[#BCEBF5] hover:bg-[#E4F6FA]/30 transition-colors"
+                            >
+                              <span className="text-2xl leading-none mt-0.5 shrink-0">{eq.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-1">
+                                  <p className="text-sm font-semibold text-[#122B43] leading-snug">{eq.name}</p>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${eqCfg.wrap}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${eqCfg.dot}`} />
+                                    {eqCfg.label}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#60778C] leading-relaxed">{eq.description}</p>
+                                <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[#60778C]">
+                                  <span className="font-semibold text-[#073B55]">Qty: {eq.quantity}</span>
+                                  <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">{eq.category}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {filteredEquip.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                          <p className="text-sm font-semibold text-[#122B43]">No equipment in this category</p>
+                          <p className="text-xs text-[#60778C]">Try selecting a different category.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Notice */}
+                    <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-[#E4F6FA] border border-[#BCEBF5] text-xs text-[#60778C]">
+                      <Info size={14} className="text-[#087D91] shrink-0 mt-0.5" />
+                      <span>Facilities and equipment availability may vary. Please contact the hospital to confirm current status before your visit.</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* ── SERVICES TAB ── */}
               {activeTab === 'services' && <ComingSoonPanel tabLabel="Services" />}

@@ -231,3 +231,187 @@ export const EQUIPMENT_CATEGORIES = [
   'Nephrology',
   'Monitoring',
 ];
+
+// ── Services data ─────────────────────────────────────────────────────────────
+
+export interface DemoService {
+  id: string;
+  name: string;
+  category: string;
+  available: boolean;
+  hours: string;        // e.g. "24 / 7" or "Mon–Sat, 8 AM – 8 PM"
+  description: string;
+  icon: string;
+}
+
+export const DEMO_SERVICES: DemoService[] = [
+  {
+    id: 'svc-01',
+    name: 'Outpatient Department (OPD)',
+    category: 'General',
+    available: true,
+    hours: 'Mon – Sat, 8 AM – 6 PM',
+    description: 'Walk-in and appointment-based consultations across all specialties. Token system available at reception.',
+    icon: '🏨',
+  },
+  {
+    id: 'svc-02',
+    name: '24 / 7 Emergency Care',
+    category: 'Emergency',
+    available: true,
+    hours: '24 / 7',
+    description: 'Round-the-clock emergency services with trained paramedics, trauma rooms, and rapid triage.',
+    icon: '🚨',
+  },
+  {
+    id: 'svc-03',
+    name: 'Ambulance Service',
+    category: 'Emergency',
+    available: true,
+    hours: '24 / 7',
+    description: 'Fleet of ALS and BLS ambulances equipped with cardiac monitors, defibrillators, and oxygen supply.',
+    icon: '🚑',
+  },
+  {
+    id: 'svc-04',
+    name: 'Inpatient & Ward Admission',
+    category: 'General',
+    available: true,
+    hours: '24 / 7',
+    description: 'General, semi-private, and private wards. Admission desk open round the clock.',
+    icon: '🛏️',
+  },
+  {
+    id: 'svc-05',
+    name: 'Surgical Services',
+    category: 'Surgery',
+    available: true,
+    hours: 'Scheduled + Emergency',
+    description: 'Elective and emergency surgeries including laparoscopic, orthopaedic, cardiac, and gynaecological procedures.',
+    icon: '⚕️',
+  },
+  {
+    id: 'svc-06',
+    name: 'Diagnostic Imaging',
+    category: 'Diagnostics',
+    available: true,
+    hours: 'Mon – Sun, 7 AM – 10 PM',
+    description: 'MRI, CT scan, digital X-ray, ultrasound, and mammography. Reports within 2–4 hours for routine scans.',
+    icon: '🔬',
+  },
+  {
+    id: 'svc-07',
+    name: 'Laboratory & Pathology',
+    category: 'Diagnostics',
+    available: true,
+    hours: '24 / 7',
+    description: 'NABL-accredited lab. Online report delivery via patient portal and WhatsApp.',
+    icon: '🧪',
+  },
+  {
+    id: 'svc-08',
+    name: 'Telemedicine / Video Consultation',
+    category: 'Digital Health',
+    available: true,
+    hours: 'Mon – Sat, 9 AM – 5 PM',
+    description: 'Remote consultations with specialist doctors. Book via the MediTrack app or hospital website.',
+    icon: '💻',
+  },
+  {
+    id: 'svc-09',
+    name: 'Maternity & Delivery',
+    category: "Women's Health",
+    available: true,
+    hours: '24 / 7',
+    description: 'Antenatal care, normal and C-section deliveries, and postnatal support in dedicated maternity suites.',
+    icon: '👶',
+  },
+  {
+    id: 'svc-10',
+    name: 'Physiotherapy & Rehabilitation',
+    category: 'Rehabilitation',
+    available: true,
+    hours: 'Mon – Sat, 8 AM – 5 PM',
+    description: 'Post-surgery and post-stroke rehabilitation, sports injury management, and geriatric physiotherapy.',
+    icon: '🏃',
+  },
+  {
+    id: 'svc-11',
+    name: 'Dietary & Nutrition Counselling',
+    category: 'Wellness',
+    available: true,
+    hours: 'Mon – Fri, 9 AM – 4 PM',
+    description: 'Personalised meal planning and therapeutic diet support for diabetic, cardiac, and renal patients.',
+    icon: '🥗',
+  },
+  {
+    id: 'svc-12',
+    name: 'Medical Social Work',
+    category: 'Support',
+    available: true,
+    hours: 'Mon – Sat, 9 AM – 5 PM',
+    description: 'Guidance on government health schemes, insurance claims, discharge planning, and community support.',
+    icon: '🤝',
+  },
+  {
+    id: 'svc-13',
+    name: 'Health Packages & Preventive Checkups',
+    category: 'Wellness',
+    available: true,
+    hours: 'Mon – Sat, 7 AM – 2 PM',
+    description: 'Annual health packages covering full blood panel, ECG, chest X-ray, BMI, and physician consultation.',
+    icon: '📋',
+  },
+  {
+    id: 'svc-14',
+    name: 'Haemodialysis',
+    category: 'Nephrology',
+    available: false,
+    hours: 'Temporarily unavailable',
+    description: 'Haemodialysis sessions for chronic kidney disease patients. Currently suspended due to equipment maintenance.',
+    icon: '🔄',
+  },
+];
+
+export const SERVICE_CATEGORIES = [
+  'All',
+  'General',
+  'Emergency',
+  'Surgery',
+  'Diagnostics',
+  'Digital Health',
+  "Women's Health",
+  'Rehabilitation',
+  'Wellness',
+  'Support',
+  'Nephrology',
+];
+
+// ── Overview quick-stats ───────────────────────────────────────────────────────
+
+export interface OverviewStat {
+  label: string;
+  value: string;
+  icon: string;
+}
+
+export const OVERVIEW_STATS: OverviewStat[] = [
+  { label: 'Total Beds',         value: '350+',    icon: '🛏️' },
+  { label: 'Specialist Doctors', value: '80+',     icon: '👨‍⚕️' },
+  { label: 'Surgeries / Year',   value: '5,000+',  icon: '⚕️'  },
+  { label: 'Established',        value: '1998',    icon: '🏥'  },
+];
+
+export const OVERVIEW_ACCREDITATIONS = [
+  { name: 'NABH Accredited',    icon: '🏅' },
+  { name: 'NABL Certified Lab', icon: '🔬' },
+  { name: 'ISO 9001:2015',      icon: '✅' },
+  { name: 'AERB Approved',      icon: '☢️' },
+];
+
+export const OVERVIEW_TIMINGS = [
+  { day: 'Mon – Fri', time: '8 AM – 8 PM' },
+  { day: 'Saturday',  time: '8 AM – 6 PM' },
+  { day: 'Sunday',    time: '9 AM – 2 PM (OPD)' },
+  { day: 'Emergency', time: '24 / 7' },
+];

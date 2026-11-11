@@ -14,7 +14,7 @@ import {
 import type { DemoHospital } from '../types/hospital';
 import type { DemoDoctor } from '../data/doctorsData';
 import { DEMO_DOCTORS, DEPARTMENTS } from '../data/doctorsData';
-import { DEMO_FACILITIES, DEMO_EQUIPMENT, EQUIPMENT_CATEGORIES } from '../data/facilitiesData';
+import { DEMO_FACILITIES, DEMO_EQUIPMENT, EQUIPMENT_CATEGORIES, DEMO_SERVICES, SERVICE_CATEGORIES, OVERVIEW_STATS, OVERVIEW_ACCREDITATIONS, OVERVIEW_TIMINGS } from '../data/facilitiesData';
 
 interface HospitalDetailsModalProps {
   hospital: DemoHospital | null;
@@ -191,6 +191,7 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
   const [selectedDoctor, setSelectedDoctor] = useState<DemoDoctor | null>(null);
   const [showAllDoctors, setShowAllDoctors] = useState(false);
   const [equipCategory, setEquipCategory] = useState('All Categories');
+  const [serviceCategory, setServiceCategory] = useState('All');
 
   // Reset all state when hospital changes
   useEffect(() => {
@@ -200,6 +201,7 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
     setSelectedDoctor(null);
     setShowAllDoctors(false);
     setEquipCategory('All Categories');
+    setServiceCategory('All');
   }, [hospital?.id]);
 
   // Keyboard / scroll lock
@@ -411,6 +413,58 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
                       <span className="font-mono text-[11px] text-[#60778C]">
                         {hospital.lat.toFixed(4)}, {hospital.lng.toFixed(4)}
                       </span>
+                    </div>
+                  </div>
+
+                  {/* ── Quick Stats ── */}
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+                      At a Glance
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {OVERVIEW_STATS.map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-[#D9E6EE] bg-white text-center"
+                        >
+                          <span className="text-2xl leading-none">{stat.icon}</span>
+                          <span className="text-lg font-black text-[#073B55]">{stat.value}</span>
+                          <span className="text-[10px] text-[#60778C] font-medium leading-tight">{stat.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── OPD Timings ── */}
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+                      Working Hours
+                    </h3>
+                    <div className="rounded-xl border border-[#D9E6EE] overflow-hidden divide-y divide-[#D9E6EE]">
+                      {OVERVIEW_TIMINGS.map((row) => (
+                        <div key={row.day} className="flex items-center justify-between px-4 py-2.5 text-xs bg-white">
+                          <span className="text-[#60778C] font-medium">{row.day}</span>
+                          <span className="font-semibold text-[#122B43]">{row.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Accreditations ── */}
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-3">
+                      Accreditations & Certifications
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {OVERVIEW_ACCREDITATIONS.map((a) => (
+                        <span
+                          key={a.name}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#E4F6FA] text-[#073B55] border border-[#BCEBF5]"
+                        >
+                          <span>{a.icon}</span>
+                          {a.name}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -656,7 +710,84 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
               })()}
 
               {/* ── SERVICES TAB ── */}
-              {activeTab === 'services' && <ComingSoonPanel tabLabel="Services" />}
+              {activeTab === 'services' && (() => {
+                const filteredServices = serviceCategory === 'All'
+                  ? DEMO_SERVICES
+                  : DEMO_SERVICES.filter(s => s.category === serviceCategory);
+                return (
+                  <div className="p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <h3 className="text-base font-bold text-[#122B43]">
+                        Services at {hospital.name}
+                      </h3>
+                      {/* Category filter */}
+                      <div className="relative">
+                        <select
+                          value={serviceCategory}
+                          onChange={(e) => setServiceCategory(e.target.value)}
+                          className="appearance-none pl-3 pr-7 py-1.5 rounded-xl border border-[#D9E6EE] text-xs text-[#122B43] focus:outline-none focus:border-[#087D91] focus:ring-1 focus:ring-[#087D91]/30 bg-white cursor-pointer w-full sm:w-auto"
+                        >
+                          {SERVICE_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : cat}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#60778C]">
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Service cards */}
+                    <div className="space-y-2.5">
+                      {filteredServices.map((svc) => (
+                        <div
+                          key={svc.id}
+                          className={`flex gap-3.5 p-3.5 rounded-xl border transition-colors ${
+                            svc.available
+                              ? 'border-[#D9E6EE] bg-white hover:border-[#BCEBF5] hover:bg-[#E4F6FA]/30'
+                              : 'border-rose-100 bg-rose-50/40'
+                          }`}
+                        >
+                          <span className="text-2xl leading-none mt-0.5 shrink-0">{svc.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-0.5">
+                              <p className="text-sm font-semibold text-[#122B43] leading-snug">{svc.name}</p>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${
+                                svc.available
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-rose-50 text-rose-700 border-rose-200'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${svc.available ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                {svc.available ? 'Available' : 'Unavailable'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#60778C] leading-relaxed mb-1.5">{svc.description}</p>
+                            <div className="flex items-center gap-2 text-[11px]">
+                              <span className="text-[#60778C]">🕐</span>
+                              <span className="font-semibold text-[#073B55]">{svc.hours}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">{svc.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredServices.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                          <p className="text-sm font-semibold text-[#122B43]">No services in this category</p>
+                          <p className="text-xs text-[#60778C]">Try selecting a different category.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Notice */}
+                    <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-[#E4F6FA] border border-[#BCEBF5] text-xs text-[#60778C]">
+                      <Info size={14} className="text-[#087D91] shrink-0 mt-0.5" />
+                      <span>Service availability and timings are subject to change. Please call the hospital to confirm before visiting.</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* ── CONTACT TAB ── */}
               {activeTab === 'contact' && <ComingSoonPanel tabLabel="Contact" />}

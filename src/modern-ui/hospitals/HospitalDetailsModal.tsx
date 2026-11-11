@@ -790,7 +790,114 @@ export function HospitalDetailsModal({ hospital, onClose }: HospitalDetailsModal
               })()}
 
               {/* ── CONTACT TAB ── */}
-              {activeTab === 'contact' && <ComingSoonPanel tabLabel="Contact" />}
+              {activeTab === 'contact' && (
+                <div className="p-5 space-y-5">
+                  <h3 className="text-base font-bold text-[#122B43]">Contact {hospital.name}</h3>
+
+                  {/* Primary phone numbers */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-2.5">Phone Numbers</p>
+                    <div className="space-y-2">
+                      {[
+                        { label: '🚨 Emergency Hotline',  number: hospital.phone || '0484-2345678', note: '24 / 7' },
+                        { label: '📋 OPD Appointments',   number: '0484-2345679',                   note: 'Mon–Sat, 8 AM–6 PM' },
+                        { label: '🏥 General Enquiries',  number: '0484-2345680',                   note: 'Mon–Sat, 9 AM–5 PM' },
+                        { label: '🚑 Ambulance',          number: '108',                            note: '24 / 7 · Free' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#D9E6EE] bg-white hover:border-[#BCEBF5] hover:bg-[#E4F6FA]/30 transition-colors">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-[#122B43]">{item.label}</p>
+                            <p className="text-[11px] text-[#60778C] mt-0.5">{item.note}</p>
+                          </div>
+                          <a
+                            href={`tel:${item.number.replace(/\s/g, '')}`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#073B55] text-white text-xs font-bold hover:bg-[#052F4B] transition-colors shrink-0"
+                          >
+                            📞 {item.number}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Email & web */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-2.5">Email & Web</p>
+                    <div className="space-y-2">
+                      {[
+                        { label: '📧 General Enquiries', value: 'info@hospital.kerala.in',         href: 'mailto:info@hospital.kerala.in' },
+                        { label: '📧 Appointments',      value: 'appointments@hospital.kerala.in', href: 'mailto:appointments@hospital.kerala.in' },
+                        { label: '🌐 Website',           value: 'www.hospital.kerala.in',          href: 'https://www.hospital.kerala.in' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#D9E6EE] bg-white">
+                          <p className="text-xs font-semibold text-[#122B43]">{item.label}</p>
+                          <a
+                            href={item.href}
+                            target={item.href.startsWith('http') ? '_blank' : undefined}
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-[#087D91] hover:underline truncate max-w-[55%] text-right"
+                          >
+                            {item.value}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Address & map */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-2.5">Address</p>
+                    <div className="rounded-xl border border-[#D9E6EE] bg-white overflow-hidden">
+                      <div className="px-4 py-3 space-y-1">
+                        <p className="text-sm font-semibold text-[#122B43]">{hospital.name}</p>
+                        <p className="text-xs text-[#60778C] leading-relaxed">{hospital.address}</p>
+                        {hospital.district && (
+                          <p className="text-xs text-[#60778C]">{hospital.district} District, Kerala</p>
+                        )}
+                        <p className="text-[11px] font-mono text-[#60778C] mt-1">
+                          {hospital.lat.toFixed(5)}, {hospital.lng.toFixed(5)}
+                        </p>
+                      </div>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${hospital.lat},${hospital.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-[#087D91] border-t border-[#D9E6EE] hover:bg-[#E4F6FA] transition-colors"
+                      >
+                        🗺️ Open in Google Maps
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Department direct lines */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#60778C] mb-2.5">Department Direct Lines</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {[
+                        { dept: 'ICU',           ext: 'Ext. 201' },
+                        { dept: 'Emergency',     ext: 'Ext. 100' },
+                        { dept: 'Cardiology',    ext: 'Ext. 310' },
+                        { dept: 'Radiology',     ext: 'Ext. 420' },
+                        { dept: 'Laboratory',    ext: 'Ext. 530' },
+                        { dept: 'Pharmacy',      ext: 'Ext. 110' },
+                        { dept: 'Physiotherapy', ext: 'Ext. 640' },
+                        { dept: 'Blood Bank',    ext: 'Ext. 720' },
+                      ].map((d) => (
+                        <div key={d.dept} className="flex items-center justify-between px-3 py-2 rounded-lg border border-[#D9E6EE] bg-white text-xs">
+                          <span className="font-medium text-[#122B43]">{d.dept}</span>
+                          <span className="text-[#60778C] font-mono">{d.ext}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Notice */}
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-[#E4F6FA] border border-[#BCEBF5] text-xs text-[#60778C]">
+                    <Info size={14} className="text-[#087D91] shrink-0 mt-0.5" />
+                    <span>Contact details shown are for demonstration purposes. Please verify with the hospital directly before visiting.</span>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
